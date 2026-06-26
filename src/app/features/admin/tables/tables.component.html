@@ -1,0 +1,47 @@
+<div class="admin-page container">
+  <div>
+    <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+    <h2>Gestion des tables</h2>
+  </div>
+
+  <!-- Ajout table -->
+  <div class="add-table card">
+    <h4>Ajouter une table</h4>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <input class="form-control" placeholder="Nom / numéro de table (ex: Table 5)"
+        style="flex:1;min-width:200px"
+        [value]="newNumber()"
+        (input)="newNumber.set($any($event.target).value)"
+        (keyup.enter)="addTable()">
+      <button class="btn btn--primary" (click)="addTable()">Ajouter</button>
+    </div>
+  </div>
+
+  @if (loading()) { <app-loader /> }
+  @else {
+    <div class="tables-grid">
+      @for (t of tables(); track t.id) {
+        <div class="table-card card" [class.table-card--occupied]="t.is_occupied" [class.table-card--inactive]="!t.is_active">
+          <div class="table-card__head flex-between">
+            <strong>{{ t.number }}</strong>
+            <span class="table-card__status">
+              {{ !t.is_active ? 'Inactif' : t.is_occupied ? 'Occupée' : 'Libre' }}
+            </span>
+          </div>
+
+          <!-- QR code via service externe (API publique) -->
+          <img class="table-card__qr" [src]="getQrUrl(t.id)" [alt]="'QR ' + t.number" loading="lazy">
+
+          <div class="table-card__actions">
+            <button class="btn btn--ghost btn--sm" (click)="toggle(t)">
+              {{ t.is_active ? 'Désactiver' : 'Activer' }}
+            </button>
+            <a [href]="getQrUrl(t.id)" download class="btn btn--outline btn--sm" target="_blank">
+              ⬇ QR code
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

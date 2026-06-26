@@ -1,0 +1,95 @@
+<!-- En-tête de page -->
+<div class="menu-header">
+  <div class="container">
+    <span class="section-tag">Notre carte</span>
+    <h1>Le menu O'Mboa</h1>
+    <p class="text-muted">Cuisine authentique d'Afrique centrale. Renouvelé chaque saison.</p>
+
+    <!-- Mode visiteur : bannière d'invitation à commander à table -->
+    <div class="menu-header__cta-bar">
+      <span>📱 Vous êtes à table ? Scannez le QR code pour passer votre commande directement.</span>
+    </div>
+  </div>
+</div>
+
+@if (loading()) {
+  <app-loader label="Chargement du menu…" />
+} @else {
+
+  <div class="menu-layout container">
+    <!-- Sidebar catégories -->
+    <aside class="menu-sidebar">
+      <div class="menu-sidebar__search">
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Rechercher un plat…"
+          [value]="searchQuery()"
+          (input)="search($event)"
+        >
+      </div>
+
+      <nav class="menu-sidebar__nav">
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="menu-sidebar__cat"
+            [class.active]="cat.id === activeId()"
+            (click)="select(cat.id)"
+          >
+            <!-- Image catégorie → 800×420px -->
+            @if (cat.image_url) {
+              <img [src]="cat.image_url" [alt]="cat.name">
+            }
+            <span>{{ cat.name }}</span>
+            @if (cat.subcategories?.length) {
+              <span class="menu-sidebar__sub-count">{{ cat.subcategories!.length }}</span>
+            }
+          </button>
+
+          <!-- Sous-catégories (boissons) -->
+          @if (cat.id === activeId() && cat.subcategories?.length) {
+            <div class="menu-sidebar__subcats">
+              @for (sub of cat.subcategories; track sub.id) {
+                <button
+                  class="menu-sidebar__subcat"
+                  [class.active]="sub.id === activeId()"
+                  (click)="select(sub.id)"
+                >
+                  {{ sub.name }}
+                </button>
+              }
+            </div>
+          }
+        }
+      </nav>
+    </aside>
+
+    <!-- Contenu produits -->
+    <main class="menu-content">
+      @if (activeCategory()) {
+        <div class="menu-content__header">
+          <h2>{{ activeCategory()!.name }}</h2>
+          @if (activeCategory()!.description) {
+            <p class="text-muted">{{ activeCategory()!.description }}</p>
+          }
+          <span class="menu-content__count">{{ filteredProducts().length }} plat(s)</span>
+        </div>
+      }
+
+      @if (filteredProducts().length) {
+        <div class="grid-3">
+          @for (p of filteredProducts(); track p.id) {
+            <app-product-card [product]="p" [showAddButton]="false" />
+          }
+        </div>
+      } @else {
+        <div class="menu-empty">
+          <p>Aucun plat trouvé pour "{{ searchQuery() }}"</p>
+          <button class="btn btn--ghost btn--sm" (click)="searchQuery.set('')">
+            Effacer la recherche
+          </button>
+        </div>
+      }
+    </main>
+  </div>
+}

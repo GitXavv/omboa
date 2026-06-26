@@ -1,0 +1,64 @@
+<div class="admin-page container">
+  <div class="admin-header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p class="text-muted">Vue d'ensemble du restaurant O'Mboa</p>
+    </div>
+    <nav class="admin-nav">
+      <a routerLink="/admin/orders" class="btn btn--ghost btn--sm">Commandes</a>
+      <a routerLink="/admin/menu"   class="btn btn--ghost btn--sm">Menu</a>
+      <a routerLink="/admin/tables" class="btn btn--ghost btn--sm">Tables</a>
+      <a routerLink="/admin/logs"   class="btn btn--ghost btn--sm">Logs</a>
+    </nav>
+  </div>
+
+  @if (loading()) {
+    <app-loader />
+  } @else {
+    <div class="stats-grid">
+      <div class="stat-card card">
+        <span class="stat-card__icon">📋</span>
+        <div>
+          <div class="stat-card__value">{{ stats.total() }}</div>
+          <div class="stat-card__label">Commandes totales</div>
+        </div>
+      </div>
+      <div class="stat-card card">
+        <span class="stat-card__icon">⏳</span>
+        <div>
+          <div class="stat-card__value">{{ stats.pending() }}</div>
+          <div class="stat-card__label">En attente</div>
+        </div>
+      </div>
+      <div class="stat-card card">
+        <span class="stat-card__icon">👨‍🍳</span>
+        <div>
+          <div class="stat-card__value">{{ stats.preparing() }}</div>
+          <div class="stat-card__label">En préparation</div>
+        </div>
+      </div>
+      <div class="stat-card card">
+        <span class="stat-card__icon">💰</span>
+        <div>
+          <div class="stat-card__value">{{ stats.revenue() | number:'1.0-0' }} F</div>
+          <div class="stat-card__label">Chiffre d'affaires</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-orders">
+      <h3>Commandes récentes</h3>
+      @for (order of orders().slice(0, 8); track order.id) {
+        <div class="order-row card">
+          <span class="order-row__table">{{ order.table?.number ?? '—' }}</span>
+          <span class="text-muted" style="font-size:.875rem">{{ order.created_at | date:'HH:mm' }}</span>
+          <span class="status-badge status-badge--{{ order.status }}">{{ order.status }}</span>
+          <span class="order-row__total">{{ order.total_amount | number:'1.0-0' }} FCFA</span>
+        </div>
+      }
+      <a routerLink="/admin/orders" class="btn btn--ghost btn--sm" style="align-self:flex-start">
+        Voir toutes les commandes →
+      </a>
+    </div>
+  }
+</div>

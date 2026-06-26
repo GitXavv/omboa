@@ -1,0 +1,115 @@
+.kitchen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--navbar-h));
+  background: #1A1A1A;
+  color: #fff;
+  padding: 24px;
+  gap: 24px;
+
+  &__header {
+    h1 { color: var(--color-accent); font-size: 1.5rem; }
+    p  { color: rgba(255,255,255,.5); font-size: .875rem; }
+  }
+
+  &__columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: flex-start;
+
+    @media (max-width: 900px) { grid-template-columns: 1fr; }
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__col-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 4px;
+
+    &--pending   { background: #333; }
+    &--preparing { background: rgba(21,101,192,.3); border: 1px solid rgba(21,101,192,.5); }
+    &--ready     { background: rgba(232,184,75,.15); border: 1px solid rgba(232,184,75,.3); }
+  }
+
+  &__col-label { font-weight: 600; font-size: 0.9375rem; }
+  &__col-count {
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: rgba(255,255,255,.15);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__empty { color: rgba(255,255,255,.3); font-size: .875rem; text-align: center; padding: 24px; }
+}
+
+.order-ticket {
+  background: #2A2A2A;
+  border: 1px solid #3A3A3A;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &--preparing { border-color: rgba(21,101,192,.4); }
+  &--ready     { border-color: rgba(232,184,75,.4); }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    strong { font-size: 1.0625rem; }
+  }
+
+  &__items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: .9375rem;
+    color: rgba(255,255,255,.85);
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+
+  &__qty {
+    font-weight: 700;
+    color: var(--color-accent);
+    min-width: 28px;
+  }
+
+  &__note {
+    display: block;
+    font-size: .8rem;
+    color: rgba(255,255,255,.45);
+    font-style: italic;
+  }
+
+  &__ready-badge {
+    text-align: center;
+    padding: 8px;
+    background: rgba(232,184,75,.15);
+    border-radius: var(--radius-md);
+    color: var(--color-accent);
+    font-size: .875rem;
+    font-weight: 600;
+  }
+}

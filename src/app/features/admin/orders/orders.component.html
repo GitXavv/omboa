@@ -1,0 +1,50 @@
+<div class="admin-page container">
+  <div class="admin-header">
+    <div>
+      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <h2>Gestion des commandes</h2>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      @for (f of (['all','pending','preparing','ready','served','paid','cancelled']); track f) {
+        <button class="btn btn--sm" [class.btn--primary]="filter()===f" [class.btn--ghost]="filter()!==f"
+          (click)="filter.set($any(f))">
+          {{ f === 'all' ? 'Toutes' : statusLabel[f] }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) { <app-loader /> }
+  @else {
+    <div class="orders-list">
+      @if (!filtered().length) {
+        <p class="text-muted text-center" style="padding:48px">Aucune commande.</p>
+      }
+      @for (o of filtered(); track o.id) {
+        <div class="order-card card">
+          <div class="order-card__head flex-between">
+            <div>
+              <strong>{{ o.table?.number ?? '—' }}</strong>
+              <span class="text-muted"> · {{ o.created_at | date:'dd/MM à HH:mm' }}</span>
+            </div>
+            <span class="status-badge status-badge--{{ o.status }}">{{ statusLabel[o.status] }}</span>
+          </div>
+          <div class="order-card__items">
+            @for (item of o.order_items ?? []; track item.id) {
+              <span>{{ item.product?.name }} × {{ item.quantity }}</span>
+            }
+          </div>
+          <div class="order-card__foot flex-between">
+            <strong style="color:var(--color-primary)">{{ o.total_amount | number:'1.0-0' }} FCFA</strong>
+            @if (nextStatus[o.status]) {
+              <button class="btn btn--primary btn--sm"
+                (click)="updateStatus(o.id, nextStatus[o.status]!)">
+                → {{ statusLabel[nextStatus[o.status]!] }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

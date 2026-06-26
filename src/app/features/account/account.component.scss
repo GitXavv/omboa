@@ -1,0 +1,120 @@
+.account-page {
+  padding: 40px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 800px;
+}
+
+.account-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.account-balance {
+  padding: 28px 32px;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-light) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label { font-size: 0.875rem; opacity: .7; text-transform: uppercase; letter-spacing: .08em; }
+  &__amount { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--color-accent); line-height: 1; }
+  &__sub { font-size: 0.875rem; opacity: .7; }
+}
+
+.account-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+
+  button {
+    padding: 10px 20px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+    margin-bottom: -1px;
+
+    &:hover { color: var(--color-text); }
+    &.active { color: var(--color-primary); border-color: var(--color-primary); }
+  }
+}
+
+.account-empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-text-muted);
+}
+
+.order-list, .loyalty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    div { display: flex; flex-direction: column; gap: 2px; }
+  }
+
+  &__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__item {
+    font-size: 0.875rem;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    color: var(--color-text-muted);
+  }
+
+  &__footer {
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  &__total {
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+}
+
+.loyalty-tx {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__type {
+    font-weight: 600;
+    font-size: 1rem;
+
+    &.earned { color: var(--color-success); }
+    &.spent  { color: var(--color-error); }
+  }
+}

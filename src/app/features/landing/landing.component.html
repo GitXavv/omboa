@@ -1,0 +1,185 @@
+<!-- ── Hero ────────────────────────────────────────────────────── -->
+<!-- Image attendue : hero-bg → 1920×900px, ambiance restaurant -->
+<section class="hero">
+  <div class="hero__bg"></div>
+  <div class="hero__overlay"></div>
+  <div class="container hero__content">
+    <span class="hero__tag">Restaurant O'Mboa · Douala</span>
+    <h1 class="hero__title">
+      La saveur<br>
+      <em>de chez nous</em>
+    </h1>
+    <p class="hero__subtitle">
+      Des plats authentiques, préparés chaque jour avec des ingrédients frais
+      et les recettes qui nous ont été transmises.
+    </p>
+    <div class="hero__actions">
+      <a routerLink="/menu" class="btn btn--accent btn--lg">Découvrir le menu</a>
+      <a href="#how-it-works" class="btn btn--outline btn--lg hero__btn-light">Commander à table</a>
+    </div>
+  </div>
+  <div class="hero__scroll-hint">
+    <span>Défiler</span>
+    <div class="hero__scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── Notre histoire ─────────────────────────────────────────── -->
+<section class="section story">
+  <div class="container story__inner">
+    <!-- Image attendue : story-img → 600×750px portrait 4:5 -->
+    <div class="story__img-wrap">
+      <div class="img-placeholder story__img">
+        <span>Photo ambiance restaurant<br>600×750 px</span>
+      </div>
+      <div class="story__badge">
+        <span class="story__badge-year">Depuis 2018</span>
+        <span class="story__badge-label">À votre service</span>
+      </div>
+    </div>
+    <div class="story__text">
+      <div class="section-tag">Notre histoire</div>
+      <h2>Un restaurant né<br>d'une passion familiale</h2>
+      <p>
+        O'Mboa, c'est "chez soi" en langue beti. C'est exactement ce que nous
+        voulons que vous ressentiez en franchissant notre porte : la chaleur d'un
+        repas partagé en famille, la générosité des saveurs d'Afrique centrale.
+      </p>
+      <p>
+        Fondé en 2018 par la famille Mbida, notre restaurant s'est construit sur
+        une promesse simple — cuisiner comme à la maison, servir avec le cœur.
+        Chaque plat raconte une histoire, chaque épice vient de nos partenaires locaux.
+      </p>
+      <a routerLink="/menu" class="btn btn--secondary">Voir notre carte</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Spécialités ────────────────────────────────────────────── -->
+<section class="section specialties">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Nos spécialités</span>
+      <h2>Ce que nos clients<br>commandent le plus</h2>
+      <p>Des plats préparés chaque matin, avec des ingrédients sélectionnés chez nos producteurs locaux.</p>
+    </div>
+
+    <!-- Images attendues : specialty-* → 480×480px carré 1:1 -->
+    <div class="specialties__grid">
+      @for (s of specialties; track s.name) {
+        <article class="specialty-card card">
+          <div class="img-placeholder specialty-card__img">
+            <span>Photo plat<br>480×480 px</span>
+          </div>
+          <div class="specialty-card__body">
+            <h3>{{ s.name }}</h3>
+            <p>{{ s.desc }}</p>
+            <span class="specialty-card__price">à partir de {{ s.price | number:'1.0-0' }} FCFA</span>
+          </div>
+        </article>
+      }
+    </div>
+
+    <div class="text-center" style="margin-top:40px">
+      <a routerLink="/menu" class="btn btn--primary btn--lg">Voir tous les plats</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Comment ça marche ──────────────────────────────────────── -->
+<section class="section how-it-works" id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Commander à table</span>
+      <h2>Simple comme un scan</h2>
+      <p>Plus besoin d'attendre le serveur pour passer votre commande. Votre téléphone fait le travail.</p>
+    </div>
+
+    <div class="steps">
+      @for (step of steps; track step.title; let i = $index) {
+        <div class="step">
+          <div class="step__number">{{ i + 1 }}</div>
+          <div class="step__icon">{{ step.icon }}</div>
+          <h3 class="step__title">{{ step.title }}</h3>
+          <p class="step__desc">{{ step.desc }}</p>
+        </div>
+        @if (!$last) { <div class="steps__sep"></div> }
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── Points de fidélité ─────────────────────────────────────── -->
+<section class="section loyalty-cta">
+  <div class="container">
+    <div class="loyalty-cta__inner card">
+      <div class="loyalty-cta__text">
+        <span class="section-tag">Programme fidélité</span>
+        <h2>Chaque visite compte</h2>
+        <p>
+          Créez un compte O'Mboa pour cumuler des points à chaque repas.
+          Plus vous revenez souvent, plus vos récompenses sont généreuses.
+          Utilisez vos points pour obtenir des réductions sur votre commande.
+        </p>
+        <div class="loyalty-cta__actions">
+          <a routerLink="/auth/register" class="btn btn--primary">Créer mon compte</a>
+          <a routerLink="/auth/login" class="btn btn--ghost">J'ai déjà un compte</a>
+        </div>
+      </div>
+      <div class="loyalty-cta__visual">
+        <div class="loyalty-card">
+          <div class="loyalty-card__top">
+            <span class="loyalty-card__brand">O'Mboa</span>
+            <span class="loyalty-card__label">Carte fidélité</span>
+          </div>
+          <div class="loyalty-card__points">
+            <span class="loyalty-card__pts-value">— pts</span>
+            <span class="loyalty-card__pts-label">Votre solde</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Horaires & Localisation ────────────────────────────────── -->
+<section class="section info">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Informations pratiques</span>
+      <h2>Venir nous rendre visite</h2>
+    </div>
+    <div class="info__grid">
+      <div class="info-block card">
+        <div class="info-block__icon">🕐</div>
+        <h4>Horaires d'ouverture</h4>
+        <ul class="info-block__hours">
+          <li><span>Lundi – Vendredi</span><span>11h00 – 23h00</span></li>
+          <li><span>Samedi</span><span>10h00 – 23h30</span></li>
+          <li><span>Dimanche</span><span>12h00 – 22h00</span></li>
+        </ul>
+      </div>
+      <div class="info-block card">
+        <div class="info-block__icon">📍</div>
+        <h4>Adresse</h4>
+        <address>
+          <p>123 Avenue de la Paix</p>
+          <p>Akwa, Douala – Cameroun</p>
+          <br>
+          <p>Tél : <a href="tel:+237600000000">+237 600 000 000</a></p>
+          <p>Email : <a href="mailto:contact@omboa.cm">contact&#64;omboa.cm</a></p>
+        </address>
+      </div>
+      <div class="info-block card">
+        <div class="info-block__icon">🍃</div>
+        <h4>Notre engagement</h4>
+        <ul class="info-block__list">
+          <li>Ingrédients locaux & frais</li>
+          <li>Recettes familiales authentiques</li>
+          <li>Service chaleureux & rapide</li>
+          <li>Commande digitale sans attente</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

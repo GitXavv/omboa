@@ -1,0 +1,42 @@
+<div class="admin-page container">
+  <div class="admin-header flex-between">
+    <div>
+      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <h2>Logs d'activité</h2>
+      <p class="text-muted">{{ total() }} événements enregistrés</p>
+    </div>
+    <button class="btn btn--secondary" [disabled]="downloading()" (click)="download()">
+      {{ downloading() ? 'Téléchargement…' : '⬇ Télécharger .txt' }}
+    </button>
+  </div>
+
+  <!-- Filtres par type -->
+  <div class="logs-filters">
+    @for (t of (['','QR_SCANNED','ORDER_CREATED','ORDER_STATUS_CHANGED','PAYMENT_COMPLETED','USER_REGISTERED','PRODUCT_CREATED']); track t) {
+      <button class="btn btn--sm" [class.btn--primary]="eventType()===t" [class.btn--ghost]="eventType()!==t"
+        (click)="filter(t)">
+        {{ t || 'Tous' }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) { <app-loader /> }
+  @else {
+    <div class="logs-list">
+      @for (log of logs(); track log.id) {
+        <div class="log-row">
+          <span class="log-row__type">{{ log.event_type }}</span>
+          <span class="log-row__desc">{{ log.description }}</span>
+          <span class="log-row__time text-muted">{{ log.created_at | date:'dd/MM HH:mm:ss' }}</span>
+          @if (log.user) { <span class="log-row__user text-muted">{{ log.user.full_name }}</span> }
+        </div>
+      }
+    </div>
+
+    <div class="logs-pagination flex-between">
+      <button class="btn btn--ghost btn--sm" [disabled]="page()===1" (click)="prevPage()">← Précédent</button>
+      <span class="text-muted">Page {{ page() }}</span>
+      <button class="btn btn--ghost btn--sm" [disabled]="logs().length < 50" (click)="nextPage()">Suivant →</button>
+    </div>
+  }
+</div>

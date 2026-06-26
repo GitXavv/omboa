@@ -1,0 +1,6 @@
+.main-content {
+  min-height: calc(100vh - var(--navbar-h));
+  padding-top: var(--navbar-h);
+  display: flex;
+  flex-direction: column;
+}

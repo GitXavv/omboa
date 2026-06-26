@@ -1,0 +1,91 @@
+<div class="account-page container">
+  <div class="account-header">
+    <div>
+      <h1>Mon compte</h1>
+      <p class="text-muted">Bonjour, {{ auth.currentUser()?.full_name }} 👋</p>
+    </div>
+    <button class="btn btn--outline btn--sm" (click)="auth.logout()">Déconnexion</button>
+  </div>
+
+  <!-- Points de fidélité -->
+  <div class="account-balance card">
+    <div class="account-balance__label">Points fidélité</div>
+    <div class="account-balance__amount">{{ balance() | number:'1.0-0' }}</div>
+    <div class="account-balance__sub">points disponibles</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="account-tabs">
+    <button [class.active]="activeTab()==='orders'"  (click)="activeTab.set('orders')">Mes commandes</button>
+    <button [class.active]="activeTab()==='loyalty'" (click)="activeTab.set('loyalty')">Historique points</button>
+  </div>
+
+  @if (loading()) {
+    <app-loader />
+  } @else {
+
+    <!-- Commandes -->
+    @if (activeTab() === 'orders') {
+      @if (!orders().length) {
+        <div class="account-empty">
+          <p>Vous n'avez pas encore de commande.</p>
+        </div>
+      } @else {
+        <div class="order-list">
+          @for (order of orders(); track order.id) {
+            <div class="order-card card">
+              <div class="order-card__header">
+                <div>
+                  <strong>Commande du {{ order.created_at | date:'dd/MM/yyyy à HH:mm' }}</strong>
+                  <span class="text-muted" style="font-size:.875rem">Table : {{ order.table?.number ?? '—' }}</span>
+                </div>
+                <span class="status-badge status-badge--{{ order.status }}">
+                  {{ {pending:'En attente',preparing:'En préparation',ready:'Prête',served:'Servie',paid:'Payée',cancelled:'Annulée'}[order.status] }}
+                </span>
+              </div>
+              <div class="order-card__items">
+                @for (item of order.order_items ?? []; track item.id) {
+                  <span class="order-card__item">
+                    {{ item.product?.name ?? '—' }} × {{ item.quantity }}
+                  </span>
+                }
+              </div>
+              <div class="order-card__footer">
+                <span class="order-card__total">
+                  {{ order.total_amount | number:'1.0-0' }} FCFA
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- Points -->
+    @if (activeTab() === 'loyalty') {
+      @if (!transactions().length) {
+        <div class="account-empty">
+          <p>Aucun mouvement de points pour le moment.</p>
+        </div>
+      } @else {
+        <div class="loyalty-list">
+          @for (tx of transactions(); track tx.id) {
+            <div class="loyalty-tx card">
+              <div class="loyalty-tx__info">
+                <span class="loyalty-tx__type" [class.earned]="tx.type==='earned'" [class.spent]="tx.type==='spent'">
+                  {{ tx.type === 'earned' ? '+ ' + tx.points_delta + ' pts' : tx.points_delta + ' pts' }}
+                </span>
+                <span class="text-muted" style="font-size:.875rem">
+                  {{ tx.created_at | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+              <span class="text-muted" style="font-size:.875rem">
+                {{ tx.type === 'earned' ? 'Points gagnés' : 'Points dépensés' }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+</div>

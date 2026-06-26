@@ -1,0 +1,99 @@
+<div class="kitchen">
+  <div class="kitchen__header">
+    <h1>Cuisine O'Mboa</h1>
+    <p class="text-muted">Les commandes se mettent à jour en temps réel.</p>
+  </div>
+
+  @if (loading()) { <app-loader [overlay]="true" /> }
+
+  <div class="kitchen__columns">
+    <!-- Colonne : En attente -->
+    <div class="kitchen__col">
+      <div class="kitchen__col-head kitchen__col-head--pending">
+        <span class="kitchen__col-label">En attente</span>
+        <span class="kitchen__col-count">{{ pending().length }}</span>
+      </div>
+      @for (order of pending(); track order.id) {
+        <div class="order-ticket card">
+          <div class="order-ticket__head">
+            <strong>{{ order.table?.number ?? '—' }}</strong>
+            <span class="text-muted">{{ order.created_at | date:'HH:mm' }}</span>
+          </div>
+          <ul class="order-ticket__items">
+            @for (item of order.order_items ?? []; track item.id) {
+              <li>
+                <span class="order-ticket__qty">×{{ item.quantity }}</span>
+                {{ item.product?.name ?? '—' }}
+                @if (item.notes) { <em class="order-ticket__note">{{ item.notes }}</em> }
+              </li>
+            }
+          </ul>
+          <button class="btn btn--primary btn--full btn--sm" (click)="startPreparing(order.id)">
+            ▶ Commencer la préparation
+          </button>
+        </div>
+      }
+      @if (!pending().length) {
+        <p class="kitchen__empty">Aucune commande en attente.</p>
+      }
+    </div>
+
+    <!-- Colonne : En préparation -->
+    <div class="kitchen__col">
+      <div class="kitchen__col-head kitchen__col-head--preparing">
+        <span class="kitchen__col-label">En préparation</span>
+        <span class="kitchen__col-count">{{ preparing().length }}</span>
+      </div>
+      @for (order of preparing(); track order.id) {
+        <div class="order-ticket order-ticket--preparing card">
+          <div class="order-ticket__head">
+            <strong>{{ order.table?.number ?? '—' }}</strong>
+            <span class="text-muted">{{ order.created_at | date:'HH:mm' }}</span>
+          </div>
+          <ul class="order-ticket__items">
+            @for (item of order.order_items ?? []; track item.id) {
+              <li>
+                <span class="order-ticket__qty">×{{ item.quantity }}</span>
+                {{ item.product?.name ?? '—' }}
+              </li>
+            }
+          </ul>
+          <button class="btn btn--accent btn--full btn--sm" (click)="markReady(order.id)">
+            ✓ Commande prête
+          </button>
+        </div>
+      }
+      @if (!preparing().length) {
+        <p class="kitchen__empty">Rien en cours.</p>
+      }
+    </div>
+
+    <!-- Colonne : Prête -->
+    <div class="kitchen__col">
+      <div class="kitchen__col-head kitchen__col-head--ready">
+        <span class="kitchen__col-label">Prête à servir</span>
+        <span class="kitchen__col-count">{{ ready().length }}</span>
+      </div>
+      @for (order of ready(); track order.id) {
+        <div class="order-ticket order-ticket--ready card">
+          <div class="order-ticket__head">
+            <strong>{{ order.table?.number ?? '—' }}</strong>
+            <span class="text-muted">{{ order.created_at | date:'HH:mm' }}</span>
+          </div>
+          <ul class="order-ticket__items">
+            @for (item of order.order_items ?? []; track item.id) {
+              <li>
+                <span class="order-ticket__qty">×{{ item.quantity }}</span>
+                {{ item.product?.name ?? '—' }}
+              </li>
+            }
+          </ul>
+          <div class="order-ticket__ready-badge">En attente du serveur</div>
+        </div>
+      }
+      @if (!ready().length) {
+        <p class="kitchen__empty">Aucune commande prête.</p>
+      }
+    </div>
+  </div>
+</div>

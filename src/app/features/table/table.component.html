@@ -1,0 +1,236 @@
+<!-- Erreur table -->
+@if (tableError()) {
+  <div class="table-error">
+    <div class="container table-error__inner">
+      <span class="table-error__icon">⚠️</span>
+      <h2>Oups !</h2>
+      <p>{{ tableError() }}</p>
+      <a routerLink="/" class="btn btn--primary">Retour à l'accueil</a>
+    </div>
+  </div>
+}
+
+<!-- Chargement -->
+@else if (loading()) {
+  <app-loader label="Vérification de la table…" />
+}
+
+<!-- Flow principal -->
+@else if (table()) {
+
+  <!-- Bandeau table -->
+  <div class="table-banner">
+    <div class="container flex-between">
+      <span class="table-banner__label">
+        📍 {{ table()!.number }}
+      </span>
+      @if (cart.count() > 0 && step() === 'menu') {
+        <button class="btn btn--primary btn--sm" (click)="goToCart()">
+          Panier ({{ cart.count() }}) — {{ cart.total() | number:'1.0-0' }} FCFA
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 1 : Menu ───────────────────────────────────────────── -->
+  @if (step() === 'menu') {
+    <div class="table-layout container">
+      <!-- Catégories -->
+      <aside class="table-cats">
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="table-cats__item"
+            [class.active]="cat.id === activeId()"
+            (click)="selectCategory(cat.id)"
+          >
+            {{ cat.name }}
+          </button>
+
+          @if (cat.id === activeId() && cat.subcategories?.length) {
+            @for (sub of cat.subcategories!; track sub.id) {
+              <button
+                class="table-cats__item table-cats__item--sub"
+                [class.active]="sub.id === activeId()"
+                (click)="selectCategory(sub.id)"
+              >
+                {{ sub.name }}
+              </button>
+            }
+          }
+        }
+      </aside>
+
+      <!-- Produits -->
+      <div class="table-products">
+        @if (activeCategory()) {
+          <h2 class="table-products__title">{{ activeCategory()!.name }}</h2>
+        }
+        <div class="grid-3">
+          @for (p of (activeCategory()?.products ?? []); track p.id) {
+            <app-product-card
+              [product]="p"
+              [quantity]="cartQuantity(p.id)"
+              (add)="addToCart($event)"
+              (remove)="removeFromCart($event)"
+            />
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton panier flottant mobile -->
+    @if (cart.count() > 0) {
+      <div class="cart-fab">
+        <button class="btn btn--primary btn--lg" (click)="goToCart()">
+          🛒 Voir le panier · {{ cart.count() }} article(s) · {{ cart.total() | number:'1.0-0' }} FCFA
+        </button>
+      </div>
+    }
+  }
+
+  <!-- ── ÉTAPE 2 : Panier ─────────────────────────────────────────── -->
+  @if (step() === 'cart') {
+    <div class="cart-page container">
+      <button class="btn btn--ghost btn--sm" (click)="goToMenu()">← Continuer mes achats</button>
+      <h2>Mon panier</h2>
+
+      @if (!cart.items().length) {
+        <div class="cart-empty">
+          <span>🛒</span>
+          <p>Votre panier est vide.</p>
+          <button class="btn btn--primary" (click)="goToMenu()">Parcourir le menu</button>
+        </div>
+      } @else {
+        <div class="cart-items">
+          @for (item of cart.items(); track item.product.id) {
+            <div class="cart-item card">
+              <div class="cart-item__info">
+                <strong>{{ item.product.name }}</strong>
+                <span class="text-muted">{{ item.product.price | number:'1.0-0' }} FCFA / unité</span>
+                @if (item.notes) { <em class="text-muted" style="font-size:.875rem">Note : {{ item.notes }}</em> }
+              </div>
+              <div class="cart-item__qty">
+                <button class="btn btn--ghost btn--sm" (click)="cart.decrement(item.product.id)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button class="btn btn--ghost btn--sm" (click)="cart.increment(item.product.id)">+</button>
+              </div>
+              <span class="cart-item__subtotal">
+                {{ item.product.price * item.quantity | number:'1.0-0' }} FCFA
+              </span>
+              <button class="btn btn--ghost" (click)="cart.remove(item.product.id)">✕</button>
+            </div>
+          }
+        </div>
+
+        <div class="cart-total card">
+          <div class="flex-between">
+            <span>Total</span>
+            <strong class="cart-total__amount">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+          </div>
+          <button class="btn btn--primary btn--full btn--lg" (click)="goToPayment()">
+            Procéder au paiement →
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── ÉTAPE 3 : Paiement ───────────────────────────────────────── -->
+  @if (step() === 'payment') {
+    <div class="payment-page container">
+      <button class="btn btn--ghost btn--sm" (click)="goToCart()">← Retour au panier</button>
+      <h2>Paiement</h2>
+
+      <div class="payment-layout">
+        <!-- Choix mode de paiement -->
+        <div class="payment-methods card">
+          <h4>Mode de paiement</h4>
+          <div class="payment-method-list">
+            @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'🟠'},{id:'mtn_momo',label:'MTN MoMo',icon:'🟡'}]) ; track m.id) {
+              <label class="payment-method-option" [class.selected]="payMethod() === m.id">
+                <input type="radio" name="method" [value]="m.id" [checked]="payMethod() === m.id" (change)="payMethod.set($any(m.id))">
+                <span class="payment-method-option__icon">{{ m.icon }}</span>
+                <span>{{ m.label }}</span>
+              </label>
+            }
+          </div>
+
+          @if (payMethod() === 'orange_money' || payMethod() === 'mtn_momo') {
+            <div class="form-group" style="margin-top:16px">
+              <label>Numéro de téléphone</label>
+              <input
+                type="tel"
+                class="form-control"
+                placeholder="ex: 6XX XXX XXX"
+                [value]="payPhone()"
+                (input)="payPhone.set($any($event.target).value)"
+              >
+            </div>
+          }
+        </div>
+
+        <!-- Récapitulatif -->
+        <div class="payment-summary">
+          <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:12px">
+            <h4>Récapitulatif</h4>
+            @for (item of cart.items(); track item.product.id) {
+              <div class="flex-between" style="font-size:.9375rem">
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>{{ item.product.price * item.quantity | number:'1.0-0' }} FCFA</span>
+              </div>
+            }
+            <hr class="divider">
+            <div class="flex-between">
+              <strong>Total</strong>
+              <strong style="color:var(--color-primary)">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <!-- Points fidélité -->
+            @if (auth.isLoggedIn() && loyaltyBalance() > 0) {
+              <div class="loyalty-toggle">
+                <label class="flex-between" style="cursor:pointer;gap:12px">
+                  <span>Utiliser mes points ({{ loyaltyBalance() }} pts)</span>
+                  <input type="checkbox" [checked]="usePoints()" (change)="usePoints.update(v=>!v)">
+                </label>
+              </div>
+            }
+
+            <button
+              class="btn btn--primary btn--full btn--lg"
+              [disabled]="submitting() || ((payMethod()==='orange_money'||payMethod()==='mtn_momo') && !payPhone())"
+              (click)="submitOrder()"
+            >
+              @if (submitting()) { Traitement… } @else { Confirmer & payer }
+            </button>
+
+            <p class="text-muted" style="font-size:.8125rem;text-align:center">
+              Le paiement sera traité à la table. Vous serez servi directement.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── ÉTAPE 4 : Confirmation ───────────────────────────────────── -->
+  @if (step() === 'confirmation') {
+    <div class="confirmation container">
+      <div class="confirmation__inner card">
+        <div class="confirmation__icon">🎉</div>
+        <h2>Commande confirmée !</h2>
+        <p>Votre commande a bien été transmise à la cuisine. Nous vous servirons directement à votre table.</p>
+        <p class="text-muted" style="font-size:.875rem">
+          Suivez le statut de votre commande ici — il se met à jour en temps réel.
+        </p>
+        @if (!auth.isLoggedIn()) {
+          <div class="confirmation__loyalty-hint">
+            <span>🌟</span>
+            <p>Créez un compte O'Mboa pour cumuler des points fidélité à chaque visite !</p>
+            <a routerLink="/auth/register" class="btn btn--accent btn--sm">Créer un compte</a>
+          </div>
+        }
+        <a routerLink="/" class="btn btn--ghost btn--sm">Retour à l'accueil</a>
+      </div>
+    </div>
+  }
+}

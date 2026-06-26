@@ -1,0 +1,38 @@
+<div class="product-card card" [class.product-card--unavailable]="!product.is_available">
+
+  <!-- Image produit → 320×320px carré -->
+  <div class="product-card__img">
+    @if (product.image_url) {
+      <img [src]="product.image_url" [alt]="product.name" loading="lazy">
+    } @else {
+      <div class="img-placeholder product-card__img-placeholder">
+        <span>🍽</span>
+      </div>
+    }
+    @if (!product.is_available) {
+      <div class="product-card__unavail">Indisponible</div>
+    }
+  </div>
+
+  <div class="product-card__body">
+    <h4 class="product-card__name">{{ product.name }}</h4>
+    @if (product.description) {
+      <p class="product-card__desc">{{ product.description }}</p>
+    }
+    <div class="product-card__footer">
+      <span class="product-card__price">{{ product.price | number:'1.0-0' }} FCFA</span>
+
+      @if (showAddButton && product.is_available) {
+        @if (quantity === 0) {
+          <button class="btn btn--primary btn--sm" (click)="add.emit(product)">Ajouter</button>
+        } @else {
+          <div class="product-card__qty">
+            <button class="btn btn--ghost btn--sm" (click)="remove.emit(product)">−</button>
+            <span>{{ quantity }}</span>
+            <button class="btn btn--ghost btn--sm" (click)="add.emit(product)">+</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

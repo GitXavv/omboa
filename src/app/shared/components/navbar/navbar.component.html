@@ -1,0 +1,60 @@
+<nav class="navbar" [class.navbar--scrolled]="true">
+  <div class="container navbar__inner">
+
+    <!-- Logo -->
+    <a routerLink="/" class="navbar__logo" (click)="close()">
+      <span class="navbar__logo-text">O'Mboa</span>
+    </a>
+
+    <!-- Liens desktop -->
+    <ul class="navbar__links">
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Accueil</a></li>
+      <li><a routerLink="/menu" routerLinkActive="active">Menu</a></li>
+      @if (auth.isOwner()) {
+        <li><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
+      }
+      @if (auth.isCook()) {
+        <li><a routerLink="/kitchen" routerLinkActive="active">Cuisine</a></li>
+      }
+    </ul>
+
+    <!-- Actions desktop -->
+    <div class="navbar__actions">
+      @if (auth.isLoggedIn()) {
+        <a routerLink="/account" class="btn btn--ghost btn--sm">Mon compte</a>
+        <button class="btn btn--outline btn--sm" (click)="logout()">Déconnexion</button>
+      } @else {
+        <a routerLink="/auth/login" class="btn btn--ghost btn--sm">Connexion</a>
+        <a routerLink="/auth/register" class="btn btn--primary btn--sm">S'inscrire</a>
+      }
+    </div>
+
+    <!-- Burger mobile -->
+    <button class="navbar__burger" (click)="toggle()" [attr.aria-expanded]="menuOpen()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Menu mobile -->
+  @if (menuOpen()) {
+    <div class="navbar__mobile">
+      <ul>
+        <li><a routerLink="/"      (click)="close()">Accueil</a></li>
+        <li><a routerLink="/menu"  (click)="close()">Menu</a></li>
+        @if (auth.isOwner()) {
+          <li><a routerLink="/admin"   (click)="close()">Admin</a></li>
+        }
+        @if (auth.isCook()) {
+          <li><a routerLink="/kitchen" (click)="close()">Cuisine</a></li>
+        }
+        @if (auth.isLoggedIn()) {
+          <li><a routerLink="/account" (click)="close()">Mon compte</a></li>
+          <li><button (click)="logout()">Déconnexion</button></li>
+        } @else {
+          <li><a routerLink="/auth/login"    (click)="close()">Connexion</a></li>
+          <li><a routerLink="/auth/register" (click)="close()">S'inscrire</a></li>
+        }
+      </ul>
+    </div>
+  }
+</nav>
