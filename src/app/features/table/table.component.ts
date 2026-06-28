@@ -22,7 +22,7 @@ type Step = 'menu' | 'cart' | 'payment' | 'confirmation';
   standalone: true,
   imports: [ProductCardComponent, LoaderComponent, DecimalPipe, RouterLink],
   templateUrl: './table.component.html',
-  styleUrl: './table.component.scss'
+  styleUrl: './table.component.css'
 })
 export class TableComponent implements OnInit, OnDestroy {
   readonly cart       = inject(CartService);

@@ -9,7 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './register.component.html',
-  styleUrl: '../../auth/login/login.component.scss'
+  styleUrl: '../../auth/login/login.component.css'
 })
 export class RegisterComponent {
   readonly fullName = signal('');

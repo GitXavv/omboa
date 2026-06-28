@@ -7,7 +7,7 @@ import { DecimalPipe } from '@angular/common';
   standalone: true,
   imports: [DecimalPipe],
   templateUrl: './product-card.component.html',
-  styleUrl: './product-card.component.scss'
+  styleUrl: './product-card.component.css'
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: Product;

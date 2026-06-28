@@ -11,7 +11,7 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   standalone: true,
   imports: [DecimalPipe, DatePipe, LoaderComponent],
   templateUrl: './account.component.html',
-  styleUrl: './account.component.scss'
+  styleUrl: './account.component.css'
 })
 export class AccountComponent implements OnInit {
   readonly auth    = inject(AuthService);

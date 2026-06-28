@@ -8,7 +8,7 @@ import { CartService } from '../../../core/services/cart.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
   readonly auth  = inject(AuthService);

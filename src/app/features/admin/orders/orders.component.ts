@@ -14,7 +14,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   standalone: true,
   imports: [RouterLink, DecimalPipe, DatePipe, LoaderComponent],
   templateUrl: './orders.component.html',
-  styleUrl: './orders.component.scss'
+  styleUrl: './orders.component.css'
 })
 export class OrdersComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);

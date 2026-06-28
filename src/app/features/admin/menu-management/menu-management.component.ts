@@ -12,7 +12,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   standalone: true,
   imports: [RouterLink, FormsModule, DecimalPipe, LoaderComponent],
   templateUrl: './menu-management.component.html',
-  styleUrl: './menu-management.component.scss'
+  styleUrl: './menu-management.component.css'
 })
 export class MenuManagementComponent implements OnInit {
   private readonly menuSvc = inject(MenuService);

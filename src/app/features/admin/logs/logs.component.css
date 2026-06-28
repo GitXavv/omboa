@@ -2,6 +2,7 @@
 .admin-header { flex-wrap: wrap; gap: 16px; align-items: flex-start; }
 .logs-filters { display: flex; flex-wrap: wrap; gap: 8px; }
 .logs-list { display: flex; flex-direction: column; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+
 .log-row {
   display: grid;
   grid-template-columns: 220px 1fr 140px 140px;
@@ -10,11 +11,11 @@
   padding: 10px 16px;
   border-bottom: 1px solid var(--color-border);
   font-size: .875rem;
-  &:last-child { border-bottom: none; }
-  &:nth-child(even) { background: var(--color-bg-subtle); }
-  @media (max-width: 768px) { grid-template-columns: 1fr 1fr; }
-
-  &__type { font-weight: 600; color: var(--color-primary); font-size: .8rem; letter-spacing: .04em; }
-  &__desc { color: var(--color-text); }
 }
+.log-row:last-child       { border-bottom: none; }
+.log-row:nth-child(even)  { background: var(--color-bg-subtle); }
+@media (max-width: 768px) { .log-row { grid-template-columns: 1fr 1fr; } }
+.log-row__type { font-weight: 600; color: var(--color-primary); font-size: .8rem; letter-spacing: .04em; }
+.log-row__desc { color: var(--color-text); }
+
 .logs-pagination { padding: 12px 0; }

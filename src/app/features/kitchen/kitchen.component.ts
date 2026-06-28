@@ -13,7 +13,7 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   standalone: true,
   imports: [DatePipe, LoaderComponent],
   templateUrl: './kitchen.component.html',
-  styleUrl: './kitchen.component.scss'
+  styleUrl: './kitchen.component.css'
 })
 export class KitchenComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);

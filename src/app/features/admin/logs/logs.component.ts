@@ -11,7 +11,7 @@ import { ToastService } from '../../../core/services/toast.service';
   standalone: true,
   imports: [RouterLink, DatePipe, LoaderComponent],
   templateUrl: './logs.component.html',
-  styleUrl: './logs.component.scss'
+  styleUrl: './logs.component.css'
 })
 export class LogsComponent implements OnInit {
   private readonly logSvc = inject(LogService);

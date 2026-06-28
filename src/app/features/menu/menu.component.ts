@@ -8,7 +8,7 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   standalone: true,
   imports: [ProductCardComponent, LoaderComponent],
   templateUrl: './menu.component.html',
-  styleUrl: './menu.component.scss'
+  styleUrl: './menu.component.css'
 })
 export class MenuComponent implements OnInit {
   readonly categories  = signal<Category[]>([]);

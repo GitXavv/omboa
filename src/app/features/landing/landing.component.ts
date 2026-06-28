@@ -7,7 +7,7 @@ import { DecimalPipe } from '@angular/common';
   standalone: true,
   imports: [RouterLink, DecimalPipe],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.scss'
+  styleUrl: './landing.component.css'
 })
 export class LandingComponent {
   readonly specialties = [

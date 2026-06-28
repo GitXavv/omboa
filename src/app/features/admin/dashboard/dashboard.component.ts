@@ -10,7 +10,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   standalone: true,
   imports: [RouterLink, DecimalPipe, DatePipe, LoaderComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
   private readonly orderSvc = inject(OrderService);

@@ -74,7 +74,7 @@ Configurer l'URL de l'API dans `src/environments/environment.prod.ts` avant de b
 
 Palette : terracotta (`#C0602A`), vert forêt (`#1E3A1A`), or (`#E8B84B`), ivoire crème (`#FBF5EC`).
 Polices : Playfair Display (titres) + DM Sans (corps).
-Toutes les variables CSS sont dans `src/styles.scss`.
+Toutes les variables CSS sont dans `src/styles.css`.
 
 ### Spécifications images à fournir
 

@@ -10,7 +10,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   standalone: true,
   imports: [RouterLink, LoaderComponent],
   templateUrl: './tables.component.html',
-  styleUrl: './tables.component.scss'
+  styleUrl: './tables.component.css'
 })
 export class TablesComponent implements OnInit {
   private readonly tableSvc = inject(TableService);
