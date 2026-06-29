@@ -5,7 +5,7 @@
   right: 0;
   z-index: 1000;
   height: var(--navbar-h);
-  background: rgba(251, 245, 236, 0.92);
+  background: rgba(24, 14, 7, 0.96);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid transparent;
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal);

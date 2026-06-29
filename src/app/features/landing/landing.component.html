@@ -1,8 +1,6 @@
 <!-- ── Hero ────────────────────────────────────────────────────── -->
-<!-- Image attendue : hero-bg → 1920×900px, ambiance restaurant -->
+<!-- Image hero : landing.png — salle du restaurant O'Mboa -->
 <section class="hero">
-  <div class="hero__bg"></div>
-  <div class="hero__overlay"></div>
   <div class="container hero__content">
     <span class="hero__tag">Restaurant O'Mboa · Douala</span>
     <h1 class="hero__title">
@@ -10,78 +8,12 @@
       <em>de chez nous</em>
     </h1>
     <p class="hero__subtitle">
-      Des plats authentiques, préparés chaque jour avec des ingrédients frais
-      et les recettes qui nous ont été transmises.
+      Scannez le QR code de votre table, composez votre commande sans
+      attendre le serveur et cumulez des points à chaque visite. La restauration au Cameroun n'a jamais été aussi rapide et simple !
     </p>
     <div class="hero__actions">
       <a routerLink="/menu" class="btn btn--accent btn--lg">Découvrir le menu</a>
-      <a href="#how-it-works" class="btn btn--outline btn--lg hero__btn-light">Commander à table</a>
-    </div>
-  </div>
-  <div class="hero__scroll-hint">
-    <span>Défiler</span>
-    <div class="hero__scroll-line"></div>
-  </div>
-</section>
-
-<!-- ── Notre histoire ─────────────────────────────────────────── -->
-<section class="section story">
-  <div class="container story__inner">
-    <!-- Image attendue : story-img → 600×750px portrait 4:5 -->
-    <div class="story__img-wrap">
-      <div class="img-placeholder story__img">
-        <span>Photo ambiance restaurant<br>600×750 px</span>
-      </div>
-      <div class="story__badge">
-        <span class="story__badge-year">Depuis 2018</span>
-        <span class="story__badge-label">À votre service</span>
-      </div>
-    </div>
-    <div class="story__text">
-      <div class="section-tag">Notre histoire</div>
-      <h2>Un restaurant né<br>d'une passion familiale</h2>
-      <p>
-        O'Mboa, c'est "chez soi" en langue beti. C'est exactement ce que nous
-        voulons que vous ressentiez en franchissant notre porte : la chaleur d'un
-        repas partagé en famille, la générosité des saveurs d'Afrique centrale.
-      </p>
-      <p>
-        Fondé en 2018 par la famille Mbida, notre restaurant s'est construit sur
-        une promesse simple — cuisiner comme à la maison, servir avec le cœur.
-        Chaque plat raconte une histoire, chaque épice vient de nos partenaires locaux.
-      </p>
-      <a routerLink="/menu" class="btn btn--secondary">Voir notre carte</a>
-    </div>
-  </div>
-</section>
-
-<!-- ── Spécialités ────────────────────────────────────────────── -->
-<section class="section specialties">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">Nos spécialités</span>
-      <h2>Ce que nos clients<br>commandent le plus</h2>
-      <p>Des plats préparés chaque matin, avec des ingrédients sélectionnés chez nos producteurs locaux.</p>
-    </div>
-
-    <!-- Images attendues : specialty-* → 480×480px carré 1:1 -->
-    <div class="specialties__grid">
-      @for (s of specialties; track s.name) {
-        <article class="specialty-card card">
-          <div class="img-placeholder specialty-card__img">
-            <span>Photo plat<br>480×480 px</span>
-          </div>
-          <div class="specialty-card__body">
-            <h3>{{ s.name }}</h3>
-            <p>{{ s.desc }}</p>
-            <span class="specialty-card__price">à partir de {{ s.price | number:'1.0-0' }} FCFA</span>
-          </div>
-        </article>
-      }
-    </div>
-
-    <div class="text-center" style="margin-top:40px">
-      <a routerLink="/menu" class="btn btn--primary btn--lg">Voir tous les plats</a>
+      <a routerLink="/auth/register" class="btn btn--outline btn--lg hero__btn-light">Créer mon compte</a>
     </div>
   </div>
 </section>
@@ -90,7 +22,7 @@
 <section class="section how-it-works" id="how-it-works">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">Commander à table</span>
+      <span class="section-tag">Commandez depuis votre table</span>
       <h2>Simple comme un scan</h2>
       <p>Plus besoin d'attendre le serveur pour passer votre commande. Votre téléphone fait le travail.</p>
     </div>
@@ -136,6 +68,102 @@
             <span class="loyalty-card__pts-value">— pts</span>
             <span class="loyalty-card__pts-label">Votre solde</span>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Citation ───────────────────────────────────────────────── -->
+<div class="quote-strip">
+  <div class="container">
+    <blockquote class="quote-strip__text">
+      « Cuisiner comme à la maison, servir avec le cœur. »
+    </blockquote>
+  </div>
+</div>
+
+<!-- ── Notre histoire ─────────────────────────────────────────── -->
+<section class="section story">
+  <div class="container story__inner">
+    <!-- Image attendue : story-img → 600×750px portrait 4:5 -->
+    <div class="story__img-wrap">
+      <div class="img-placeholder story__img">
+        <span>Photo ambiance restaurant<br>600 × 750 px</span>
+      </div>
+      <div class="story__badge">
+        <span class="story__badge-year">Depuis 2018</span>
+        <span class="story__badge-label">À votre service</span>
+      </div>
+    </div>
+    <div class="story__text">
+      <div class="section-tag">Notre histoire</div>
+      <h2>Un restaurant né<br>d'une passion familiale</h2>
+      <p>
+        O'Mboa, c'est "chez soi" en langue beti. C'est exactement ce que nous
+        voulons que vous ressentiez en franchissant notre porte : la chaleur d'un
+        repas partagé en famille, la générosité des saveurs d'Afrique centrale.
+      </p>
+      <p>
+        Fondé en 2018 par la famille Mbida, notre restaurant s'est construit sur
+        une promesse simple — cuisiner comme à la maison, servir avec le cœur.
+        Chaque plat raconte une histoire, chaque épice vient de nos partenaires locaux.
+      </p>
+      <a routerLink="/menu" class="btn btn--secondary">Voir notre carte</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Spécialités ────────────────────────────────────────────── -->
+<section class="section specialties">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Nos spécialités</span>
+      <h2>Ce que nos clients<br>commandent le plus</h2>
+      <p>Des plats préparés chaque matin, avec des ingrédients sélectionnés chez nos producteurs locaux.</p>
+    </div>
+
+    <!-- Images attendues : specialty-* → 480×480px carré 1:1 -->
+    <div class="specialties__grid">
+      @for (s of specialties; track s.name) {
+        <article class="specialty-card card">
+          <div class="img-placeholder specialty-card__img">
+            <span>Photo plat<br>480 × 480 px</span>
+          </div>
+          <div class="specialty-card__body">
+            <h3>{{ s.name }}</h3>
+            <p>{{ s.desc }}</p>
+            <span class="specialty-card__price">à partir de {{ s.price | number:'1.0-0' }} FCFA</span>
+          </div>
+        </article>
+      }
+    </div>
+
+    <div class="text-center" style="margin-top:40px">
+      <a routerLink="/menu" class="btn btn--primary btn--lg">Voir tous les plats</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Galerie ambiance ───────────────────────────────────────── -->
+<!-- Images attendues : galerie-main → 800×600px / galerie-small → 400×285px -->
+<section class="section galerie">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Notre cadre</span>
+      <h2>Un espace pensé<br>pour le partage</h2>
+      <p>Que ce soit pour un repas en famille ou un déjeuner d'affaires, O'Mboa vous accueille dans un cadre chaleureux et authentique.</p>
+    </div>
+    <div class="galerie__mosaic">
+      <div class="galerie__main img-placeholder">
+        <span>Salle principale<br>800 × 600 px</span>
+      </div>
+      <div class="galerie__side">
+        <div class="galerie__small img-placeholder">
+          <span>Espace bar & comptoir<br>400 × 285 px</span>
+        </div>
+        <div class="galerie__small img-placeholder">
+          <span>Terrasse extérieure<br>400 × 285 px</span>
         </div>
       </div>
     </div>

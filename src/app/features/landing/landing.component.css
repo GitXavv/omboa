@@ -7,22 +7,34 @@
   overflow: hidden;
   margin-top: calc(-1 * var(--navbar-h));
   padding-top: var(--navbar-h);
-}
-.hero__bg {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #2C1810 0%, #1E3A1A 50%, #C0602A 100%);
+  isolation: isolate;
+  background-image: url('/images/landing.png');
   background-size: cover;
-  background-position: center;
+  background-position: center 25%;
 }
-.hero__overlay {
+/* Voile chaleureux — effet cinématique mix-blend sur la photo */
+.hero::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0,0,0,.65) 0%, rgba(0,0,0,.35) 60%, transparent 100%);
+  background: linear-gradient(135deg, #2A1A10 0%, #C87D60 100%);
+  mix-blend-mode: multiply;
+  opacity: 0.68;
+  z-index: 1;
+}
+/* Vignette directionnelle pour la lisibilité du texte */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(20, 8, 3, 0.82) 0%, rgba(20, 8, 3, 0.12) 55%, transparent 100%),
+    linear-gradient(to top, rgba(20, 8, 3, 0.55) 0%, transparent 52%);
+  z-index: 2;
 }
 .hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   max-width: 640px;
   color: #fff;
   padding-top: 40px;
@@ -56,6 +68,7 @@
 .hero__btn-light:hover { border-color: #fff; background: rgba(255,255,255,.1); }
 .hero__scroll-hint {
   position: absolute;
+  z-index: 3;
   bottom: 32px;
   left: 50%;
   transform: translateX(-50%);
@@ -130,10 +143,11 @@
   color: var(--color-text-muted);
   text-align: center;
 }
-.specialty-card__body       { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-.specialty-card__body h3    { font-size: 1.125rem; }
+.specialty-card             { border-color: transparent; }
+.specialty-card__body       { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 8px; }
+.specialty-card__body h3    { font-size: 1.125rem; color: var(--color-accent); }
 .specialty-card__body p     { font-size: 0.9rem; color: var(--color-text-muted); }
-.specialty-card__price      { font-size: 0.9375rem; font-weight: 600; color: var(--color-primary); margin-top: 4px; }
+.specialty-card__price      { font-size: 0.9375rem; font-weight: 600; color: var(--color-text-muted); margin-top: 4px; }
 
 /* Steps */
 .steps { display: flex; align-items: flex-start; gap: 0; }
@@ -226,3 +240,63 @@
 .info-block__list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .info-block__list li { font-size: 0.9375rem; color: var(--color-text-muted); padding-left: 18px; position: relative; }
 .info-block__list li::before { content: '✓'; position: absolute; left: 0; color: var(--color-primary); font-weight: 700; }
+
+/* Citation strip */
+.quote-strip {
+  background: var(--color-secondary);
+  padding: 56px 0;
+  text-align: center;
+}
+.quote-strip__text {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2.5vw, 1.625rem);
+  font-style: italic;
+  color: var(--color-accent);
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+/* Galerie ambiance */
+.galerie__mosaic {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  height: 480px;
+}
+@media (max-width: 768px) { .galerie__mosaic { grid-template-columns: 1fr; height: auto; } }
+.galerie__main {
+  height: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (max-width: 768px) { .galerie__main { height: 280px; } }
+.galerie__side { display: flex; flex-direction: column; gap: 16px; }
+.galerie__small {
+  flex: 1;
+  border-radius: var(--radius-md);
+  min-height: 120px;
+  overflow: hidden;
+}
+
+/* Cadres photo — label caption en bas à la templatemo */
+.galerie__main.img-placeholder,
+.galerie__small.img-placeholder {
+  border: 1px solid rgba(209, 173, 103, 0.2);
+  background: var(--color-bg);
+  justify-content: flex-end;
+  padding-bottom: 20px;
+  gap: 0;
+}
+.galerie__main.img-placeholder span,
+.galerie__small.img-placeholder span {
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--color-text-muted);
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  backdrop-filter: blur(4px);
+  text-align: center;
+  line-height: 1.5;
+}
