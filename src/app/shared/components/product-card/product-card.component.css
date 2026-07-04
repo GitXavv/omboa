@@ -26,15 +26,6 @@
 
 .product-card__body  { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .product-card__name  { font-size: 1rem; font-weight: 600; font-family: var(--font-display); }
-.product-card__desc  {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .product-card__footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; }
 .product-card__price  { font-size: 1rem; font-weight: 600; color: var(--color-primary); }
 .product-card__qty    {

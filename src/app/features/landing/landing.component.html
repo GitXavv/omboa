@@ -54,20 +54,7 @@
           Utilisez vos points pour obtenir des réductions sur votre commande.
         </p>
         <div class="loyalty-cta__actions">
-          <a routerLink="/auth/register" class="btn btn--primary">Créer mon compte</a>
-          <a routerLink="/auth/login" class="btn btn--ghost">J'ai déjà un compte</a>
-        </div>
-      </div>
-      <div class="loyalty-cta__visual">
-        <div class="loyalty-card">
-          <div class="loyalty-card__top">
-            <span class="loyalty-card__brand">O'Mboa</span>
-            <span class="loyalty-card__label">Carte fidélité</span>
-          </div>
-          <div class="loyalty-card__points">
-            <span class="loyalty-card__pts-value">— pts</span>
-            <span class="loyalty-card__pts-label">Votre solde</span>
-          </div>
+          <a routerLink="/fidelite" class="btn btn--primary">En savoir plus</a>
         </div>
       </div>
     </div>
@@ -88,13 +75,7 @@
   <div class="container story__inner">
     <!-- Image attendue : story-img → 600×750px portrait 4:5 -->
     <div class="story__img-wrap">
-      <div class="img-placeholder story__img">
-        <span>Photo ambiance restaurant<br>600 × 750 px</span>
-      </div>
-      <div class="story__badge">
-        <span class="story__badge-year">Depuis 2018</span>
-        <span class="story__badge-label">À votre service</span>
-      </div>
+      <img src="/images/ambiance.png" alt="Ambiance restaurant O'Mboa" class="story__img" />
     </div>
     <div class="story__text">
       <div class="section-tag">Notre histoire</div>
@@ -104,38 +85,48 @@
         voulons que vous ressentiez en franchissant notre porte : la chaleur d'un
         repas partagé en famille, la générosité des saveurs d'Afrique centrale.
       </p>
-      <p>
-        Fondé en 2018 par la famille Mbida, notre restaurant s'est construit sur
-        une promesse simple — cuisiner comme à la maison, servir avec le cœur.
-        Chaque plat raconte une histoire, chaque épice vient de nos partenaires locaux.
-      </p>
       <a routerLink="/menu" class="btn btn--secondary">Voir notre carte</a>
     </div>
   </div>
 </section>
 
-<!-- ── Spécialités ────────────────────────────────────────────── -->
+<!-- ── Notre sélection ────────────────────────────────────────── -->
 <section class="section specialties">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">Nos spécialités</span>
-      <h2>Ce que nos clients<br>commandent le plus</h2>
+      <span class="section-tag">Notre sélection</span>
+      <h2>Des plats à découvrir</h2>
       <p>Des plats préparés chaque matin, avec des ingrédients sélectionnés chez nos producteurs locaux.</p>
     </div>
 
     <!-- Images attendues : specialty-* → 480×480px carré 1:1 -->
     <div class="specialties__grid">
-      @for (s of specialties; track s.name) {
-        <article class="specialty-card card">
-          <div class="img-placeholder specialty-card__img">
-            <span>Photo plat<br>480 × 480 px</span>
-          </div>
-          <div class="specialty-card__body">
-            <h3>{{ s.name }}</h3>
-            <p>{{ s.desc }}</p>
-            <span class="specialty-card__price">à partir de {{ s.price | number:'1.0-0' }} FCFA</span>
-          </div>
-        </article>
+      @if (selection(); as items) {
+        @for (item of items; track item.product.id) {
+          <article class="specialty-card card">
+            <div class="img-placeholder specialty-card__img">
+              <span>Photo plat<br>480 × 480 px</span>
+            </div>
+            <div class="specialty-card__body">
+              <span class="specialty-card__category">{{ item.categoryName }}</span>
+              <h3>{{ item.product.name }}</h3>
+              <span class="specialty-card__price">{{ item.product.price | number:'1.0-0' }} FCFA</span>
+            </div>
+          </article>
+        }
+      } @else {
+        @for (s of fallbackSelection; track s.name) {
+          <article class="specialty-card card">
+            <div class="img-placeholder specialty-card__img">
+              <span>Photo plat<br>480 × 480 px</span>
+            </div>
+            <div class="specialty-card__body">
+              <h3>{{ s.name }}</h3>
+              <p>{{ s.desc }}</p>
+              <span class="specialty-card__price">à partir de {{ s.price | number:'1.0-0' }} FCFA</span>
+            </div>
+          </article>
+        }
       }
     </div>
 

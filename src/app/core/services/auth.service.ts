@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 interface AuthResponse {
   access_token: string;
   refresh_token: string;
-  user: { id: string; email: string };
+  user: { id: string; phone: string };
   profile: Profile;
 }
 
@@ -24,15 +24,15 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(email: string, password: string) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
+  login(phone: string, password: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, { phone, password }).pipe(
       tap(res => this.storeSession(res)),
       catchError(err => throwError(() => err))
     );
   }
 
-  register(email: string, password: string, full_name: string, phone?: string) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, { email, password, full_name, phone }).pipe(
+  register(phone: string, password: string, full_name: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, { phone, password, full_name }).pipe(
       tap(res => this.storeSession(res)),
       catchError(err => throwError(() => err))
     );

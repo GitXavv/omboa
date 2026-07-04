@@ -14,7 +14,8 @@
       <div class="form-group">
         <label for="fullName">Nom complet <span style="color:var(--color-error)">*</span></label>
         <input id="fullName" type="text" class="form-control" placeholder="Jean Mbida"
-          [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" name="fullName" required>
+          [ngModel]="fullName()" (ngModelChange)="fullName.set($event)" name="fullName"
+          minlength="2" maxlength="100" required>
       </div>
 
       <div class="form-group">
@@ -24,9 +25,10 @@
       </div>
 
       <div class="form-group">
-        <label for="phone">Numéro de téléphone <span class="text-muted">(optionnel)</span></label>
+        <label for="phone">Numéro de téléphone <span style="color:var(--color-error)">*</span></label>
         <input id="phone" type="tel" class="form-control" placeholder="6XX XXX XXX"
-          [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone">
+          [ngModel]="phone()" (ngModelChange)="phone.set($event)" name="phone" required>
+        <small class="text-muted">Utilisé pour vos paiements Orange Money / MTN MoMo.</small>
       </div>
 
       <div class="form-group">

@@ -14,6 +14,10 @@ export class MenuService {
     return this.http.get<Category[]>(`${this.base}/categories`);
   }
 
+  getCategoriesAdmin(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.base}/categories?showAll=true`);
+  }
+
   getCategory(id: string): Observable<Category> {
     return this.http.get<Category>(`${this.base}/categories/${id}`);
   }

@@ -45,6 +45,10 @@ export class RealtimeService implements OnDestroy {
     this.events$.next({ type: 'connected' });
   }
 
+  async invoke(method: string, ...args: unknown[]) {
+    await this.connection?.invoke(method, ...args);
+  }
+
   async disconnect() {
     await this.connection?.stop();
     this.connection = null;

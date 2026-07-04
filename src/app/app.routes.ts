@@ -22,18 +22,10 @@ export const routes: Routes = [
   // ── Auth ─────────────────────────────────────
   {
     path: 'auth',
-    children: [
-      {
-        path: 'login',
-        loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
-      },
-      {
-        path: 'register',
-        loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
-      },
-      { path: '', redirectTo: 'login', pathMatch: 'full' }
-    ]
+    loadComponent: () => import('./features/auth/auth.component').then(m => m.AuthComponent)
   },
+  { path: 'auth/login',    redirectTo: '/auth', pathMatch: 'full' },
+  { path: 'auth/register', redirectTo: '/auth', pathMatch: 'full' },
 
   // ── Compte client ────────────────────────────
   {
@@ -67,6 +59,10 @@ export const routes: Routes = [
       {
         path: 'logs',
         loadComponent: () => import('./features/admin/logs/logs.component').then(m => m.LogsComponent)
+      },
+      {
+        path: 'stats',
+        loadComponent: () => import('./features/admin/stats/stats.component').then(m => m.StatsComponent)
       }
     ]
   },

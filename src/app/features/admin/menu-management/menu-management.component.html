@@ -1,31 +1,54 @@
 <div class="admin-page container">
-  <div class="flex-between">
+
+  <div class="menu-header flex-between">
     <div>
       <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
-      <h2>Gestion du menu</h2>
+      <h2>Menu & catégories</h2>
     </div>
+    <button class="btn btn--outline btn--sm" (click)="openCreateCategory(null)">+ Catégorie</button>
   </div>
 
   @if (loading()) { <app-loader /> }
   @else {
+
     @for (cat of categories(); track cat.id) {
       <div class="cat-section card">
-        <div class="cat-section__head flex-between">
-          <h3>{{ cat.name }}</h3>
-          <button class="btn btn--primary btn--sm" (click)="openCreate(cat.id)">+ Ajouter un plat</button>
+
+        <div class="cat-section__head">
+          @if (cat.image_url) {
+            <img [src]="cat.image_url" [alt]="cat.name" class="cat-section__thumb">
+          }
+          <div class="cat-section__info">
+            <h3 [class.cat-inactive]="!cat.is_active">{{ cat.name }}{{ !cat.is_active ? ' — désactivée' : '' }}</h3>
+            @if (cat.description) { <p class="cat-section__desc">{{ cat.description }}</p> }
+          </div>
+          <div class="cat-section__actions">
+            <button class="btn btn--ghost btn--sm" (click)="openCreateCategory(cat.id)">+ Sous-cat.</button>
+            <button class="btn btn--primary btn--sm" (click)="openCreateProduct(cat.id)">+ Plat</button>
+            <button class="btn btn--ghost btn--sm" (click)="openEditCategory(cat)">✏️</button>
+            <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('category', cat.id, cat.name)">🗑️</button>
+          </div>
         </div>
 
-        <!-- Sous-catégories -->
         @if (cat.subcategories?.length) {
           @for (sub of cat.subcategories!; track sub.id) {
             <div class="subcat-section">
-              <div class="flex-between">
-                <h4 class="subcat-section__title">{{ sub.name }}</h4>
-                <button class="btn btn--ghost btn--sm" (click)="openCreate(sub.id)">+ Ajouter</button>
+              <div class="subcat-section__head flex-between">
+                <div class="subcat-section__info">
+                  @if (sub.image_url) { <img [src]="sub.image_url" [alt]="sub.name" class="subcat-thumb"> }
+                  <h4 [class.cat-inactive]="!sub.is_active">{{ sub.name }}{{ !sub.is_active ? ' — désactivée' : '' }}</h4>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn--ghost btn--sm" (click)="openCreateProduct(sub.id)">+ Plat</button>
+                  <button class="btn btn--ghost btn--sm" (click)="openEditCategory(sub)">✏️</button>
+                  <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('category', sub.id, sub.name)">🗑️</button>
+                </div>
               </div>
               <div class="products-table">
                 @for (p of sub.products ?? []; track p.id) {
-                  <div class="product-row">
+                  <div class="product-row" [class.product-row--disabled]="!p.is_available">
+                    @if (p.image_url) { <img [src]="p.image_url" [alt]="p.name" class="product-row__img"> }
+                    @else { <div class="product-row__img product-row__img--empty">🍽️</div> }
                     <span class="product-row__name">{{ p.name }}</span>
                     <span class="product-row__price">{{ p.price | number:'1.0-0' }} FCFA</span>
                     <span class="product-row__avail" [class.available]="p.is_available">
@@ -35,21 +58,25 @@
                       <button class="btn btn--ghost btn--sm" (click)="toggleAvailability(p)">
                         {{ p.is_available ? 'Désactiver' : 'Activer' }}
                       </button>
-                      <button class="btn btn--ghost btn--sm" (click)="openEdit(p)">Modifier</button>
-                      <button class="btn btn--ghost btn--sm" style="color:var(--color-error)" (click)="deleteProduct(p.id)">✕</button>
+                      <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)">✏️</button>
+                      <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('product', p.id, p.name)">🗑️</button>
                     </div>
                   </div>
+                }
+                @if (!(sub.products?.length)) {
+                  <p class="no-products">Aucun plat dans cette sous-catégorie.</p>
                 }
               </div>
             </div>
           }
         }
 
-        <!-- Produits directs -->
         @if ((cat.products ?? []).length) {
           <div class="products-table">
             @for (p of cat.products!; track p.id) {
-              <div class="product-row">
+              <div class="product-row" [class.product-row--disabled]="!p.is_available">
+                @if (p.image_url) { <img [src]="p.image_url" [alt]="p.name" class="product-row__img"> }
+                @else { <div class="product-row__img product-row__img--empty">🍽️</div> }
                 <span class="product-row__name">{{ p.name }}</span>
                 <span class="product-row__price">{{ p.price | number:'1.0-0' }} FCFA</span>
                 <span class="product-row__avail" [class.available]="p.is_available">
@@ -59,49 +86,202 @@
                   <button class="btn btn--ghost btn--sm" (click)="toggleAvailability(p)">
                     {{ p.is_available ? 'Désactiver' : 'Activer' }}
                   </button>
-                  <button class="btn btn--ghost btn--sm" (click)="openEdit(p)">Modifier</button>
-                  <button class="btn btn--ghost btn--sm" style="color:var(--color-error)" (click)="deleteProduct(p.id)">✕</button>
+                  <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)">✏️</button>
+                  <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('product', p.id, p.name)">🗑️</button>
                 </div>
               </div>
             }
           </div>
         }
+
+        @if (!(cat.products?.length) && !(cat.subcategories?.length)) {
+          <p class="no-products">Aucun plat dans cette catégorie.</p>
+        }
+
       </div>
     }
+
   }
 
-  <!-- Modal formulaire produit -->
-  @if (showForm()) {
-    <div class="modal-overlay" (click)="showForm.set(false)">
-      <div class="modal card" (click)="$event.stopPropagation()">
-        <div class="flex-between">
-          <h3>{{ formMode() === 'create' ? 'Nouveau produit' : 'Modifier le produit' }}</h3>
-          <button class="btn btn--ghost" (click)="showForm.set(false)">✕</button>
+  <!-- ── Modal produit ─────────────────────────────────────────────────────── -->
+  @if (showProdForm()) {
+    <div class="modal-overlay"
+      (mousedown)="onOverlayMousedown($event)"
+      (click)="maybeClose('prod')">
+      <div class="modal card" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header flex-between">
+          <h3>{{ prodFormMode() === 'create' ? 'Nouveau plat' : 'Modifier le plat' }}</h3>
+          <button class="modal-close" (click)="showProdForm.set(false)">✕</button>
         </div>
         <div class="modal-form">
+
           <div class="form-group">
-            <label>Nom</label>
-            <input class="form-control" [value]="formProduct().name ?? ''"
+            <label>Image du plat</label>
+            <label class="img-upload-area" [class.has-preview]="prodImagePreview()">
+              @if (prodImagePreview()) {
+                <img [src]="prodImagePreview()!" class="img-upload-preview" alt="Aperçu">
+                <span class="img-upload-change">Changer l'image</span>
+              } @else {
+                <div class="img-upload-cta">
+                  <span class="img-upload-icon">📷</span>
+                  <span class="img-upload-text">Cliquer pour importer une image</span>
+                </div>
+              }
+              <input type="file" accept="image/*" style="display:none" (change)="onProdFileChange($event)">
+            </label>
+            <p class="form-hint">Image carrée recommandée · JPEG, PNG ou WebP · max 5 Mo</p>
+          </div>
+
+          <div class="form-group">
+            <label>Nom *</label>
+            <input class="form-control" placeholder="Ndolé, Poulet DG…"
+              [value]="formProduct().name ?? ''"
               (input)="formProduct.update(p => ({...p, name: $any($event.target).value}))">
           </div>
+
           <div class="form-group">
-            <label>Description</label>
-            <textarea class="form-control" rows="3" [value]="formProduct().description ?? ''"
-              (input)="formProduct.update(p => ({...p, description: $any($event.target).value}))"></textarea>
+            <label>Catégorie *</label>
+            <select class="form-control"
+              [value]="formProduct().category_id ?? ''"
+              (change)="formProduct.update(p => ({...p, category_id: $any($event.target).value}))">
+              <option value="" disabled>Choisir une catégorie…</option>
+              @for (cat of allCategoriesFlat(); track cat.id) {
+                <option [value]="cat.id">{{ cat.label }}</option>
+              }
+            </select>
           </div>
-          <div class="form-group">
-            <label>Prix (FCFA)</label>
-            <input type="number" class="form-control" [value]="formProduct().price ?? ''"
-              (input)="formProduct.update(p => ({...p, price: +$any($event.target).value}))">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prix (FCFA) *</label>
+              <input type="number" class="form-control" placeholder="2500"
+                [value]="formProduct().price ?? ''"
+                (input)="formProduct.update(p => ({...p, price: +$any($event.target).value}))">
+            </div>
+            <div class="form-group">
+              <label>Ordre d'affichage</label>
+              <input type="number" class="form-control" placeholder="0"
+                [value]="formProduct().display_order ?? 0"
+                (input)="formProduct.update(p => ({...p, display_order: +$any($event.target).value}))">
+            </div>
           </div>
-          <div class="form-group">
-            <label>URL image</label>
-            <input class="form-control" placeholder="https://…" [value]="formProduct().image_url ?? ''"
-              (input)="formProduct.update(p => ({...p, image_url: $any($event.target).value}))">
+
+          <label class="toggle-label">
+            <input type="checkbox"
+              [checked]="formProduct().is_available ?? true"
+              (change)="formProduct.update(p => ({...p, is_available: $any($event.target).checked}))">
+            Disponible à la commande
+          </label>
+
+          <div class="modal-footer">
+            <button class="btn btn--ghost" (click)="showProdForm.set(false)">Annuler</button>
+            <button class="btn btn--primary" [disabled]="saving()" (click)="saveProduct()">
+              {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
           </div>
-          <button class="btn btn--primary btn--full" (click)="saveProduct()">Enregistrer</button>
         </div>
       </div>
     </div>
   }
+
+  <!-- ── Modal catégorie ───────────────────────────────────────────────────── -->
+  @if (showCatForm()) {
+    <div class="modal-overlay"
+      (mousedown)="onOverlayMousedown($event)"
+      (click)="maybeClose('cat')">
+      <div class="modal card" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header flex-between">
+          <h3>{{ catFormMode() === 'create' ? 'Nouvelle catégorie' : 'Modifier la catégorie' }}</h3>
+          <button class="modal-close" (click)="showCatForm.set(false)">✕</button>
+        </div>
+        <div class="modal-form">
+
+          <div class="form-group">
+            <label>Image de la catégorie</label>
+            <label class="img-upload-area" [class.has-preview]="catImagePreview()">
+              @if (catImagePreview()) {
+                <img [src]="catImagePreview()!" class="img-upload-preview" alt="Aperçu">
+                <span class="img-upload-change">Changer l'image</span>
+              } @else {
+                <div class="img-upload-cta">
+                  <span class="img-upload-icon">📷</span>
+                  <span class="img-upload-text">Cliquer pour importer une image</span>
+                </div>
+              }
+              <input type="file" accept="image/*" style="display:none" (change)="onCatFileChange($event)">
+            </label>
+            <p class="form-hint">Image carrée recommandée · JPEG, PNG ou WebP · max 5 Mo</p>
+          </div>
+
+          <div class="form-group">
+            <label>Nom *</label>
+            <input class="form-control" placeholder="Entrées, Boissons…"
+              [value]="formCategory().name ?? ''"
+              (input)="formCategory.update(c => ({...c, name: $any($event.target).value}))">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input class="form-control" placeholder="Description courte…"
+              [value]="formCategory().description ?? ''"
+              (input)="formCategory.update(c => ({...c, description: $any($event.target).value}))">
+          </div>
+          <div class="form-group">
+            <label>Ordre d'affichage</label>
+            <input type="number" class="form-control" placeholder="0"
+              [value]="formCategory().display_order ?? 0"
+              (input)="formCategory.update(c => ({...c, display_order: +$any($event.target).value}))">
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn--ghost" (click)="showCatForm.set(false)">Annuler</button>
+            <button class="btn btn--primary" [disabled]="saving()" (click)="saveCategory()">
+              {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal confirmation suppression ───────────────────────────────────── -->
+  @if (deleteTarget()) {
+    <div class="modal-overlay"
+      (mousedown)="onOverlayMousedown($event)"
+      (click)="maybeClose('delete')">
+      <div class="modal modal--sm card" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Confirmer la suppression</h3>
+        </div>
+        <p class="delete-modal__text">
+          Supprimer <strong>« {{ deleteTarget()!.name }} »</strong> définitivement ?
+          @if (deleteTarget()!.type === 'category') {
+            <br><span style="font-size:.85em;color:var(--color-text-muted)">Les sous-catégories et plats associés seront désactivés.</span>
+          }
+        </p>
+        <div class="modal-footer">
+          <button class="btn btn--ghost" (click)="deleteTarget.set(null)">Annuler</button>
+          <button class="btn btn--primary danger-confirm" (click)="confirmDelete()">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal confirmation générique ─────────────────────────────────────── -->
+  @if (confirmAction()) {
+    <div class="modal-overlay"
+      (mousedown)="onOverlayMousedown($event)"
+      (click)="maybeClose('confirm')">
+      <div class="modal modal--sm card" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ confirmAction()!.title }}</h3>
+        </div>
+        <p class="delete-modal__text">{{ confirmAction()!.message }}</p>
+        <div class="modal-footer">
+          <button class="btn btn--ghost" (click)="confirmAction.set(null)">Annuler</button>
+          <button class="btn btn--primary" (click)="runConfirm()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

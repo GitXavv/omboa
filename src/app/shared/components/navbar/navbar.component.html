@@ -1,60 +1,217 @@
-<nav class="navbar" [class.navbar--scrolled]="true">
+<nav class="navbar">
   <div class="container navbar__inner">
 
     <!-- Logo -->
-    <a routerLink="/" class="navbar__logo" (click)="close()">
+    <a routerLink="/" class="navbar__logo">
       <span class="navbar__logo-text">O'Mboa</span>
     </a>
 
     <!-- Liens desktop -->
     <ul class="navbar__links">
-      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Accueil</a></li>
       <li><a routerLink="/menu" routerLinkActive="active">Menu</a></li>
       @if (auth.isOwner()) {
         <li><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
       }
-      @if (auth.isCook()) {
+      @if (auth.isCook() || auth.isOwner()) {
         <li><a routerLink="/kitchen" routerLinkActive="active">Cuisine</a></li>
       }
     </ul>
 
+    <!-- Barre de recherche -->
+    <div class="navbar__search">
+      <span class="navbar__search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="search"
+        class="navbar__search-input"
+        placeholder="Vous cherchez un plat ? Tapez ici…"
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+        (keydown.escape)="clearSearch()"
+        aria-label="Rechercher un plat"
+      >
+    </div>
+
     <!-- Actions desktop -->
     <div class="navbar__actions">
+
+      <!-- Panier (connectés uniquement) -->
       @if (auth.isLoggedIn()) {
-        <a routerLink="/account" class="btn btn--ghost btn--sm">Mon compte</a>
-        <button class="btn btn--outline btn--sm" (click)="logout()">Déconnexion</button>
-      } @else {
-        <a routerLink="/auth/login" class="btn btn--ghost btn--sm">Connexion</a>
-        <a routerLink="/auth/register" class="btn btn--primary btn--sm">S'inscrire</a>
+      <div class="navbar__cart-wrap">
+        <button class="navbar__cart-btn" (click)="toggleCart()" [class.active]="cartOpen()" aria-label="Ma commande">
+          🛒
+          @if (cart.count() > 0) {
+            <span class="navbar__cart-badge">{{ cart.count() }}</span>
+          }
+        </button>
+
+        @if (cartOpen()) {
+          <div class="cart-panel">
+            <div class="cart-panel__header">
+              <span class="cart-panel__title">Ma commande</span>
+              <button class="cart-panel__close" (click)="toggleCart()">✕</button>
+            </div>
+
+            @if (cart.items().length === 0) {
+              <div class="cart-panel__empty">
+                <span>🍽️</span>
+                <p>Votre panier est vide.<br>Parcourez le menu et ajoutez des plats.</p>
+              </div>
+            } @else {
+              <ul class="cart-panel__list">
+                @for (item of cart.items(); track item.product.id) {
+                  <li class="cart-item">
+                    <div class="cart-item__info">
+                      <span class="cart-item__name">{{ item.product.name }}</span>
+                      <span class="cart-item__price">{{ item.product.price | number:'1.0-0' }} FCFA</span>
+                    </div>
+                    <div class="cart-item__qty">
+                      <button (click)="cart.decrement(item.product.id)">−</button>
+                      <span>{{ item.quantity }}</span>
+                      <button (click)="cart.increment(item.product.id)">+</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+              <div class="cart-panel__footer">
+                <div class="cart-panel__total">
+                  <span>Total</span>
+                  <strong>{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+                </div>
+                @if (cart.tableId()) {
+                  <button class="btn btn--primary btn--full">Passer la commande</button>
+                } @else {
+                  <p class="cart-panel__note">📱 Scannez le QR code de votre table pour commander.</p>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
       }
+
+      <!-- Auth -->
+      @if (auth.isLoggedIn()) {
+        <div class="navbar__user-wrap">
+          <button class="navbar__user-trigger" (click)="toggleUserMenu()" [class.active]="userMenuOpen()">
+            <span class="navbar__user-name">{{ userFirstName }}</span>
+            <span class="navbar__user-chevron" [class.open]="userMenuOpen()">▾</span>
+          </button>
+
+          @if (userMenuOpen()) {
+            <div class="navbar__user-menu">
+              <div class="navbar__user-menu-header">
+                <strong>{{ auth.currentUser()?.full_name }}</strong>
+                <span>{{ auth.currentUser()?.phone }}</span>
+              </div>
+              <hr class="navbar__user-menu-divider">
+              <a routerLink="/account" class="navbar__user-menu-item">👤 Mon compte</a>
+              @if (auth.isCook() || auth.isOwner()) {
+                <a routerLink="/kitchen" class="navbar__user-menu-item">🍳 Espace cuisine</a>
+              }
+              @if (auth.isOwner()) {
+                <a routerLink="/admin" class="navbar__user-menu-item">⚙️ Administration</a>
+              }
+              <hr class="navbar__user-menu-divider">
+              <button class="navbar__user-menu-item navbar__user-menu-item--danger" (click)="logout()">
+                ↩ Déconnexion
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/auth" class="btn btn--primary btn--sm">Connexion / Inscription</a>
+      }
+
     </div>
 
-    <!-- Burger mobile -->
-    <button class="navbar__burger" (click)="toggle()" [attr.aria-expanded]="menuOpen()">
-      <span></span><span></span><span></span>
-    </button>
   </div>
+</nav>
 
-  <!-- Menu mobile -->
-  @if (menuOpen()) {
-    <div class="navbar__mobile">
-      <ul>
-        <li><a routerLink="/"      (click)="close()">Accueil</a></li>
-        <li><a routerLink="/menu"  (click)="close()">Menu</a></li>
-        @if (auth.isOwner()) {
-          <li><a routerLink="/admin"   (click)="close()">Admin</a></li>
-        }
-        @if (auth.isCook()) {
-          <li><a routerLink="/kitchen" (click)="close()">Cuisine</a></li>
-        }
-        @if (auth.isLoggedIn()) {
-          <li><a routerLink="/account" (click)="close()">Mon compte</a></li>
-          <li><button (click)="logout()">Déconnexion</button></li>
-        } @else {
-          <li><a routerLink="/auth/login"    (click)="close()">Connexion</a></li>
-          <li><a routerLink="/auth/register" (click)="close()">S'inscrire</a></li>
-        }
-      </ul>
+<!-- Navigation mobile fixe en bas -->
+<nav class="bottom-nav" aria-label="Navigation principale">
+  <a routerLink="/menu" routerLinkActive="active" class="bottom-nav__item">
+    <span class="bottom-nav__icon">🍽️</span>
+    <span class="bottom-nav__label">Menu</span>
+  </a>
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav__item">
+    <span class="bottom-nav__icon">🏠</span>
+    <span class="bottom-nav__label">Accueil</span>
+  </a>
+  <!-- Panier si connecté + items, sinon Auth/Compte -->
+  @if (auth.isLoggedIn() && cart.count() > 0) {
+    <button class="bottom-nav__item" (click)="toggleCart()">
+      <span class="bottom-nav__icon">🛒 <span class="bottom-nav__cart-badge">{{ cart.count() }}</span></span>
+      <span class="bottom-nav__label">Ma commande</span>
+    </button>
+  } @else if (auth.isLoggedIn()) {
+    <div class="bottom-nav-account-wrap">
+      @if (userMenuOpen()) {
+        <div class="bottom-nav__dropdown">
+          <a routerLink="/account" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">👤 Mon compte</a>
+          @if (auth.isCook() || auth.isOwner()) {
+            <a routerLink="/kitchen" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">🍳 Espace cuisine</a>
+          }
+          @if (auth.isOwner()) {
+            <a routerLink="/admin" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">⚙️ Administration</a>
+          }
+          <hr class="bottom-nav__dropdown-divider">
+          <button class="bottom-nav__dropdown-item bottom-nav__dropdown-item--danger" (click)="logout()">↩ Déconnexion</button>
+        </div>
+      }
+      <button class="bottom-nav__item" (click)="toggleUserMenu()" [class.active]="userMenuOpen()">
+        <span class="bottom-nav__icon">👤</span>
+        <span class="bottom-nav__label">{{ userFirstName }}</span>
+      </button>
     </div>
+  } @else {
+    <a routerLink="/auth" routerLinkActive="active" class="bottom-nav__item">
+      <span class="bottom-nav__icon">🔑</span>
+      <span class="bottom-nav__label">Connexion</span>
+    </a>
   }
 </nav>
+
+<!-- Panel panier mobile (bottom sheet) -->
+@if (cartOpen()) {
+  <div class="cart-overlay" (click)="toggleCart()">
+    <div class="cart-sheet" (click)="$event.stopPropagation()">
+      <div class="cart-panel__header">
+        <span class="cart-panel__title">Ma commande</span>
+        <button class="cart-panel__close" (click)="toggleCart()">✕</button>
+      </div>
+      @if (cart.items().length === 0) {
+        <div class="cart-panel__empty">
+          <span>🍽️</span>
+          <p>Votre panier est vide.</p>
+        </div>
+      } @else {
+        <ul class="cart-panel__list">
+          @for (item of cart.items(); track item.product.id) {
+            <li class="cart-item">
+              <div class="cart-item__info">
+                <span class="cart-item__name">{{ item.product.name }}</span>
+                <span class="cart-item__price">{{ item.product.price | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="cart-item__qty">
+                <button (click)="cart.decrement(item.product.id)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button (click)="cart.increment(item.product.id)">+</button>
+              </div>
+            </li>
+          }
+        </ul>
+        <div class="cart-panel__footer">
+          <div class="cart-panel__total">
+            <span>Total</span>
+            <strong>{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+          </div>
+          @if (cart.tableId()) {
+            <button class="btn btn--primary btn--full">Passer la commande</button>
+          } @else {
+            <p class="cart-panel__note">📱 Scannez le QR code de votre table pour commander.</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

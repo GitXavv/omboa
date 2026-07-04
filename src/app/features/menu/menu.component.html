@@ -3,9 +3,6 @@
   <div class="container">
     <span class="section-tag">Notre carte</span>
     <h1>Le menu O'Mboa</h1>
-    <p class="text-muted">Cuisine authentique d'Afrique centrale. Renouvelé chaque saison.</p>
-
-    <!-- Mode visiteur : bannière d'invitation à commander à table -->
     <div class="menu-header__cta-bar">
       <span>📱 Vous êtes à table ? Scannez le QR code pour passer votre commande directement.</span>
     </div>
@@ -16,80 +13,210 @@
   <app-loader label="Chargement du menu…" />
 } @else {
 
-  <div class="menu-layout container">
-    <!-- Sidebar catégories -->
-    <aside class="menu-sidebar">
-      <div class="menu-sidebar__search">
-        <input
-          type="search"
-          class="form-control"
-          placeholder="Rechercher un plat…"
-          [value]="searchQuery()"
-          (input)="search($event)"
-        >
+  <div class="menu-body container">
+
+    @if (searchQuery()) {
+
+      <!-- Résultats de recherche -->
+      <div class="menu-search-results">
+        <div class="menu-search-results__header">
+          <span>
+            {{ searchResults().length }} résultat{{ searchResults().length !== 1 ? 's' : '' }}
+            pour <strong>"{{ searchQuery() }}"</strong>
+          </span>
+          <button class="btn btn--ghost btn--sm" (click)="clearSearch()">✕ Effacer</button>
+        </div>
+        @if (searchResults().length) {
+          <div class="menu-list">
+            @for (p of searchResults(); track p.id) {
+              <button class="menu-product-row" (click)="openProduct(p)">
+                <div class="menu-product-row__img">
+                  @if (p.image_url) {
+                    <img [src]="p.image_url" [alt]="p.name" loading="lazy">
+                  } @else {
+                    <span>🍽️</span>
+                  }
+                </div>
+                <div class="menu-product-row__info">
+                  <span class="menu-product-row__name">{{ p.name }}</span>
+                  <span class="menu-product-row__price">{{ p.price | number:'1.0-0' }} FCFA</span>
+                </div>
+                @if (!p.is_available) {
+                  <span class="menu-product-row__unavail">Indisponible</span>
+                }
+                <span class="menu-product-row__caret" aria-hidden="true">›</span>
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="menu-empty">
+            <p>Aucun plat ne correspond à « {{ searchQuery() }} ».</p>
+          </div>
+        }
       </div>
 
-      <nav class="menu-sidebar__nav">
+    } @else {
+
+      <!-- Accordéon par catégorie -->
+      <div class="menu-accordion">
         @for (cat of categories(); track cat.id) {
-          <button
-            class="menu-sidebar__cat"
-            [class.active]="cat.id === activeId()"
-            (click)="select(cat.id)"
-          >
-            <!-- Image catégorie → 800×420px -->
-            @if (cat.image_url) {
-              <img [src]="cat.image_url" [alt]="cat.name">
-            }
-            <span>{{ cat.name }}</span>
-            @if (cat.subcategories?.length) {
-              <span class="menu-sidebar__sub-count">{{ cat.subcategories!.length }}</span>
-            }
-          </button>
 
-          <!-- Sous-catégories (boissons) -->
-          @if (cat.id === activeId() && cat.subcategories?.length) {
-            <div class="menu-sidebar__subcats">
-              @for (sub of cat.subcategories; track sub.id) {
-                <button
-                  class="menu-sidebar__subcat"
-                  [class.active]="sub.id === activeId()"
-                  (click)="select(sub.id)"
-                >
-                  {{ sub.name }}
-                </button>
+          <div class="menu-cat" [class.menu-cat--open]="isOpen(cat.id)">
+
+            <!-- Trigger -->
+            <button class="menu-cat__trigger" (click)="toggle(cat.id)">
+              <div class="menu-cat__thumb">
+                @if (cat.image_url) {
+                  <img [src]="cat.image_url" [alt]="cat.name" loading="lazy">
+                } @else {
+                  <span>🍽️</span>
+                }
+              </div>
+              <div class="menu-cat__info">
+                <span class="menu-cat__name">{{ cat.name }}</span>
+                @if (cat.description) {
+                  <span class="menu-cat__desc-mobile">{{ cat.description }}</span>
+                }
+                <span class="menu-cat__count">
+                  {{ (cat.products?.length ?? 0) + (cat.subcategories?.reduce((n, s) => n + (s.products?.length ?? 0), 0) ?? 0) }} plat(s)
+                </span>
+              </div>
+              @if (cat.description) {
+                <span class="menu-cat__desc-center">{{ cat.description }}</span>
               }
-            </div>
-          }
+              <span class="menu-cat__arrow" aria-hidden="true">
+                @if (isOpen(cat.id)) { ▲ } @else { ▼ }
+              </span>
+            </button>
+
+            <!-- Contenu -->
+            @if (isOpen(cat.id)) {
+              <div class="menu-cat__body">
+
+                <!-- Produits directs -->
+                @if (cat.products?.length) {
+                  <div class="menu-list">
+                    @for (p of cat.products!; track p.id) {
+                      <button class="menu-product-row" [class.menu-product-row--unavail]="!p.is_available" (click)="openProduct(p)">
+                        <div class="menu-product-row__img">
+                          @if (p.image_url) {
+                            <img [src]="p.image_url" [alt]="p.name" loading="lazy">
+                          } @else {
+                            <span>🍽️</span>
+                          }
+                        </div>
+                        <div class="menu-product-row__info">
+                          <span class="menu-product-row__name">{{ p.name }}</span>
+                          <span class="menu-product-row__price">{{ p.price | number:'1.0-0' }} FCFA</span>
+                        </div>
+                        @if (!p.is_available) {
+                          <span class="menu-product-row__unavail">Indisponible</span>
+                        }
+                        <span class="menu-product-row__caret" aria-hidden="true">›</span>
+                      </button>
+                    }
+                  </div>
+                }
+
+                <!-- Sous-catégories -->
+                @for (sub of (cat.subcategories ?? []); track sub.id) {
+                  <div class="menu-subcat" [class.menu-subcat--open]="isOpen(sub.id)">
+                    <button class="menu-subcat__trigger" (click)="toggle(sub.id); $event.stopPropagation()">
+                      <div class="menu-subcat__thumb">
+                        @if (sub.image_url) {
+                          <img [src]="sub.image_url" [alt]="sub.name" loading="lazy">
+                        } @else {
+                          <span>🥤</span>
+                        }
+                      </div>
+                      <div class="menu-subcat__info">
+                        <span class="menu-subcat__name">{{ sub.name }}</span>
+                        @if (sub.description) {
+                          <span class="menu-subcat__desc-mobile">{{ sub.description }}</span>
+                        }
+                        <span class="menu-subcat__count">{{ sub.products?.length ?? 0 }} plat(s)</span>
+                      </div>
+                      @if (sub.description) {
+                        <span class="menu-subcat__desc-center">{{ sub.description }}</span>
+                      }
+                      <span class="menu-subcat__arrow" aria-hidden="true">
+                        @if (isOpen(sub.id)) { ▲ } @else { ▼ }
+                      </span>
+                    </button>
+
+                    @if (isOpen(sub.id) && sub.products?.length) {
+                      <div class="menu-subcat__body">
+                        <div class="menu-list">
+                          @for (p of sub.products!; track p.id) {
+                            <button class="menu-product-row" [class.menu-product-row--unavail]="!p.is_available" (click)="openProduct(p)">
+                              <div class="menu-product-row__img">
+                                @if (p.image_url) {
+                                  <img [src]="p.image_url" [alt]="p.name" loading="lazy">
+                                } @else {
+                                  <span>🍽️</span>
+                                }
+                              </div>
+                              <div class="menu-product-row__info">
+                                <span class="menu-product-row__name">{{ p.name }}</span>
+                                <span class="menu-product-row__price">{{ p.price | number:'1.0-0' }} FCFA</span>
+                              </div>
+                              @if (!p.is_available) {
+                                <span class="menu-product-row__unavail">Indisponible</span>
+                              }
+                              <span class="menu-product-row__caret" aria-hidden="true">›</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+              </div>
+            }
+
+          </div>
         }
-      </nav>
-    </aside>
+      </div>
 
-    <!-- Contenu produits -->
-    <main class="menu-content">
-      @if (activeCategory()) {
-        <div class="menu-content__header">
-          <h2>{{ activeCategory()!.name }}</h2>
-          @if (activeCategory()!.description) {
-            <p class="text-muted">{{ activeCategory()!.description }}</p>
-          }
-          <span class="menu-content__count">{{ filteredProducts().length }} plat(s)</span>
-        </div>
-      }
+    }
+  </div>
+}
 
-      @if (filteredProducts().length) {
-        <div class="grid-3">
-          @for (p of filteredProducts(); track p.id) {
-            <app-product-card [product]="p" [showAddButton]="false" />
-          }
-        </div>
-      } @else {
-        <div class="menu-empty">
-          <p>Aucun plat trouvé pour "{{ searchQuery() }}"</p>
-          <button class="btn btn--ghost btn--sm" (click)="searchQuery.set('')">
-            Effacer la recherche
-          </button>
-        </div>
-      }
-    </main>
+<!-- Modal détail produit -->
+@if (selectedProduct()) {
+  <div class="product-modal-overlay" (click)="closeProduct()">
+    <div class="product-modal" (click)="$event.stopPropagation()" role="dialog" [attr.aria-label]="selectedProduct()!.name">
+
+      <button class="product-modal__close" (click)="closeProduct()" aria-label="Fermer">✕</button>
+
+      <!-- Image -->
+      <div class="product-modal__img">
+        @if (selectedProduct()!.image_url) {
+          <img [src]="selectedProduct()!.image_url" [alt]="selectedProduct()!.name" loading="lazy">
+        } @else {
+          <div class="product-modal__img-placeholder">🍽️</div>
+        }
+        @if (!selectedProduct()!.is_available) {
+          <div class="product-modal__unavail-badge">Indisponible</div>
+        }
+      </div>
+
+      <!-- Infos -->
+      <div class="product-modal__body">
+        <h3 class="product-modal__name">{{ selectedProduct()!.name }}</h3>
+        <span class="product-modal__price">{{ selectedProduct()!.price | number:'1.0-0' }} FCFA</span>
+
+        @if (selectedProduct()!.is_available) {
+          <div class="product-modal__actions">
+            <button class="btn btn--primary btn--full" (click)="addToCart(selectedProduct()!)">
+              🛒 Ajouter à la commande
+            </button>
+            <p class="product-modal__note">Disponible uniquement pour les commandes à table.</p>
+          </div>
+        }
+      </div>
+
+    </div>
   </div>
 }

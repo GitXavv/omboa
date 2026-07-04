@@ -46,7 +46,7 @@
               <div class="order-card__items">
                 @for (item of order.order_items ?? []; track item.id) {
                   <span class="order-card__item">
-                    {{ item.product?.name ?? '—' }} × {{ item.quantity }}
+                    {{ item.product_name ?? '—' }} × {{ item.quantity }}
                   </span>
                 }
               </div>

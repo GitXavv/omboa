@@ -1,0 +1,107 @@
+<div class="admin-page container">
+
+  <div class="admin-header flex-between">
+    <div>
+      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <h2>Statistiques</h2>
+      @if (refreshedAt()) {
+        <p class="text-muted" style="font-size:.825rem">Actualisé à {{ refreshedAt() | date:'HH:mm:ss' }}</p>
+      }
+    </div>
+    <button class="btn btn--ghost btn--sm" [disabled]="loading()" (click)="load()">⟳ Actualiser</button>
+  </div>
+
+  @if (loading()) {
+    <app-loader label="Chargement des statistiques…" />
+  } @else if (stats()) {
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card card">
+        <span class="kpi-card__icon">📋</span>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats()!.total_orders | number }}</div>
+          <div class="kpi-card__label">Commandes totales</div>
+        </div>
+      </div>
+      <div class="kpi-card card">
+        <span class="kpi-card__icon">💰</span>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats()!.total_revenue | number:'1.0-0' }}</div>
+          <div class="kpi-card__label">Chiffre d'affaires (FCFA)</div>
+        </div>
+      </div>
+      <div class="kpi-card card">
+        <span class="kpi-card__icon">🧾</span>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats()!.avg_order_value | number:'1.0-0' }}</div>
+          <div class="kpi-card__label">Panier moyen (FCFA)</div>
+        </div>
+      </div>
+      <div class="kpi-card card">
+        <span class="kpi-card__icon">👤</span>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats()!.total_customers | number }}</div>
+          <div class="kpi-card__label">Comptes clients</div>
+        </div>
+      </div>
+      <div class="kpi-card card">
+        <span class="kpi-card__icon">⭐</span>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats()!.loyal_customers | number }}</div>
+          <div class="kpi-card__label">Clients fidèles actifs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deux colonnes -->
+    <div class="stats-two-col">
+
+      <!-- Répartition par statut -->
+      <div class="card stats-block">
+        <h3 class="stats-block__title">Répartition des commandes</h3>
+        @if (stats()!.orders_by_status.length) {
+          <table class="stats-table">
+            <tbody>
+              @for (row of stats()!.orders_by_status; track row.status) {
+                <tr>
+                  <td class="stats-td-label">
+                    <span class="status-badge status-badge--{{ row.status }}">{{ statusFr[row.status] ?? row.status }}</span>
+                  </td>
+                  <td class="stats-td-value">{{ row.count | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-msg">Aucune commande enregistrée.</p>
+        }
+      </div>
+
+      <!-- Top 10 plats -->
+      <div class="card stats-block">
+        <h3 class="stats-block__title">Top 10 plats commandés</h3>
+        @if (stats()!.top_products.length) {
+          <div class="top-products">
+            @for (p of stats()!.top_products; track p.product_id; let i = $index) {
+              <div class="top-product-row">
+                <span class="top-product-row__rank">{{ i + 1 }}</span>
+                @if (p.product_image_url) {
+                  <img [src]="p.product_image_url" [alt]="p.product_name" class="top-product-row__img">
+                } @else {
+                  <div class="top-product-row__img top-product-row__img--empty">🍽️</div>
+                }
+                <span class="top-product-row__name">{{ p.product_name }}</span>
+                <span class="top-product-row__qty">{{ p.total_quantity | number }} servi{{ p.total_quantity > 1 ? 's' : '' }}</span>
+                <span class="top-product-row__orders text-muted">{{ p.order_count | number }} cmd.</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-msg">Aucun plat commandé pour l'instant.</p>
+        }
+      </div>
+
+    </div>
+  }
+</div>

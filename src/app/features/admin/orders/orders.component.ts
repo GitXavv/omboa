@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
@@ -9,10 +10,17 @@ import { Order, OrderStatus } from '../../../core/models';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
+const STATUS_FR: Record<string, string> = {
+  pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
+  paid: 'Payée', served: 'Servie', cancelled: 'Annulée', all: 'Toutes'
+};
+
+const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'paid', 'served', 'cancelled'];
+
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, DatePipe, LoaderComponent],
+  imports: [RouterLink, FormsModule, DecimalPipe, DatePipe, LoaderComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
@@ -25,43 +33,42 @@ export class OrdersComponent implements OnInit, OnDestroy {
   readonly orders   = signal<Order[]>([]);
   readonly loading  = signal(true);
   readonly filter   = signal<OrderStatus | 'all'>('all');
-  private subs = new Subscription();
+  readonly search   = signal('');
+  readonly expanded = signal<string | null>(null);
+  readonly filters  = FILTERS;
+  readonly statusFr = STATUS_FR;
 
-  readonly filtered = () => {
+  private sub?: Subscription;
+
+  readonly filtered = computed(() => {
     const f = this.filter();
-    return f === 'all' ? this.orders() : this.orders().filter(o => o.status === f);
-  };
-
-  readonly statusLabel: Record<string, string> = {
-    pending: 'En attente', preparing: 'En préparation',
-    ready: 'Prête', served: 'Servie', paid: 'Payée', cancelled: 'Annulée'
-  };
+    const q = this.search().toLowerCase();
+    return this.orders()
+      .filter(o => f === 'all' || o.status === f)
+      .filter(o => !q || (o.table?.number ?? '').toLowerCase().includes(q));
+  });
 
   ngOnInit() {
     this.load();
     this.rt.connect(this.auth.getToken() ?? undefined);
-    this.subs.add(
-      this.rt.events$.subscribe(ev => {
-        if (ev.type === 'order:new') { this.load(); this.toast.info(`Nouvelle commande — ${ev.payload.tableNumber}`); }
-        if (ev.type === 'order:status') this.load();
-      })
-    );
-  }
-
-  ngOnDestroy() { this.subs.unsubscribe(); this.rt.disconnect(); }
-
-  private load() {
-    this.orderSvc.getAll().subscribe({ next: o => { this.orders.set(o); this.loading.set(false); } });
-  }
-
-  updateStatus(id: string, status: OrderStatus) {
-    this.orderSvc.updateStatus(id, status).subscribe({
-      next: () => { this.toast.success('Statut mis à jour'); this.load(); },
-      error: () => this.toast.error('Erreur lors de la mise à jour')
+    this.sub = this.rt.events$.subscribe(ev => {
+      if (ev.type === 'order:new' || ev.type === 'order:status') {
+        this.load();
+        if (ev.type === 'order:new') this.toast.info(`Nouvelle commande — ${ev.payload.tableNumber}`);
+      }
     });
   }
 
-  readonly nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
-    pending: 'preparing', preparing: 'ready', ready: 'served', served: 'paid'
-  };
+  ngOnDestroy() { this.sub?.unsubscribe(); this.rt.disconnect(); }
+
+  private load() {
+    this.orderSvc.getAll().subscribe({
+      next: o => { this.orders.set(o); this.loading.set(false); },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  toggleExpand(id: string) {
+    this.expanded.update(cur => cur === id ? null : id);
+  }
 }

@@ -2,7 +2,7 @@ export interface Profile {
   id: string;
   role: 'owner' | 'cook' | 'customer';
   full_name: string;
-  phone: string | null;
+  phone: string;
   created_at: string;
 }
 
@@ -23,7 +23,6 @@ export interface Product {
   id: string;
   category_id: string;
   name: string;
-  description: string | null;
   price: number;
   image_url: string | null;
   is_available: boolean;
@@ -56,7 +55,8 @@ export interface OrderItem {
   unit_price: number;
   notes: string | null;
   created_at: string;
-  product?: Product;
+  product_name?: string;
+  product_image_url?: string;
 }
 
 export type PaymentMethod = 'cash' | 'orange_money' | 'mtn_momo';
@@ -118,6 +118,22 @@ export interface Toast {
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
+}
+
+export interface AdminStats {
+  total_orders: number;
+  total_revenue: number;
+  avg_order_value: number;
+  total_customers: number;
+  loyal_customers: number;
+  orders_by_status: { status: string; count: number }[];
+  top_products: {
+    product_id: string;
+    product_name: string;
+    product_image_url: string | null;
+    total_quantity: number;
+    order_count: number;
+  }[];
 }
 
 export interface ApiResponse<T> {

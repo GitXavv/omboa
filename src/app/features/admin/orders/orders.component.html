@@ -1,48 +1,73 @@
 <div class="admin-page container">
-  <div class="admin-header">
+
+  <div class="orders-header">
     <div>
       <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
-      <h2>Gestion des commandes</h2>
+      <h2>Historique des commandes</h2>
+      <p class="text-muted">{{ filtered().length }} commande{{ filtered().length !== 1 ? 's' : '' }} · lecture seule</p>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      @for (f of (['all','pending','preparing','ready','served','paid','cancelled']); track f) {
-        <button class="btn btn--sm" [class.btn--primary]="filter()===f" [class.btn--ghost]="filter()!==f"
-          (click)="filter.set($any(f))">
-          {{ f === 'all' ? 'Toutes' : statusLabel[f] }}
-        </button>
-      }
-    </div>
+    <input class="form-control search-input"
+      type="search"
+      placeholder="Rechercher par table…"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)">
   </div>
 
-  @if (loading()) { <app-loader /> }
-  @else {
+  <!-- Filtres par statut -->
+  <div class="orders-filters">
+    @for (f of filters; track f) {
+      <button class="btn btn--sm"
+        [class.btn--primary]="filter() === f"
+        [class.btn--ghost]="filter() !== f"
+        (click)="filter.set(f)">
+        {{ statusFr[f] }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <app-loader />
+  } @else {
     <div class="orders-list">
       @if (!filtered().length) {
-        <p class="text-muted text-center" style="padding:48px">Aucune commande.</p>
+        <p class="text-muted text-center" style="padding:48px">Aucune commande pour ce filtre.</p>
       }
       @for (o of filtered(); track o.id) {
-        <div class="order-card card">
-          <div class="order-card__head flex-between">
-            <div>
-              <strong>{{ o.table?.number ?? '—' }}</strong>
-              <span class="text-muted"> · {{ o.created_at | date:'dd/MM à HH:mm' }}</span>
+        <div class="order-card card" [class.order-card--expanded]="expanded() === o.id">
+
+          <!-- En-tête cliquable -->
+          <button class="order-card__head" (click)="toggleExpand(o.id)">
+            <div class="order-card__left">
+              <span class="order-card__table">{{ o.table?.number ?? '—' }}</span>
+              <span class="text-muted order-card__date">{{ o.created_at | date:'dd/MM/yyyy · HH:mm' }}</span>
             </div>
-            <span class="status-badge status-badge--{{ o.status }}">{{ statusLabel[o.status] }}</span>
-          </div>
-          <div class="order-card__items">
-            @for (item of o.order_items ?? []; track item.id) {
-              <span>{{ item.product?.name }} × {{ item.quantity }}</span>
-            }
-          </div>
-          <div class="order-card__foot flex-between">
-            <strong style="color:var(--color-primary)">{{ o.total_amount | number:'1.0-0' }} FCFA</strong>
-            @if (nextStatus[o.status]) {
-              <button class="btn btn--primary btn--sm"
-                (click)="updateStatus(o.id, nextStatus[o.status]!)">
-                → {{ statusLabel[nextStatus[o.status]!] }}
-              </button>
-            }
-          </div>
+            <div class="order-card__right">
+              <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] }}</span>
+              <strong class="order-card__total">{{ o.total_amount | number:'1.0-0' }} FCFA</strong>
+              <span class="order-card__chevron">{{ expanded() === o.id ? '▲' : '▼' }}</span>
+            </div>
+          </button>
+
+          <!-- Détail extensible -->
+          @if (expanded() === o.id) {
+            <div class="order-card__detail">
+              @if (!o.order_items?.length) {
+                <p class="text-muted" style="font-size:.875rem">Aucun article.</p>
+              }
+              @for (item of o.order_items ?? []; track item.id) {
+                <div class="order-item-row">
+                  <span class="order-item-row__qty">×{{ item.quantity }}</span>
+                  <span class="order-item-row__name">{{ item.product_name ?? '—' }}</span>
+                  @if (item.notes) { <em class="order-item-row__note">{{ item.notes }}</em> }
+                  <span class="order-item-row__price">{{ item.unit_price | number:'1.0-0' }} FCFA</span>
+                </div>
+              }
+              @if (o.customer_id) {
+                <p class="order-card__meta">Client · {{ o.customer_id }}</p>
+              }
+            </div>
+          }
+
         </div>
       }
     </div>

@@ -61,8 +61,9 @@
   --transition-normal: 250ms ease;
   --transition-slow:   400ms ease;
 
-  --max-width: 1200px;
-  --navbar-h:  68px;
+  --max-width:     1200px;
+  --navbar-h:      68px;
+  --bottom-nav-h:  60px;
 }
 
 /* Reset & Base */
@@ -99,7 +100,7 @@ p  { line-height: 1.7; }
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.9375rem;
   font-weight: 500;
   font-family: var(--font-body);
@@ -241,7 +242,8 @@ p  { line-height: 1.7; }
   flex-direction: column;
   gap: 10px;
 }
-@media (max-width: 640px) { .toast-container { left: 16px; right: 16px; bottom: 16px; } }
+@media (max-width: 768px) { body { padding-bottom: var(--bottom-nav-h); } }
+@media (max-width: 640px) { .toast-container { left: 16px; right: 16px; bottom: calc(var(--bottom-nav-h) + 16px); } }
 
 .toast {
   display: flex;

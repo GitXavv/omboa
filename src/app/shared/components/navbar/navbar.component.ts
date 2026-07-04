@@ -1,21 +1,67 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal, HostListener } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
+import { DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, DecimalPipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
   readonly auth  = inject(AuthService);
   readonly cart  = inject(CartService);
-  readonly menuOpen = signal(false);
 
-  toggle() { this.menuOpen.update(v => !v); }
-  close()  { this.menuOpen.set(false); }
-  logout() { this.auth.logout(); this.close(); }
+  readonly searchQuery  = signal('');
+  readonly userMenuOpen = signal(false);
+  readonly cartOpen     = signal(false);
+
+  private readonly router = inject(Router);
+
+  constructor() {
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd)
+    ).subscribe(e => {
+      if (!e.urlAfterRedirects.startsWith('/menu')) this.searchQuery.set('');
+      this.userMenuOpen.set(false);
+      this.cartOpen.set(false);
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.navbar__user-wrap') && !target.closest('.navbar__cart-wrap') && !target.closest('.bottom-nav-account-wrap')) {
+      this.userMenuOpen.set(false);
+      this.cartOpen.set(false);
+    }
+  }
+
+  toggleUserMenu() { this.userMenuOpen.update(v => !v); this.cartOpen.set(false); }
+  toggleCart()     { this.cartOpen.update(v => !v);     this.userMenuOpen.set(false); }
+
+  onSearch(e: Event) {
+    const q = (e.target as HTMLInputElement).value;
+    this.searchQuery.set(q);
+    this.router.navigate(['/menu'], { queryParams: q ? { q } : {}, replaceUrl: true });
+  }
+
+  clearSearch() {
+    this.searchQuery.set('');
+    this.router.navigate(['/menu'], { replaceUrl: true });
+  }
+
+  logout() { this.auth.logout(); this.userMenuOpen.set(false); }
+
+  get userInitial(): string {
+    return this.auth.currentUser()?.full_name?.charAt(0).toUpperCase() ?? '?';
+  }
+
+  get userFirstName(): string {
+    return this.auth.currentUser()?.full_name ?? '';
+  }
 }

@@ -1,4 +1,4 @@
-ng s# O'Mboa — Frontend
+# O'Mboa — Frontend
 
 Application web Angular 21 pour le restaurant O'Mboa.
 Permet aux clients de parcourir le menu, de passer commande via QR code, et aux staff de gérer les opérations.
@@ -25,6 +25,7 @@ Permet aux clients de parcourir le menu, de passer commande via QR code, et aux 
 | `/admin/menu` | Gestion menu | Owner |
 | `/admin/tables` | Gestion tables + QR codes | Owner |
 | `/admin/logs` | Logs d'activité | Owner |
+| `/admin/stats` | Statistiques | Owner |
 | `/kitchen` | Vue cuisine temps réel | Cook + Owner |
 
 ## Installation
@@ -40,7 +41,7 @@ npm start
 # → http://localhost:4200
 ```
 
-L'API backend doit tourner sur `http://localhost:5000`.
+L'API backend doit tourner sur `http://localhost:5272`.
 Configurer dans `src/environments/environment.ts` si nécessaire.
 
 ## Build production
@@ -75,6 +76,50 @@ Configurer l'URL de l'API dans `src/environments/environment.prod.ts` avant de b
 Palette : terracotta (`#C0602A`), vert forêt (`#1E3A1A`), or (`#E8B84B`), ivoire crème (`#FBF5EC`).
 Polices : Playfair Display (titres) + DM Sans (corps).
 Toutes les variables CSS sont dans `src/styles.css`.
+
+## Comptes staff (test / production)
+
+> Les mots de passe sont gérés par Supabase Auth — la table `profiles` ne les contient pas,
+> c'est l'architecture normale.
+
+| Rôle | Nom | Téléphone | Mot de passe |
+|------|-----|-----------|--------------|
+| `owner` | Xavier Olama | 6 93 01 14 69 | `Mboa_Mboa` |
+| `cook`  | Chef Cook    | 6 98 76 54 32 | `Mboa_Mboa` |
+
+### Créer / recréer ces comptes
+
+**Étape 1 — Inscription via l'API** (API doit être démarrée) :
+
+```bash
+# Owner
+curl -X POST http://localhost:5272/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"Xavier Olama","phone":"693011469","password":"Mboa_Mboa"}'
+
+# Cook
+curl -X POST http://localhost:5272/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"Chef Cook","phone":"698765432","password":"Mboa_Mboa"}'
+```
+
+**Étape 2 — Mise à jour des rôles** dans le SQL Editor de Supabase :
+
+```sql
+-- Promouvoir Xavier Olama en owner
+UPDATE profiles
+SET role = 'owner'
+WHERE id = (SELECT id FROM auth.users WHERE email = '693011469@omboa-users.app');
+
+-- Promouvoir Chef Cook en cook
+UPDATE profiles
+SET role = 'cook'
+WHERE id = (SELECT id FROM auth.users WHERE email = '698765432@omboa-users.app');
+```
+
+> L'email synthétique est construit automatiquement : `{chiffres_du_téléphone}@omboa-users.app`.
+
+---
 
 ### Spécifications images à fournir
 

@@ -1,19 +1,30 @@
 <div class="admin-page container">
-  <div>
-    <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
-    <h2>Gestion des tables</h2>
+
+  <div class="flex-between tables-top" style="flex-wrap:wrap;gap:12px">
+    <div>
+      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <h2>Tables & codes QR</h2>
+      @if (!loading()) {
+        <p class="text-muted">
+          {{ tables().length }} table{{ tables().length !== 1 ? 's' : '' }} ·
+          {{ tables().filter(t => t.is_active && !t.is_occupied).length }} libre{{ tables().filter(t => t.is_active && !t.is_occupied).length !== 1 ? 's' : '' }} ·
+          {{ tables().filter(t => t.is_occupied).length }} occupée{{ tables().filter(t => t.is_occupied).length !== 1 ? 's' : '' }}
+        </p>
+      }
+    </div>
   </div>
 
   <!-- Ajout table -->
   <div class="add-table card">
     <h4>Ajouter une table</h4>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <input class="form-control" placeholder="Nom / numéro de table (ex: Table 5)"
-        style="flex:1;min-width:200px"
+    <div class="add-table__row">
+      <input class="form-control" placeholder="Nom / numéro (ex : Table 5, Terrasse A…)"
         [value]="newNumber()"
         (input)="newNumber.set($any($event.target).value)"
         (keyup.enter)="addTable()">
-      <button class="btn btn--primary" (click)="addTable()">Ajouter</button>
+      <button class="btn btn--primary" (click)="addTable()" [disabled]="!newNumber().trim()">
+        + Ajouter
+      </button>
     </div>
   </div>
 
@@ -21,26 +32,58 @@
   @else {
     <div class="tables-grid">
       @for (t of tables(); track t.id) {
-        <div class="table-card card" [class.table-card--occupied]="t.is_occupied" [class.table-card--inactive]="!t.is_active">
-          <div class="table-card__head flex-between">
-            <strong>{{ t.number }}</strong>
-            <span class="table-card__status">
-              {{ !t.is_active ? 'Inactif' : t.is_occupied ? 'Occupée' : 'Libre' }}
+
+        <div class="table-card card"
+          [class.table-card--occupied]="t.is_occupied"
+          [class.table-card--inactive]="!t.is_active">
+
+          <!-- Statut -->
+          <div class="table-card__status-row">
+            <span class="table-card__status-dot"></span>
+            <span class="table-card__status-label">
+              @if (!t.is_active) { Inactif }
+              @else if (t.is_occupied) { Occupée }
+              @else { Libre }
             </span>
           </div>
 
-          <!-- QR code via service externe (API publique) -->
+          <!-- Nom / édition -->
+          @if (editId() === t.id) {
+            <div class="table-card__edit-row">
+              <input class="form-control form-control--sm" [value]="editNumber()" (input)="editNumber.set($any($event.target).value)" (keyup.enter)="saveEdit(t)">
+              <button class="btn btn--primary btn--sm" (click)="saveEdit(t)">✓</button>
+              <button class="btn btn--ghost btn--sm" (click)="cancelEdit()">✕</button>
+            </div>
+          } @else {
+            <h3 class="table-card__name">{{ t.number }}</h3>
+          }
+
+          <!-- QR code -->
           <img class="table-card__qr" [src]="getQrUrl(t.id)" [alt]="'QR ' + t.number" loading="lazy">
 
-          <div class="table-card__actions">
-            <button class="btn btn--ghost btn--sm" (click)="toggle(t)">
-              {{ t.is_active ? 'Désactiver' : 'Activer' }}
-            </button>
-            <a [href]="getQrUrl(t.id)" download class="btn btn--outline btn--sm" target="_blank">
-              ⬇ QR code
-            </a>
-          </div>
+          <!-- Actions normales -->
+          @if (confirmDeleteId() !== t.id) {
+            <div class="table-card__actions">
+              <button class="btn btn--ghost btn--sm" (click)="toggleActive(t)">
+                {{ t.is_active ? 'Désactiver' : 'Activer' }}
+              </button>
+              <button class="btn btn--ghost btn--sm" (click)="startEdit(t)">✏️ Renommer</button>
+              <a [href]="getQrUrl(t.id)" target="_blank" class="btn btn--outline btn--sm">⬇ QR</a>
+              <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete(t.id)">🗑️</button>
+            </div>
+          } @else {
+            <!-- Confirmation suppression -->
+            <div class="table-card__confirm">
+              <p>Supprimer cette table ?</p>
+              <div class="table-card__confirm-btns">
+                <button class="btn btn--ghost btn--sm" (click)="cancelDelete()">Non</button>
+                <button class="btn btn--primary btn--sm danger-confirm" (click)="confirmDelete(t.id)">Supprimer</button>
+              </div>
+            </div>
+          }
+
         </div>
+
       }
     </div>
   }

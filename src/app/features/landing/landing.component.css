@@ -104,14 +104,13 @@
 .story__img-wrap { position: relative; }
 .story__img {
   border-radius: var(--radius-xl);
-  aspect-ratio: 4/5;
+  aspect-ratio: 409 / 720;
   width: 100%;
-  overflow: hidden;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  text-align: center;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
-@media (max-width: 768px) { .story__img { aspect-ratio: 16/9; } }
+@media (max-width: 768px) { .story__img { aspect-ratio: 4/3; } }
 .story__badge {
   position: absolute;
   bottom: 24px;
@@ -144,10 +143,11 @@
   text-align: center;
 }
 .specialty-card             { border-color: transparent; }
-.specialty-card__body       { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 8px; }
-.specialty-card__body h3    { font-size: 1.125rem; color: var(--color-accent); }
-.specialty-card__body p     { font-size: 0.9rem; color: var(--color-text-muted); }
-.specialty-card__price      { font-size: 0.9375rem; font-weight: 600; color: var(--color-text-muted); margin-top: 4px; }
+.specialty-card__body        { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 8px; }
+.specialty-card__category    { font-size: 0.75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); }
+.specialty-card__body h3     { font-size: 1.125rem; color: var(--color-accent); }
+.specialty-card__body p      { font-size: 0.9rem; color: var(--color-text-muted); }
+.specialty-card__price       { font-size: 0.9375rem; font-weight: 600; color: var(--color-text-muted); margin-top: 4px; }
 
 /* Steps */
 .steps { display: flex; align-items: flex-start; gap: 0; }

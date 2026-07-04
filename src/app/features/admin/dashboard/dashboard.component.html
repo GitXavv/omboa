@@ -1,64 +1,108 @@
 <div class="admin-page container">
-  <div class="admin-header">
-    <div>
-      <h1>Tableau de bord</h1>
-      <p class="text-muted">Vue d'ensemble du restaurant O'Mboa</p>
-    </div>
-    <nav class="admin-nav">
-      <a routerLink="/admin/orders" class="btn btn--ghost btn--sm">Commandes</a>
-      <a routerLink="/admin/menu"   class="btn btn--ghost btn--sm">Menu</a>
-      <a routerLink="/admin/tables" class="btn btn--ghost btn--sm">Tables</a>
-      <a routerLink="/admin/logs"   class="btn btn--ghost btn--sm">Logs</a>
-    </nav>
-  </div>
+
+  <h1 class="dash-title">Tableau de bord</h1>
 
   @if (loading()) {
     <app-loader />
   } @else {
-    <div class="stats-grid">
-      <div class="stat-card card">
-        <span class="stat-card__icon">📋</span>
-        <div>
-          <div class="stat-card__value">{{ stats.total() }}</div>
-          <div class="stat-card__label">Commandes totales</div>
-        </div>
+
+    <!-- Situation du service -->
+    <div class="dash-strip">
+      <div class="dash-strip__stat">
+        <span class="dash-strip__n">{{ activeCount() }}</span>
+        <span class="dash-strip__lbl">Commandes actives</span>
       </div>
-      <div class="stat-card card">
-        <span class="stat-card__icon">⏳</span>
-        <div>
-          <div class="stat-card__value">{{ stats.pending() }}</div>
-          <div class="stat-card__label">En attente</div>
-        </div>
+      <div class="dash-strip__sep"></div>
+      <div class="dash-strip__stat">
+        <span class="dash-strip__n">{{ pendingCount() }}</span>
+        <span class="dash-strip__lbl">En attente</span>
       </div>
-      <div class="stat-card card">
-        <span class="stat-card__icon">👨‍🍳</span>
-        <div>
-          <div class="stat-card__value">{{ stats.preparing() }}</div>
-          <div class="stat-card__label">En préparation</div>
-        </div>
+      <div class="dash-strip__sep"></div>
+      <div class="dash-strip__stat">
+        <span class="dash-strip__n">{{ preparingCount() }}</span>
+        <span class="dash-strip__lbl">En cuisine</span>
       </div>
-      <div class="stat-card card">
-        <span class="stat-card__icon">💰</span>
-        <div>
-          <div class="stat-card__value">{{ stats.revenue() | number:'1.0-0' }} F</div>
-          <div class="stat-card__label">Chiffre d'affaires</div>
-        </div>
+      <div class="dash-strip__sep"></div>
+      <div class="dash-strip__stat dash-strip__stat--wide">
+        <span class="dash-strip__n">{{ revenue() | number:'1.0-0' }}<span class="dash-strip__unit"> FCFA</span></span>
+        <span class="dash-strip__lbl">Encaissés</span>
       </div>
     </div>
 
-    <div class="recent-orders">
-      <h3>Commandes récentes</h3>
-      @for (order of orders().slice(0, 8); track order.id) {
-        <div class="order-row card">
-          <span class="order-row__table">{{ order.table?.number ?? '—' }}</span>
-          <span class="text-muted" style="font-size:.875rem">{{ order.created_at | date:'HH:mm' }}</span>
-          <span class="status-badge status-badge--{{ order.status }}">{{ order.status }}</span>
-          <span class="order-row__total">{{ order.total_amount | number:'1.0-0' }} FCFA</span>
+    <!-- Corps principal -->
+    <div class="dash-body">
+
+      <!-- Navigation -->
+      <nav class="dash-nav">
+        <p class="dash-nav__hd">Sections</p>
+
+        <a routerLink="/admin/orders" class="dash-nav__row">
+          <span class="dash-nav__idx">I</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Commandes</span>
+            <span class="dash-nav__desc">Historique filtrable</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
+
+        <a routerLink="/admin/menu" class="dash-nav__row">
+          <span class="dash-nav__idx">II</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Menu & catégories</span>
+            <span class="dash-nav__desc">Ajouter, modifier les plats</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
+
+        <a routerLink="/admin/tables" class="dash-nav__row">
+          <span class="dash-nav__idx">III</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Tables & QR</span>
+            <span class="dash-nav__desc">Gestion des tables</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
+
+        <a routerLink="/admin/stats" class="dash-nav__row">
+          <span class="dash-nav__idx">IV</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Statistiques</span>
+            <span class="dash-nav__desc">Chiffres & tendances</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
+
+        <a routerLink="/admin/logs" class="dash-nav__row">
+          <span class="dash-nav__idx">V</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Logs d'activité</span>
+            <span class="dash-nav__desc">Audit complet</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
+      </nav>
+
+      <!-- Commandes récentes -->
+      <div class="dash-orders">
+        <div class="dash-orders__hd">
+          <p class="dash-orders__title">Commandes récentes</p>
+          <a routerLink="/admin/orders" class="btn btn--ghost btn--sm">Tout voir →</a>
         </div>
-      }
-      <a routerLink="/admin/orders" class="btn btn--ghost btn--sm" style="align-self:flex-start">
-        Voir toutes les commandes →
-      </a>
+
+        @if (!recentOrders().length) {
+          <p class="text-muted" style="padding:48px 0;text-align:center">Aucune commande pour le moment.</p>
+        }
+        @for (o of recentOrders(); track o.id) {
+          <div class="dash-order-row">
+            <span class="dash-order-row__table">Table {{ o.table?.number ?? '—' }}</span>
+            <span class="dash-order-row__time">{{ o.created_at | date:'HH:mm' }}</span>
+            <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] }}</span>
+            <span class="dash-order-row__amt">{{ o.total_amount | number:'1.0-0' }}<span class="dash-order-row__curr"> F</span></span>
+          </div>
+        }
+      </div>
+
     </div>
+
   }
 </div>
