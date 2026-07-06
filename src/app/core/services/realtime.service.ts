@@ -19,6 +19,7 @@ export type RealtimeEvent =
 @Injectable({ providedIn: 'root' })
 export class RealtimeService implements OnDestroy {
   private connection: signalR.HubConnection | null = null;
+  private connectionReady?: Promise<void>;
   readonly events$ = new Subject<RealtimeEvent>();
 
   async connect(token?: string) {
@@ -77,10 +78,13 @@ export class RealtimeService implements OnDestroy {
     // 'connected' = reconnexion uniquement (pas le premier démarrage)
     this.connection.onreconnected(() => this.events$.next({ type: 'connected' }));
 
-    await this.connection.start();
+    this.connectionReady = this.connection.start();
+    await this.connectionReady;
   }
 
   async invoke(method: string, ...args: unknown[]) {
+    // Attendre que la connexion soit établie avant d'invoquer
+    if (this.connectionReady) await this.connectionReady;
     await this.connection?.invoke(method, ...args);
   }
 

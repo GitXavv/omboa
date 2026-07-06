@@ -155,14 +155,14 @@
                 <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '—' }}</li>
               }
             </ul>
-            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
+            @if (o.payment?.method === 'cash' && o.status === 'ready') {
               <div class="order-card__ready-note">⏳ En attente de la confirmation du paiement client</div>
             }
             <div class="order-card__actions">
               <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
               <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
             </div>
-            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
+            @if (o.payment?.method === 'cash' && o.status === 'ready') {
               <div class="order-card__actions">
                 <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
               </div>
@@ -223,7 +223,7 @@
               <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
               <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
             </div>
-            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
+            @if (o.payment?.method === 'cash' && o.status === 'ready') {
               <div class="order-card__actions">
                 <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
               </div>

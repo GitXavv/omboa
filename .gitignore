@@ -35,7 +35,7 @@ testem.log
 /typings
 __screenshots__/
 
-# System filess
+# System files
 .DS_Store
 Thumbs.db
 templatemo_466_cafe_house/

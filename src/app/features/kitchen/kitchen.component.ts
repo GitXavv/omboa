@@ -142,6 +142,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
           const payment: Payment = {
             ...(o.payment ?? {} as Payment),
             method: method as Payment['method'],
+            status: 'pending',
           };
           return { ...o, payment };
         }));
