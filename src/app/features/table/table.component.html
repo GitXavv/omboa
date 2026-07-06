@@ -266,7 +266,9 @@
   <!-- ── ÉTAPE 3 : Paiement ───────────────────────────────────────── -->
   @if (step() === 'payment') {
     <div class="payment-page container">
-      <button class="btn btn--ghost btn--sm" (click)="goToCart()">← Retour à ma commande</button>
+      @if (!orderId()) {
+        <button class="btn btn--ghost btn--sm" (click)="goToCart()">← Retour à ma commande</button>
+      }
       <h2>Paiement</h2>
 
       <div class="payment-layout">
@@ -301,20 +303,33 @@
         <div class="payment-summary">
           <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:12px">
             <h4>Récapitulatif</h4>
-            @for (item of cart.items(); track item.product.id) {
-              <div class="flex-between" style="font-size:.9375rem">
-                <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                <span>{{ item.product.price * item.quantity | number:'1.0-0' }} FCFA</span>
+
+            @if (orderId()) {
+              <!-- Re-paiement : commande déjà créée, montant connu -->
+              <div class="flex-between">
+                <span class="text-muted" style="font-size:.9rem">Commande déjà enregistrée</span>
+              </div>
+              <hr class="divider">
+              <div class="flex-between">
+                <strong>Total</strong>
+                <strong style="color:var(--color-primary)">{{ confirmedAmount() | number:'1.0-0' }} FCFA</strong>
+              </div>
+            } @else {
+              @for (item of cart.items(); track item.product.id) {
+                <div class="flex-between" style="font-size:.9375rem">
+                  <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                  <span>{{ item.product.price * item.quantity | number:'1.0-0' }} FCFA</span>
+                </div>
+              }
+              <hr class="divider">
+              <div class="flex-between">
+                <strong>Total</strong>
+                <strong style="color:var(--color-primary)">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
               </div>
             }
-            <hr class="divider">
-            <div class="flex-between">
-              <strong>Total</strong>
-              <strong style="color:var(--color-primary)">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
-            </div>
 
             <!-- Points fidélité -->
-            @if (auth.isLoggedIn() && loyaltyBalance() > 0) {
+            @if (auth.isLoggedIn() && loyaltyBalance() > 0 && !orderId()) {
               <div class="loyalty-toggle">
                 <label class="flex-between" style="cursor:pointer;gap:12px">
                   <span>Utiliser mes points ({{ loyaltyBalance() }} pts)</span>
@@ -377,6 +392,73 @@
         }
         <a routerLink="/" class="btn btn--ghost btn--sm">Retour à l'accueil</a>
       </div>
+    </div>
+  }
+
+  <!-- ── ÉTAPE TRACKING : Commande en cours ────────────────────────── -->
+  @if (step() === 'tracking') {
+    <div class="tracking-page container">
+      @if (!trackedOrder()) {
+        <app-loader label="Chargement de votre commande…" />
+      } @else if (trackedOrder()!.status === 'served') {
+        <div class="tracking-done card">
+          <div class="tracking-done__icon">🎉</div>
+          <h2>Bon appétit !</h2>
+          <p>Votre commande a été servie. Nous espérons que vous vous régalez !</p>
+          <button class="btn btn--primary" (click)="startNewOrder()">Passer une nouvelle commande</button>
+        </div>
+      } @else if (trackedOrder()!.status === 'cancelled') {
+        <div class="tracking-done card tracking-done--cancelled">
+          <div class="tracking-done__icon">😕</div>
+          <h2>Commande annulée</h2>
+          <p>Votre commande a été annulée. Vous pouvez en passer une nouvelle.</p>
+          <button class="btn btn--primary" (click)="startNewOrder()">Nouvelle commande</button>
+        </div>
+      } @else {
+        <div class="tracking-card card">
+          <div class="tracking-card__head">
+            <div>
+              <div class="tracking-card__table">📍 Table {{ trackedOrder()!.table?.number ?? '—' }}</div>
+              <div class="tracking-card__sub text-muted">Commande en cours</div>
+            </div>
+            <span class="tracking-card__status tracking-status--{{ trackedOrder()!.status }}">
+              {{ trackedStatusLabels[trackedOrder()!.status] ?? trackedOrder()!.status }}
+            </span>
+          </div>
+
+          @if (trackedOrder()!.order_items?.length) {
+            <ul class="tracking-card__items">
+              @for (item of trackedOrder()!.order_items!; track item.id) {
+                <li class="tracking-card__item">
+                  <span class="tracking-card__qty">× {{ item.quantity }}</span>
+                  <span class="tracking-card__name">{{ item.product_name ?? 'Plat' }}</span>
+                  <span class="tracking-card__price">{{ item.unit_price * item.quantity | number:'1.0-0' }} FCFA</span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (orderCode()) {
+            <div class="tracking-card__code">
+              <span class="tracking-card__code-label">Code</span>
+              <span class="tracking-card__code-value">{{ orderCode() }}</span>
+              <button class="btn btn--ghost btn--sm" (click)="copyCode()" [disabled]="codeCopied()">
+                @if (codeCopied()) { ✓ Copié } @else { Copier }
+              </button>
+            </div>
+          }
+
+          @if (trackedOrder()!.status === 'pending') {
+            <button
+              class="btn btn--outline btn--sm tracking-card__cancel"
+              [disabled]="cancelling()"
+              (click)="cancelTrackedOrder()"
+            >
+              @if (cancelling()) { Annulation… } @else { Annuler ma commande }
+            </button>
+          }
+        </div>
+      }
     </div>
   }
 }
@@ -463,6 +545,100 @@
           <button class="btn btn--primary btn--full" (click)="dismissKitchenPopup()">
             Ok
           </button>
+        </div>
+      }
+
+    </div>
+  </div>
+}
+
+<!-- ── Popup paiement en espèce ──────────────────────────────────────────── -->
+@if (cashPopupStep()) {
+  <div class="cash-popup-overlay">
+    <div class="cash-popup">
+
+      <!-- ── État : info (3 boutons) ── -->
+      @if (cashPopupStep() === 'info') {
+        <div class="cash-popup__header">
+          💵 Paiement en espèce
+        </div>
+        <div class="cash-popup__body">
+          <p class="cash-popup__text">
+            Votre commande a bien été reçue. Un·e serveur·euse va venir vers votre table
+            pour encaisser votre paiement. Il ou elle vous communiquera verbalement un
+            <strong>code à 5 caractères</strong> que vous devrez saisir pour confirmer le paiement.
+            Ce code est <strong>sensible à la casse</strong>.
+          </p>
+
+          @if (cashReminderSent()) {
+            <p class="cash-popup__reminder-sent">✓ Rappel envoyé à la cuisine.</p>
+          }
+        </div>
+        <div class="cash-popup__actions">
+          <button class="btn btn--primary btn--full" (click)="openCashCodeForm()">
+            Entrer le code de confirmation
+          </button>
+          <button
+            class="btn btn--outline btn--full"
+            [disabled]="cashRemindDisabled()"
+            (click)="sendServerReminder()"
+          >
+            @if (cashRemindDisabled() && cashCountdown() > 0) {
+              Aucun·e serveur·euse n'est venu·e ({{ cashCountdown() }}s)
+            } @else {
+              Aucun·e serveur·euse n'est venu·e à ma table
+            }
+          </button>
+          <button
+            class="btn btn--ghost btn--full"
+            [disabled]="cashChangeDisabled()"
+            (click)="changeCashPayment()"
+          >
+            @if (cashChangeDisabled() && cashCountdown() > 0) {
+              Changer de mode de paiement ({{ cashCountdown() }}s)
+            } @else {
+              Changer de mode de paiement
+            }
+          </button>
+        </div>
+      }
+
+      <!-- ── État : saisie du code ── -->
+      @if (cashPopupStep() === 'code') {
+        <div class="cash-popup__header">
+          🔑 Code de confirmation
+        </div>
+        <div class="cash-popup__body">
+          <p class="cash-popup__text">
+            Saisissez le code à 5 caractères que le serveur vous a communiqué.
+            Attention : le code est <strong>sensible à la casse</strong>.
+          </p>
+          <input
+            type="text"
+            class="cash-popup__code-input"
+            placeholder="Ex : aB3kZ"
+            maxlength="5"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+            [value]="cashCodeInput()"
+            (input)="cashCodeInput.set($any($event.target).value)"
+            (keydown.enter)="submitCashCode()"
+          >
+          @if (cashCodeError()) {
+            <p class="cash-popup__error">{{ cashCodeError() }}</p>
+          }
+        </div>
+        <div class="cash-popup__actions">
+          <button
+            class="btn btn--primary btn--full"
+            [disabled]="cashCodeSubmitting() || cashCodeInput().trim().length !== 5"
+            (click)="submitCashCode()"
+          >
+            @if (cashCodeSubmitting()) { Vérification… } @else { Valider le code }
+          </button>
+          <button class="btn btn--ghost btn--full" (click)="backToCashInfo()">← Retour</button>
         </div>
       }
 

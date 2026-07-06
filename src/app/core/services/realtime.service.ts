@@ -9,6 +9,8 @@ export type RealtimeEvent =
   | { type: 'kitchen:question';    payload: { question: string } }
   | { type: 'kitchen:cancel';      payload: { reason: string } }
   | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string } }
+  | { type: 'server:reminder';     payload: { tableNumber: string; orderId: string } }
+  | { type: 'payment:method';      payload: { orderId: string; method: string; cashCode: string | null } }
   | { type: 'connected' }
   | { type: 'disconnected' };
 
@@ -51,6 +53,14 @@ export class RealtimeService implements OnDestroy {
 
     this.connection.on('ClientReply', (reply: string, tableNumber: string, orderId: string) =>
       this.events$.next({ type: 'client:reply', payload: { reply, tableNumber, orderId } })
+    );
+
+    this.connection.on('ServerReminder', (tableNumber: string, orderId: string) =>
+      this.events$.next({ type: 'server:reminder', payload: { tableNumber, orderId } })
+    );
+
+    this.connection.on('PaymentMethod', (orderId: string, method: string, cashCode: string | null) =>
+      this.events$.next({ type: 'payment:method', payload: { orderId, method, cashCode } })
     );
 
     this.connection.onclose(() => this.events$.next({ type: 'disconnected' }));

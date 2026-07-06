@@ -379,3 +379,47 @@
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* ── Badge mode de paiement ──────────────────────────────────────────────── */
+.order-card__payment {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.order-card__payment-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.03em;
+}
+.order-card__payment-badge--cash         { background: rgba(255,193,7,0.2);  color: #ffc107; }
+.order-card__payment-badge--orange_money { background: rgba(255,130,30,0.2); color: #ff821e; }
+.order-card__payment-badge--mtn_momo     { background: rgba(255,220,0,0.2);  color: #ffdc00; }
+
+.order-card__cash-code {
+  font-size: 0.8125rem;
+  color: rgba(240,232,220,0.7);
+  background: rgba(255,193,7,0.08);
+  border: 1px solid rgba(255,193,7,0.25);
+  border-radius: var(--radius-sm);
+  padding: 2px 10px;
+  letter-spacing: 0.05em;
+}
+.order-card__cash-code strong {
+  color: #ffc107;
+  font-family: var(--font-display);
+  letter-spacing: 0.15em;
+}
+
+.order-card__paid-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}

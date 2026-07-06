@@ -55,6 +55,16 @@
           </div>
         }
 
+        @if (order()!.status === 'pending') {
+          <button
+            class="btn btn--outline btn--sm mc-order__cancel"
+            [disabled]="cancelling()"
+            (click)="cancelOrder()"
+          >
+            @if (cancelling()) { Annulation… } @else { Annuler ma commande }
+          </button>
+        }
+
         <button class="btn btn--ghost btn--sm mc-order__clear" (click)="clearOrder()">
           Effacer / Nouvelle commande
         </button>

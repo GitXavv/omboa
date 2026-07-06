@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Category, Product, TableStatus } from '../../core/models';
+import { Category, Order, OrderStatus, Product, TableStatus } from '../../core/models';
 import { CartService } from '../../core/services/cart.service';
 import { MenuService } from '../../core/services/menu.service';
 import { TableService } from '../../core/services/table.service';
@@ -14,7 +14,18 @@ import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PaymentMethod } from '../../core/models';
 
-type Step = 'menu' | 'cart' | 'payment' | 'confirmation';
+type Step = 'menu' | 'cart' | 'payment' | 'confirmation' | 'tracking';
+
+const TERMINAL_STATUSES = ['cancelled', 'served'];
+
+const STATUS_LABELS: Partial<Record<string, string>> = {
+  pending:   'En attente',
+  preparing: 'En préparation',
+  ready:     'Prête — elle arrive bientôt !',
+  paid:      'Payée — en attente de livraison',
+  served:    'Servie',
+  cancelled: 'Annulée',
+};
 
 @Component({
   selector: 'app-table',
@@ -48,6 +59,11 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly commandeTooltip  = signal(false);
   readonly showLoyaltyPromo = signal(false);
 
+  // Tracking d'une commande existante (table occupée + localStorage)
+  readonly trackedOrder       = signal<Order | null>(null);
+  readonly trackedStatusLabels = STATUS_LABELS;
+  readonly cancelling         = signal(false);
+
   // Popup cuisine → client
   readonly kitchenPopup     = signal<{ type: 'question' | 'cancel'; message: string } | null>(null);
   readonly kitchenReply     = signal('');
@@ -56,6 +72,17 @@ export class TableComponent implements OnInit, OnDestroy {
   // Paiement
   readonly payMethod     = signal<PaymentMethod>('cash');
   readonly payPhone      = signal('');
+  readonly confirmedAmount = signal<number | null>(null);
+
+  // Popup paiement en espèce
+  readonly cashPopupStep     = signal<'info' | 'code' | null>(null);
+  readonly cashCodeInput     = signal('');
+  readonly cashCodeError     = signal('');
+  readonly cashCodeSubmitting = signal(false);
+  readonly cashCountdown     = signal(0);
+  readonly cashRemindDisabled = signal(true);
+  readonly cashChangeDisabled = signal(true);
+  readonly cashReminderSent   = signal(false);
 
   // Points fidélité
   readonly usePoints      = signal(false);
@@ -68,7 +95,9 @@ export class TableComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
   private longPressTimer?: ReturnType<typeof setTimeout>;
   private tooltipHideTimer?: ReturnType<typeof setTimeout>;
-  private readonly PROMO_KEY = 'omboa_loyalty_promo_dismissed';
+  private cashCountdownInterval?: ReturnType<typeof setInterval>;
+  private readonly PROMO_KEY    = 'omboa_loyalty_promo_dismissed';
+  private readonly STORAGE_KEY  = 'omboa_current_order';
 
   ngOnInit() {
     const tableId = this.route.snapshot.paramMap.get('tableId')!;
@@ -79,6 +108,12 @@ export class TableComponent implements OnInit, OnDestroy {
       this.showLoyaltyPromo.set(true);
     }
 
+    let storedOrder: { id: string; code: string } | null = null;
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      storedOrder = raw ? JSON.parse(raw) : null;
+    } catch { /* ignore */ }
+
     this.tableSvc.getById(tableId).subscribe({
       next: t => {
         if (!t.is_active) {
@@ -86,11 +121,37 @@ export class TableComponent implements OnInit, OnDestroy {
           this.loading.set(false);
           return;
         }
+
         if (t.is_occupied) {
-          this.tableError.set('Cette table est déjà occupée. Veuillez contacter le personnel.');
-          this.loading.set(false);
+          if (storedOrder) {
+            this.orderSvc.getById(storedOrder.id).subscribe({
+              next: order => {
+                if (order.table_id === tableId && !TERMINAL_STATUSES.includes(order.status)) {
+                  this.table.set(t);
+                  this.orderId.set(order.id);
+                  this.orderCode.set(order.code ?? null);
+                  this.trackedOrder.set(order);
+                  this.step.set('tracking');
+                  this.rt.invoke('JoinOrder', order.id).catch(() => {});
+                } else {
+                  localStorage.removeItem(this.STORAGE_KEY);
+                  this.tableError.set('Cette table est occupée. Retrouvez votre commande via « Ma commande ».');
+                }
+                this.loading.set(false);
+              },
+              error: () => {
+                localStorage.removeItem(this.STORAGE_KEY);
+                this.tableError.set('Cette table est occupée. Retrouvez votre commande via « Ma commande ».');
+                this.loading.set(false);
+              }
+            });
+          } else {
+            this.tableError.set('Cette table est déjà occupée. Si vous avez déjà passé une commande, retrouvez-la via « Ma commande ».');
+            this.loading.set(false);
+          }
           return;
         }
+
         this.table.set(t);
         this.loadMenu();
       },
@@ -104,8 +165,14 @@ export class TableComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.rt.events$.subscribe(ev => {
         if (ev.type === 'order:status' && ev.payload.orderId === this.orderId()) {
-          if (ev.payload.status === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
-          if (ev.payload.status === 'ready')     this.toast.success('Votre commande est prête ! Elle arrive bientôt. 🎉');
+          const s = ev.payload.status;
+          // Mise à jour du statut de la commande trackée
+          this.trackedOrder.update(o => o ? { ...o, status: s as OrderStatus } : null);
+          if (s === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
+          if (s === 'ready')     this.toast.success('Votre commande est prête ! Elle arrive bientôt. 🎉');
+          if (TERMINAL_STATUSES.includes(s)) {
+            localStorage.removeItem(this.STORAGE_KEY);
+          }
         }
         if (ev.type === 'kitchen:question') {
           this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
@@ -124,6 +191,7 @@ export class TableComponent implements OnInit, OnDestroy {
     this.rt.disconnect();
     clearTimeout(this.longPressTimer);
     clearTimeout(this.tooltipHideTimer);
+    clearInterval(this.cashCountdownInterval);
   }
 
   private loadMenu() {
@@ -198,7 +266,43 @@ export class TableComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(code).then(() => this.codeCopied.set(true));
   }
 
+  // ── Tracking : annuler la commande ──────────────────────────────────────
+  cancelTrackedOrder() {
+    const id = this.orderId();
+    if (!id || this.cancelling()) return;
+    this.cancelling.set(true);
+    this.orderSvc.cancel(id).subscribe({
+      next: () => {
+        localStorage.removeItem(this.STORAGE_KEY);
+        this.cancelling.set(false);
+        this.toast.info('Commande annulée.');
+      },
+      error: () => {
+        this.toast.error('Impossible d\'annuler la commande.');
+        this.cancelling.set(false);
+      }
+    });
+  }
+
+  startNewOrder() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.trackedOrder.set(null);
+    this.orderId.set(null);
+    this.orderCode.set(null);
+    this.loading.set(true);
+    this.step.set('menu');
+    this.cart.clear();
+    this.loadMenu();
+  }
+
+  // ── Paiement ─────────────────────────────────────────────────────────────
   submitOrder() {
+    // Re-paiement pour une commande existante (changement de mode)
+    if (this.orderId()) {
+      this.repayExistingOrder();
+      return;
+    }
+
     const tableId = this.table()?.id;
     if (!tableId || !this.cart.items().length) return;
 
@@ -216,32 +320,121 @@ export class TableComponent implements OnInit, OnDestroy {
 
     this.orderSvc.create(payload).subscribe({
       next: order => {
-        this.orderSvc.pay({
-          order_id:        order.id,
-          method:          this.payMethod(),
-          phone_number:    this.payPhone() || undefined,
-          points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
-        }).subscribe({
-          next: () => {
-            this.orderId.set(order.id);
-            this.orderCode.set(order.code ?? null);
-            // Sauvegarde en localStorage pour la page "Ma commande"
-            localStorage.setItem('omboa_current_order', JSON.stringify({ id: order.id, code: order.code }));
-            // Rejoindre le groupe SignalR de cette commande pour recevoir les messages cuisine
-            this.rt.invoke('JoinOrder', order.id);
-            this.cart.clear();
-            this.step.set('confirmation');
-            this.submitting.set(false);
-          },
-          error: () => {
-            this.toast.error('Erreur lors du paiement. Réessayez.');
-            this.submitting.set(false);
-          }
-        });
+        this.orderId.set(order.id);
+        this.orderCode.set(order.code ?? null);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ id: order.id, code: order.code }));
+        this.rt.invoke('JoinOrder', order.id).catch(() => {});
+        this.processPayment(order.id);
       },
       error: () => {
         this.toast.error('Impossible de créer la commande. Réessayez.');
         this.submitting.set(false);
+      }
+    });
+  }
+
+  private repayExistingOrder() {
+    this.submitting.set(true);
+    this.processPayment(this.orderId()!);
+  }
+
+  private processPayment(orderId: string) {
+    this.orderSvc.pay({
+      order_id:        orderId,
+      method:          this.payMethod(),
+      phone_number:    this.payPhone() || undefined,
+      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
+    }).subscribe({
+      next: payment => {
+        this.confirmedAmount.set(payment.amount);
+        this.cart.clear();
+        this.step.set('confirmation');
+        this.submitting.set(false);
+
+        if (payment.method === 'cash' && payment.status === 'pending') {
+          this.cashPopupStep.set('info');
+          this.cashReminderSent.set(false);
+          this.startCashCountdown();
+        }
+      },
+      error: () => {
+        this.toast.error('Erreur lors du paiement. Réessayez.');
+        this.submitting.set(false);
+      }
+    });
+  }
+
+  // ── Cash popup ───────────────────────────────────────────────────────────
+  private startCashCountdown() {
+    clearInterval(this.cashCountdownInterval);
+    this.cashCountdown.set(30);
+    this.cashRemindDisabled.set(true);
+    this.cashChangeDisabled.set(true);
+    this.cashCountdownInterval = setInterval(() => {
+      const c = this.cashCountdown() - 1;
+      this.cashCountdown.set(c);
+      if (c <= 0) {
+        clearInterval(this.cashCountdownInterval);
+        this.cashRemindDisabled.set(false);
+        this.cashChangeDisabled.set(false);
+      }
+    }, 1000);
+  }
+
+  sendServerReminder() {
+    if (this.cashRemindDisabled()) return;
+    const orderId      = this.orderId()!;
+    const tableNumber  = String(this.table()?.number ?? '');
+    this.cashRemindDisabled.set(true);
+    this.rt.invoke('RemindServer', orderId, tableNumber)
+      .then(() => {
+        this.cashReminderSent.set(true);
+        this.startCashCountdown();
+      })
+      .catch(() => this.cashRemindDisabled.set(false));
+  }
+
+  changeCashPayment() {
+    if (this.cashChangeDisabled()) return;
+    const orderId = this.orderId()!;
+    this.cashChangeDisabled.set(true);
+    this.orderSvc.cancelCashPayment(orderId).subscribe({
+      next: () => {
+        clearInterval(this.cashCountdownInterval);
+        this.cashPopupStep.set(null);
+        this.payPhone.set('');
+        this.step.set('payment');
+        this.cashReminderSent.set(false);
+      },
+      error: () => this.cashChangeDisabled.set(false)
+    });
+  }
+
+  openCashCodeForm() {
+    this.cashCodeInput.set('');
+    this.cashCodeError.set('');
+    this.cashPopupStep.set('code');
+  }
+
+  backToCashInfo() { this.cashPopupStep.set('info'); }
+
+  submitCashCode() {
+    const code    = this.cashCodeInput().trim();
+    const orderId = this.orderId()!;
+    if (code.length !== 5) { this.cashCodeError.set('Le code doit contenir exactement 5 caractères.'); return; }
+
+    this.cashCodeSubmitting.set(true);
+    this.cashCodeError.set('');
+    this.orderSvc.confirmCash(orderId, code).subscribe({
+      next: () => {
+        this.cashPopupStep.set(null);
+        this.cashCodeSubmitting.set(false);
+        clearInterval(this.cashCountdownInterval);
+        this.toast.success('Paiement confirmé !');
+      },
+      error: (err) => {
+        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez la casse.');
+        this.cashCodeSubmitting.set(false);
       }
     });
   }

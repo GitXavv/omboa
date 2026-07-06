@@ -9,14 +9,14 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
 
 interface StoredOrder { id: string; code: string; }
 
-const TERMINAL_STATUSES = ['cancelled', 'served', 'paid'];
+const TERMINAL_STATUSES = ['cancelled', 'served'];
 
 const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
   preparing: 'En préparation',
   ready:     'Prête — elle arrive bientôt !',
+  paid:      'Payée — en attente de livraison',
   served:    'Servie',
-  paid:      'Payée',
   cancelled: 'Annulée',
 };
 
@@ -37,6 +37,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   readonly searchError  = signal<string | null>(null);
   readonly searching    = signal(false);
   readonly codeCopied   = signal(false);
+  readonly cancelling   = signal(false);
 
   // Popup cuisine → client
   readonly kitchenPopup     = signal<{ type: 'question' | 'cancel'; message: string } | null>(null);
@@ -158,4 +159,17 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   }
 
   isTerminal(status: string) { return TERMINAL_STATUSES.includes(status); }
+
+  cancelOrder() {
+    const id = this.order()?.id;
+    if (!id || this.cancelling()) return;
+    this.cancelling.set(true);
+    this.orderSvc.cancel(id).subscribe({
+      next: () => {
+        this.cancelling.set(false);
+        // L'update de statut arrivera via SignalR (kitchen:cancel ou order:status)
+      },
+      error: () => this.cancelling.set(false)
+    });
+  }
 }

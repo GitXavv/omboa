@@ -93,6 +93,15 @@
 .mc-order__code-label { font-size: 0.8125rem; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
 .mc-order__code-value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-accent); letter-spacing: 0.15em; flex: 1; }
 
+/* Annuler */
+.mc-order__cancel {
+  align-self: stretch;
+  color: var(--color-error);
+  border-color: var(--color-error);
+  font-size: 0.9rem;
+}
+.mc-order__cancel:hover:not(:disabled) { background: rgba(239,83,80,0.08); }
+
 /* Effacer */
 .mc-order__clear { align-self: flex-end; color: var(--color-text-light); font-size: 0.8125rem; }
 

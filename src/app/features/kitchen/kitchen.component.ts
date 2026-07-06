@@ -4,7 +4,7 @@ import { OrderService } from '../../core/services/order.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
-import { Order, OrderStatus } from '../../core/models';
+import { Order, OrderStatus, Payment } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
 export const STATUS_LABELS: Record<string, string> = {
@@ -16,19 +16,37 @@ export const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Annulé'
 };
 
-const NEXT: Partial<Record<OrderStatus, OrderStatus>> = {
-  pending:   'preparing',
-  preparing: 'ready',
-  ready:     'paid',
-  paid:      'served'
+const METHOD_LABELS: Record<string, string> = {
+  cash:         'Espèces',
+  orange_money: 'Orange Money',
+  mtn_momo:     'MTN MoMo'
 };
 
-const NEXT_LABEL: Partial<Record<string, string>> = {
-  pending:   'Accepter la commande',
-  preparing: 'Marquer prêt',
-  ready:     'Marquer payé',
-  paid:      'Marquer servi'
-};
+function nextStatus(order: Order): OrderStatus | null {
+  switch (order.status) {
+    case 'pending':   return 'preparing';
+    case 'preparing': return 'ready';
+    case 'ready':
+      // Paiement électronique : passer directement à servi
+      if (order.payment && order.payment.method !== 'cash') return 'served';
+      // Espèce : attendre la confirmation du paiement (passage à 'paid' automatique)
+      return null;
+    case 'paid': return 'served';
+    default:     return null;
+  }
+}
+
+function nextLabel(order: Order): string {
+  switch (order.status) {
+    case 'pending':   return 'Accepter la commande';
+    case 'preparing': return 'Marquer prêt';
+    case 'ready':
+      if (order.payment && order.payment.method !== 'cash') return 'Marquer servi';
+      return '';
+    case 'paid': return 'Marquer servi';
+    default:     return '';
+  }
+}
 
 @Component({
   selector: 'app-kitchen',
@@ -60,17 +78,24 @@ export class KitchenComponent implements OnInit, OnDestroy {
   // Popup de réponse client
   readonly clientReplyPopup = signal<{ reply: string; tableNumber: string } | null>(null);
 
+  // Popup rappel serveur
+  readonly serverReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
+
   readonly pendingOrders   = computed(() => this.orders().filter(o => o.status === 'pending'));
   readonly preparingOrders = computed(() => this.orders().filter(o => o.status === 'preparing'));
-  readonly readyOrders     = computed(() => this.orders().filter(o => o.status === 'ready'));
-  readonly mobileOrders    = computed(() => this.orders().filter(o => o.status === this.mobileTab()));
+  // 'ready' et 'paid' partagent la même colonne (plat prêt, en attente de livraison)
+  readonly readyOrders     = computed(() => this.orders().filter(o => o.status === 'ready' || o.status === 'paid'));
+  readonly mobileOrders    = computed(() => {
+    const tab = this.mobileTab();
+    if (tab === 'ready') return this.readyOrders();
+    return this.orders().filter(o => o.status === tab);
+  });
   readonly activeCount     = computed(() =>
     this.pendingOrders().length + this.preparingOrders().length + this.readyOrders().length
   );
 
-  readonly labels    = STATUS_LABELS;
-  readonly nextLabel = NEXT_LABEL;
-  readonly NEXT      = NEXT;
+  readonly labels      = STATUS_LABELS;
+  readonly methodLabels = METHOD_LABELS;
 
   private sub?: Subscription;
 
@@ -115,9 +140,25 @@ export class KitchenComponent implements OnInit, OnDestroy {
               setTimeout(() => this.orders.update(l => l.filter(o => o.id !== orderId)), 3000);
             }
           }
+          if (ev.type === 'payment:method') {
+            // Mettre à jour le mode de paiement de la commande en temps réel
+            const { orderId, method, cashCode } = ev.payload;
+            this.orders.update(list => list.map(o => {
+              if (o.id !== orderId) return o;
+              const payment: Payment = {
+                ...(o.payment ?? {} as Payment),
+                method: method as Payment['method'],
+                cash_confirmation_code: cashCode ?? null
+              };
+              return { ...o, payment };
+            }));
+          }
           if (ev.type === 'client:reply') {
             const { reply, tableNumber } = ev.payload;
             this.clientReplyPopup.set({ reply, tableNumber });
+          }
+          if (ev.type === 'server:reminder') {
+            this.serverReminderPopup.set(ev.payload);
           }
           if (ev.type === 'disconnected') this.connected.set(false);
           if (ev.type === 'connected')    this.connected.set(true);
@@ -126,28 +167,29 @@ export class KitchenComponent implements OnInit, OnDestroy {
       .catch(() => this.connected.set(false));
   }
 
-  // Bouton avancer l'état (garde la confirmation inline existante)
   requestAdvance(id: string) { this.confirmMode.set('advance'); this.confirmingId.set(id); }
   dismissConfirm()           { this.confirmingId.set(null); }
 
   confirm(order: Order) {
     this.confirmingId.set(null);
-    const next = NEXT[order.status as OrderStatus];
+    const next = nextStatus(order);
     if (!next) return;
     this.orderSvc.updateStatus(order.id, next).subscribe({
-      next: u => { this.orders.update(l => l.map(o => o.id === u.id ? u : o)); this.toast.success(`Table ${order.table?.number ?? ''} → ${STATUS_LABELS[next]}`); },
+      next: u => {
+        this.orders.update(l => l.map(o => o.id === u.id ? { ...u, payment: o.payment } : o));
+        this.toast.success(`Table ${order.table?.number ?? ''} → ${STATUS_LABELS[next]}`);
+      },
       error: () => this.toast.error('Erreur lors du changement de statut.')
     });
   }
 
-  // Dialogue question / annulation
   openDialog(orderId: string, mode: 'question' | 'cancel') {
     this.dialogOrderId.set(orderId);
     this.dialogMode.set(mode);
     this.dialogInput.set('');
     this.dialogError.set('');
     this.dialogSubmitting.set(false);
-    this.confirmingId.set(null); // ferme l'éventuelle confirm inline
+    this.confirmingId.set(null);
   }
 
   closeDialog() {
@@ -168,13 +210,12 @@ export class KitchenComponent implements OnInit, OnDestroy {
 
     if (mode === 'question') {
       this.realtime.invoke('AskClient', orderId, msg)
-        .then(() => { this.closeDialog(); })
+        .then(() => this.closeDialog())
         .catch(() => { this.dialogError.set('Envoi échoué, vérifiez la connexion.'); this.dialogSubmitting.set(false); });
     } else {
-      // Annulation : mettre à jour le statut puis notifier le client avec la raison
       this.orderSvc.cancel(orderId).subscribe({
         next: u => {
-          this.orders.update(l => l.map(o => o.id === u.id ? u : o));
+          this.orders.update(l => l.map(o => o.id === u.id ? { ...u, payment: o.payment } : o));
           this.toast.warning(`Commande annulée — Table ${u.table?.number ?? ''}`);
           this.realtime.invoke('NotifyCancelReason', orderId, msg)
             .finally(() => this.closeDialog());
@@ -187,10 +228,13 @@ export class KitchenComponent implements OnInit, OnDestroy {
     }
   }
 
-  dismissReplyPopup() { this.clientReplyPopup.set(null); }
+  dismissReplyPopup()    { this.clientReplyPopup.set(null); }
+  dismissReminderPopup() { this.serverReminderPopup.set(null); }
 
-  hasNext(status: string) { return status in NEXT; }
-  labelFor(s: string) { return STATUS_LABELS[s] ?? s; }
+  hasNext(order: Order)       { return nextStatus(order) !== null; }
+  nextLabelFor(order: Order)  { return nextLabel(order); }
+  labelFor(s: string)         { return STATUS_LABELS[s] ?? s; }
+  nextStatusFor(order: Order) { return nextStatus(order); }
 
   timeSince(dateStr: string): string {
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);

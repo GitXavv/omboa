@@ -668,3 +668,161 @@
   text-align: center;
 }
 .kitchen-popup__close-btn { align-self: center; }
+
+/* ── Tracking commande existante ────────────────────────────────────────── */
+.tracking-page { padding: 32px 0 80px; }
+
+.tracking-done {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+.tracking-done__icon { font-size: 2.5rem; }
+.tracking-done--cancelled .tracking-done__icon { opacity: 0.5; }
+
+.tracking-card {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tracking-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tracking-card__table { font-weight: 600; font-size: 1rem; }
+.tracking-card__sub   { font-size: 0.8125rem; margin-top: 2px; }
+
+.tracking-card__status {
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tracking-status--pending   { background: var(--color-warning-bg);  color: var(--color-warning); }
+.tracking-status--preparing { background: rgba(200,125,96,0.15);    color: var(--color-primary); }
+.tracking-status--ready     { background: rgba(209,173,103,0.15);   color: var(--color-accent); }
+.tracking-status--paid      { background: var(--color-success-bg);  color: var(--color-success); }
+.tracking-status--served,
+.tracking-status--cancelled { background: var(--color-success-bg);  color: var(--color-success); }
+
+.tracking-card__items { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.tracking-card__item  { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--color-border); }
+.tracking-card__item:first-child { border-top: none; }
+.tracking-card__qty   { font-size: 0.875rem; color: var(--color-text-muted); min-width: 30px; }
+.tracking-card__name  { flex: 1; font-size: 0.9375rem; }
+.tracking-card__price { font-weight: 600; color: var(--color-primary); font-size: 0.9rem; white-space: nowrap; }
+
+.tracking-card__code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+.tracking-card__code-label { font-size: 0.8125rem; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.tracking-card__code-value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-accent); letter-spacing: 0.15em; flex: 1; }
+
+.tracking-card__cancel {
+  align-self: flex-end;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+.tracking-card__cancel:hover { background: rgba(239,83,80,0.08); }
+
+/* ── Popup paiement en espèce ────────────────────────────────────────────── */
+.cash-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInOverlay 150ms ease;
+}
+
+.cash-popup {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+  animation: popupIn 220ms cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.cash-popup__header {
+  padding: 20px 22px 16px;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.cash-popup__body {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cash-popup__text {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.cash-popup__reminder-sent {
+  font-size: 0.875rem;
+  color: var(--color-success);
+  font-weight: 500;
+  margin: 0;
+}
+
+.cash-popup__actions {
+  padding: 0 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cash-popup__code-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.25em;
+  text-align: center;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+.cash-popup__code-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); }
+
+.cash-popup__error {
+  font-size: 0.875rem;
+  color: var(--color-error);
+  margin: 0;
+  text-align: center;
+}

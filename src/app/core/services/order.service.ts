@@ -55,4 +55,12 @@ export class OrderService {
   pay(payload: CreatePaymentPayload): Observable<Payment> {
     return this.http.post<Payment>(`${environment.apiUrl}/payments`, payload);
   }
+
+  confirmCash(orderId: string, code: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/payments/confirm-cash`, { order_id: orderId, code });
+  }
+
+  cancelCashPayment(orderId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/payments/cash/${orderId}`);
+  }
 }
