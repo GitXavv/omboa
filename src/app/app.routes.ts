@@ -81,6 +81,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/kitchen/kitchen.component').then(m => m.KitchenComponent)
   },
 
+  // ── Réception (libération de table) ──────────
+  // owner y a accès mais en lecture seule (stats uniquement, géré dans le composant).
+  {
+    path: 'reception',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['receptionist', 'owner'] },
+    loadComponent: () => import('./features/reception/dashboard/reception-dashboard.component').then(m => m.ReceptionDashboardComponent)
+  },
+  {
+    path: 'reception/order/:code',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['receptionist'] },
+    loadComponent: () => import('./features/reception/order-detail/reception-order-detail.component').then(m => m.ReceptionOrderDetailComponent)
+  },
+
   // ── Fallback ─────────────────────────────────
   { path: '**', redirectTo: '' }
 ];

@@ -7,7 +7,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 
 const STATUS_FR: Record<string, string> = {
   pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
-  paid: 'Payée', served: 'Servie', cancelled: 'Annulée'
+  paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée'
 };
 
 @Component({

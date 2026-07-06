@@ -49,7 +49,7 @@ export class OrderService {
   }
 
   cancel(id: string): Observable<Order> {
-    return this.updateStatus(id, 'cancelled');
+    return this.http.post<Order>(`${this.base}/${id}/cancel`, {});
   }
 
   pay(payload: CreatePaymentPayload): Observable<Payment> {

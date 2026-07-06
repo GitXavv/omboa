@@ -268,7 +268,7 @@
     <div class="tracking-page container">
       @if (!trackedOrder()) {
         <app-loader label="Chargement de votre commande…" />
-      } @else if (trackedOrder()!.status === 'served') {
+      } @else if (trackedOrder()!.status === 'served' || trackedOrder()!.status === 'released') {
         <div class="tracking-done card">
           <div class="tracking-done__icon">🎉</div>
           <h2>Bon appétit !</h2>
@@ -615,6 +615,9 @@
             <span class="receipt__meta-title">REÇU</span>
             <span class="receipt__meta-date">{{ trackedOrder()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
             <span class="receipt__meta-ref">Table {{ trackedOrder()!.table?.number ?? '—' }}</span>
+            @if (trackedOrder()!.code) {
+              <span class="receipt__meta-ref">Code {{ trackedOrder()!.code }}</span>
+            }
           </div>
         </div>
 
@@ -674,6 +677,9 @@
         <div class="receipt__footer">
           <p>Merci de votre visite chez Omboa !</p>
           <p class="receipt__footer-sub">Nous espérons vous revoir très bientôt.</p>
+          @if (trackedOrder()!.code) {
+            <p class="receipt__footer-sub">Conservez ce reçu : présentez votre code à la sortie.</p>
+          }
         </div>
 
       </div>

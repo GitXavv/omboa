@@ -40,7 +40,7 @@
                   <span class="text-muted" style="font-size:.875rem">Table : {{ order.table?.number ?? '—' }}</span>
                 </div>
                 <span class="status-badge status-badge--{{ order.status }}">
-                  {{ {pending:'En attente',preparing:'En préparation',ready:'Prête',served:'Servie',paid:'Payée',cancelled:'Annulée'}[order.status] }}
+                  {{ {pending:'En attente',preparing:'En préparation',ready:'Prête',served:'Servie',paid:'Payée',released:'Servie',cancelled:'Annulée'}[order.status] }}
                 </span>
               </div>
               <div class="order-card__items">

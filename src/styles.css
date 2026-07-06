@@ -230,6 +230,7 @@ p  { line-height: 1.7; }
 .status-badge--ready     { background: #FFF8E1; color: #7A5200; }
 .status-badge--served    { background: #EDE7F6; color: #6A1B9A; }
 .status-badge--paid      { background: var(--color-success-bg); color: var(--color-success); }
+.status-badge--released  { background: #E0F2F1; color: #00695C; }
 .status-badge--cancelled { background: #FAFAFA; color: #9E9E9E; }
 
 /* Toasts */

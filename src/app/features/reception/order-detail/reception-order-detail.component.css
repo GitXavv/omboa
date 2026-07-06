@@ -1,0 +1,89 @@
+.recep-detail-page { padding: 32px 24px 80px; display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
+
+.recep-detail__back { align-self: flex-start; }
+
+.recep-detail-empty {
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+/* ── Carte détail ──────────────────────────────────────────────────────────── */
+.recep-detail { padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+
+.recep-detail__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.recep-detail__table { display: block; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--color-text); }
+.recep-detail__date  { display: block; font-size: 0.8125rem; margin-top: 2px; }
+
+.recep-detail__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+  padding: 4px 0;
+}
+
+.recep-detail__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.recep-detail__item { display: flex; align-items: baseline; gap: 10px; font-size: 0.9375rem; }
+.recep-detail__item-qty   { font-weight: 700; color: var(--color-accent); min-width: 32px; flex-shrink: 0; }
+.recep-detail__item-name  { flex: 1; }
+.recep-detail__item-price { color: var(--color-text-muted); font-size: 0.875rem; }
+
+.recep-detail__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.recep-detail__release { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.recep-detail__release-hint { font-size: 0.8125rem; text-align: center; margin: 0; }
+
+/* ── Popup confirmation (mêmes règles que le dashboard réceptionniste) ───────── */
+.recep-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.recep-dialog {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+.recep-dialog__header { padding: 18px 20px 14px; border-bottom: 1px solid var(--color-border); }
+.recep-dialog__title { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--color-text); }
+.recep-dialog__body { padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.recep-dialog__body p { margin: 0; }
+.recep-dialog__footer { display: flex; gap: 10px; padding: 14px 20px 18px; border-top: 1px solid var(--color-border); }
+.recep-dialog__btn {
+  flex: 1; padding: 10px 16px; border-radius: var(--radius-sm);
+  font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none;
+  transition: all var(--transition-fast);
+}
+.recep-dialog__btn--cancel { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+.recep-dialog__btn--cancel:hover { background: var(--color-border); }
+.recep-dialog__btn--confirm { background: var(--color-primary); color: #fff; }
+.recep-dialog__btn--confirm:not(:disabled):hover { background: var(--color-primary-dark); }
+.recep-dialog__btn:disabled { opacity: 0.5; cursor: not-allowed; }

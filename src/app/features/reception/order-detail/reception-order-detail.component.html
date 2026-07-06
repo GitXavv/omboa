@@ -1,0 +1,93 @@
+<div class="recep-detail-page container">
+
+  <a routerLink="/reception" class="btn btn--ghost btn--sm recep-detail__back">← Retour au tableau de bord</a>
+
+  @if (loading()) {
+    <app-loader label="Recherche de la commande…" />
+  } @else if (notFound()) {
+    <div class="recep-detail-empty card">
+      <p>Code de commande introuvable.</p>
+      <p class="text-muted" style="font-size:.9rem">Vérifiez la saisie ou redemandez au client de relire son code.</p>
+      <a routerLink="/reception" class="btn btn--primary btn--sm">Retour</a>
+    </div>
+  } @else if (order()) {
+    <div class="recep-detail card">
+
+      <div class="recep-detail__head">
+        <div>
+          <span class="recep-detail__table">📍 Table {{ order()!.table?.number ?? '—' }}</span>
+          <span class="recep-detail__date text-muted">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <span class="status-badge status-badge--{{ order()!.status }}">
+          {{ labels[order()!.status] ?? order()!.status }}
+        </span>
+      </div>
+
+      <div class="recep-detail__row">
+        <span class="text-muted">Code de commande</span>
+        <strong>{{ order()!.code }}</strong>
+      </div>
+
+      @if (order()!.payment?.method) {
+        <div class="recep-detail__row">
+          <span class="text-muted">Mode de paiement</span>
+          <strong>{{ methodLabels[order()!.payment!.method] ?? order()!.payment!.method }}</strong>
+        </div>
+      }
+
+      @if (order()!.order_items?.length) {
+        <ul class="recep-detail__items">
+          @for (item of order()!.order_items!; track item.id) {
+            <li class="recep-detail__item">
+              <span class="recep-detail__item-qty">× {{ item.quantity }}</span>
+              <span class="recep-detail__item-name">{{ item.product_name ?? 'Plat' }}</span>
+              <span class="recep-detail__item-price">{{ item.unit_price * item.quantity | number:'1.0-0' }} FCFA</span>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="recep-detail__total">
+        <span>Total</span>
+        <strong>{{ orderTotal() | number:'1.0-0' }} FCFA</strong>
+      </div>
+
+      <div class="recep-detail__release">
+        @if (canRelease()) {
+          <button class="btn btn--primary btn--full btn--lg" (click)="requestRelease()">
+            Libérer la table {{ order()!.table?.number ?? '' }}
+          </button>
+        } @else {
+          <button class="btn btn--outline btn--full btn--lg" disabled>
+            Libérer la table {{ order()!.table?.number ?? '' }}
+          </button>
+          <p class="recep-detail__release-hint text-muted">
+            Disponible une fois la commande servie (statut actuel : {{ labels[order()!.status] ?? order()!.status }}).
+          </p>
+        }
+      </div>
+
+    </div>
+  }
+</div>
+
+<!-- ── Popup confirmation ───────────────────────────────────────────────────── -->
+@if (confirming()) {
+  <div class="recep-dialog-overlay" (click)="cancelRelease()">
+    <div class="recep-dialog" (click)="$event.stopPropagation()">
+      <div class="recep-dialog__header">
+        <span class="recep-dialog__title">Confirmer la libération</span>
+      </div>
+      <div class="recep-dialog__body">
+        <p>Le client de la table <strong>{{ order()?.table?.number }}</strong> a bien quitté les lieux ?</p>
+        <p class="text-muted" style="font-size:.875rem">La table redeviendra scannable pour une nouvelle commande.</p>
+      </div>
+      <div class="recep-dialog__footer">
+        <button class="recep-dialog__btn recep-dialog__btn--cancel" [disabled]="releasing()" (click)="cancelRelease()">Non</button>
+        <button class="recep-dialog__btn recep-dialog__btn--confirm" [disabled]="releasing()" (click)="confirmRelease()">
+          @if (releasing()) { … } @else { Oui, libérer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

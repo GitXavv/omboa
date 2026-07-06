@@ -10,7 +10,7 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
 
 interface StoredOrder { id: string; code: string; }
 
-const TERMINAL_STATUSES = ['cancelled', 'served'];
+const TERMINAL_STATUSES = ['cancelled', 'released'];
 
 const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
@@ -18,6 +18,7 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
   ready:     'Prête — finalisez votre paiement',
   paid:      'Payée — en attente de livraison',
   served:    'Servie',
+  released:  'Servie',
   cancelled: 'Annulée',
 };
 

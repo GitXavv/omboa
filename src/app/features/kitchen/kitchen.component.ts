@@ -13,6 +13,7 @@ export const STATUS_LABELS: Record<string, string> = {
   ready:     'Prêt',
   paid:      'Payé',
   served:    'Servi',
+  released:  'Libéré',
   cancelled: 'Annulé'
 };
 
@@ -49,7 +50,7 @@ function nextLabel(order: Order): string {
 export class KitchenComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly realtime = inject(RealtimeService);
-  private readonly auth     = inject(AuthService);
+  readonly auth             = inject(AuthService);
   private readonly toast    = inject(ToastService);
 
   readonly orders       = signal<Order[]>([]);
@@ -177,7 +178,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
   private loadOrders() {
     this.orderSvc.getAll().subscribe({
       next: all => {
-        this.orders.set(all.filter(o => !['served', 'cancelled'].includes(o.status)));
+        this.orders.set(all.filter(o => !['served', 'released', 'cancelled'].includes(o.status)));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

@@ -12,10 +12,10 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 
 const STATUS_FR: Record<string, string> = {
   pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
-  paid: 'Payée', served: 'Servie', cancelled: 'Annulée', all: 'Toutes'
+  paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée', all: 'Toutes'
 };
 
-const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'paid', 'served', 'cancelled'];
+const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'paid', 'served', 'released', 'cancelled'];
 
 @Component({
   selector: 'app-orders',

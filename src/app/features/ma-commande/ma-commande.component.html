@@ -264,6 +264,9 @@
             <span class="receipt__meta-title">REÇU</span>
             <span class="receipt__meta-date">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
             <span class="receipt__meta-ref">Table {{ order()!.table?.number ?? '—' }}</span>
+            @if (order()!.code) {
+              <span class="receipt__meta-ref">Code {{ order()!.code }}</span>
+            }
           </div>
         </div>
         <div class="receipt__section">
@@ -317,6 +320,9 @@
         <div class="receipt__footer">
           <p>Merci de votre visite chez Omboa !</p>
           <p class="receipt__footer-sub">Nous espérons vous revoir très bientôt.</p>
+          @if (order()!.code) {
+            <p class="receipt__footer-sub">Conservez ce reçu : présentez votre code à la sortie.</p>
+          }
         </div>
       </div>
     </div>

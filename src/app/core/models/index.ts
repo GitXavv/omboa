@@ -1,6 +1,6 @@
 export interface Profile {
   id: string;
-  role: 'owner' | 'cook' | 'customer';
+  role: 'owner' | 'cook' | 'customer' | 'receptionist';
   full_name: string;
   phone: string;
   created_at: string;
@@ -31,7 +31,7 @@ export interface Product {
   category?: Category;
 }
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'paid' | 'cancelled';
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'paid' | 'released' | 'cancelled';
 
 export interface Order {
   id: string;
@@ -137,6 +137,14 @@ export interface AdminStats {
     total_quantity: number;
     order_count: number;
   }[];
+}
+
+export interface RecentOrder {
+  id: string;
+  table_number: string;
+  status: OrderStatus;
+  updated_at: string;
+  total_amount: number | null;
 }
 
 export interface ApiResponse<T> {

@@ -10,7 +10,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 
 const STATUS_FR: Record<string, string> = {
   pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
-  paid: 'Payée', served: 'Servie', cancelled: 'Annulée'
+  paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée'
 };
 
 @Component({
@@ -32,7 +32,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly pendingCount   = computed(() => this.orders().filter(o => o.status === 'pending').length);
   readonly preparingCount = computed(() => this.orders().filter(o => o.status === 'preparing').length);
   readonly activeCount    = computed(() => this.pendingCount() + this.preparingCount() + this.orders().filter(o => o.status === 'ready').length);
-  readonly revenue        = computed(() => this.orders().filter(o => ['paid','served'].includes(o.status)).reduce((s, o) => s + (o.total_amount ?? 0), 0));
+  readonly revenue        = computed(() => this.orders().filter(o => ['paid','served','released'].includes(o.status)).reduce((s, o) => s + (o.total_amount ?? 0), 0));
   readonly recentOrders   = computed(() => this.orders().slice(0, 8));
 
   private sub?: Subscription;

@@ -1,0 +1,118 @@
+<div class="recep-page container">
+
+  <div class="recep-header">
+    <h1 class="recep-title">Réception</h1>
+    <div class="recep-status" [class.recep-status--on]="connected()">
+      <span class="recep-status__dot"></span>
+      {{ connected() ? 'En ligne' : 'Hors ligne' }}
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-loader label="Chargement…" />
+  } @else {
+
+    <!-- Situation des tables -->
+    <div class="recep-strip">
+      <div class="recep-strip__stat">
+        <span class="recep-strip__n">{{ occupiedCount() }}</span>
+        <span class="recep-strip__lbl">Tables occupées</span>
+      </div>
+      <div class="recep-strip__sep"></div>
+      <div class="recep-strip__stat">
+        <span class="recep-strip__n">{{ freeCount() }}</span>
+        <span class="recep-strip__lbl">Tables libres</span>
+      </div>
+      <div class="recep-strip__sep"></div>
+      <div class="recep-strip__stat">
+        <span class="recep-strip__n">{{ totalCount() }}</span>
+        <span class="recep-strip__lbl">Tables au total</span>
+      </div>
+    </div>
+
+    @if (!auth.isOwner()) {
+      <button class="btn btn--primary btn--lg recep-ask-btn" (click)="openCodePopup()">
+        🔑 Demander un code de commande
+      </button>
+    }
+
+    <!-- Corps principal -->
+    <div class="recep-body">
+
+      <!-- Tables -->
+      <div class="recep-panel">
+        <p class="recep-panel__title">Tables</p>
+        <div class="recep-tables__grid">
+          @for (t of tables(); track t.id) {
+            <div class="recep-table-chip" [class.recep-table-chip--occupied]="t.is_occupied" [class.recep-table-chip--inactive]="!t.is_active">
+              <span class="recep-table-chip__number">{{ t.number }}</span>
+              <span class="recep-table-chip__state">
+                @if (!t.is_active) { Inactive } @else if (t.is_occupied) { Occupée } @else { Libre }
+              </span>
+            </div>
+          }
+          @if (!tables().length) { <p class="text-muted">Aucune table configurée.</p> }
+        </div>
+      </div>
+
+      <!-- Dernières commandes servies / annulées -->
+      <div class="recep-panel">
+        <p class="recep-panel__title">Dernières commandes</p>
+
+        @if (!recentOrders().length) {
+          <p class="text-muted" style="padding:32px 0;text-align:center">Rien à signaler pour le moment.</p>
+        }
+        @for (o of recentOrders(); track o.id) {
+          <div class="recep-feed-row">
+            <span class="recep-feed-row__table">Table {{ o.table_number }}</span>
+            <span class="recep-feed-row__time">{{ o.updated_at | date:'HH:mm' }}</span>
+            <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] ?? o.status }}</span>
+            <span class="recep-feed-row__amt">{{ o.total_amount | number:'1.0-0' }}<span class="recep-feed-row__curr"> F</span></span>
+          </div>
+        }
+      </div>
+
+    </div>
+
+  }
+</div>
+
+<!-- ── Popup "Demander un code de commande" ────────────────────────────────── -->
+@if (codePopup()) {
+  <div class="recep-dialog-overlay" (click)="closeCodePopup()">
+    <div class="recep-dialog" (click)="$event.stopPropagation()">
+      <div class="recep-dialog__header">
+        <span class="recep-dialog__title">🔑 Code de commande</span>
+        <button class="recep-dialog__close" (click)="closeCodePopup()">✕</button>
+      </div>
+      <div class="recep-dialog__body">
+        <label class="recep-dialog__label">Demandez au client les 6 chiffres de son code de commande :</label>
+        <input
+          class="recep-dialog__code-input"
+          type="text"
+          maxlength="6"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          autocomplete="off"
+          placeholder="Ex : 482037"
+          [value]="codeInput()"
+          (input)="codeInput.set($any($event.target).value)"
+          (keydown.enter)="submitCode()"
+          autofocus
+        />
+        @if (codeError()) {
+          <p class="recep-dialog__error">{{ codeError() }}</p>
+        }
+      </div>
+      <div class="recep-dialog__footer">
+        <button class="recep-dialog__btn recep-dialog__btn--cancel" (click)="closeCodePopup()">Annuler</button>
+        <button
+          class="recep-dialog__btn recep-dialog__btn--confirm"
+          [disabled]="codeSubmitting() || codeInput().trim().length !== 6"
+          (click)="submitCode()">
+          @if (codeSubmitting()) { … } @else { Vérifier }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -21,6 +21,7 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this.currentUser() !== null);
   readonly isOwner   = computed(() => this.currentUser()?.role === 'owner');
   readonly isCook    = computed(() => this.currentUser()?.role === 'cook');
+  readonly isReceptionist = computed(() => this.currentUser()?.role === 'receptionist');
 
   constructor(private http: HttpClient, private router: Router) {}
 
