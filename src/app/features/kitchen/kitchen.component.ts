@@ -47,8 +47,18 @@ export class KitchenComponent implements OnInit, OnDestroy {
   readonly loading      = signal(true);
   readonly connected    = signal(false);
   readonly confirmingId = signal<string | null>(null);
-  readonly confirmMode  = signal<'advance' | 'cancel'>('advance');
+  readonly confirmMode  = signal<'advance'>('advance');
   readonly mobileTab    = signal<OrderStatus>('pending');
+
+  // Dialog (question ou annulation)
+  readonly dialogOrderId    = signal<string | null>(null);
+  readonly dialogMode       = signal<'question' | 'cancel' | null>(null);
+  readonly dialogInput      = signal('');
+  readonly dialogSubmitting = signal(false);
+  readonly dialogError      = signal('');
+
+  // Popup de réponse client
+  readonly clientReplyPopup = signal<{ reply: string; tableNumber: string } | null>(null);
 
   readonly pendingOrders   = computed(() => this.orders().filter(o => o.status === 'pending'));
   readonly preparingOrders = computed(() => this.orders().filter(o => o.status === 'preparing'));
@@ -105,6 +115,10 @@ export class KitchenComponent implements OnInit, OnDestroy {
               setTimeout(() => this.orders.update(l => l.filter(o => o.id !== orderId)), 3000);
             }
           }
+          if (ev.type === 'client:reply') {
+            const { reply, tableNumber } = ev.payload;
+            this.clientReplyPopup.set({ reply, tableNumber });
+          }
           if (ev.type === 'disconnected') this.connected.set(false);
           if (ev.type === 'connected')    this.connected.set(true);
         });
@@ -112,21 +126,12 @@ export class KitchenComponent implements OnInit, OnDestroy {
       .catch(() => this.connected.set(false));
   }
 
+  // Bouton avancer l'état (garde la confirmation inline existante)
   requestAdvance(id: string) { this.confirmMode.set('advance'); this.confirmingId.set(id); }
-  requestCancel(id: string)  { this.confirmMode.set('cancel');  this.confirmingId.set(id); }
   dismissConfirm()           { this.confirmingId.set(null); }
 
   confirm(order: Order) {
     this.confirmingId.set(null);
-
-    if (this.confirmMode() === 'cancel') {
-      this.orderSvc.cancel(order.id).subscribe({
-        next: u => { this.orders.update(l => l.map(o => o.id === u.id ? u : o)); this.toast.warning('Commande annulée.'); },
-        error: () => this.toast.error('Impossible d\'annuler.')
-      });
-      return;
-    }
-
     const next = NEXT[order.status as OrderStatus];
     if (!next) return;
     this.orderSvc.updateStatus(order.id, next).subscribe({
@@ -134,6 +139,55 @@ export class KitchenComponent implements OnInit, OnDestroy {
       error: () => this.toast.error('Erreur lors du changement de statut.')
     });
   }
+
+  // Dialogue question / annulation
+  openDialog(orderId: string, mode: 'question' | 'cancel') {
+    this.dialogOrderId.set(orderId);
+    this.dialogMode.set(mode);
+    this.dialogInput.set('');
+    this.dialogError.set('');
+    this.dialogSubmitting.set(false);
+    this.confirmingId.set(null); // ferme l'éventuelle confirm inline
+  }
+
+  closeDialog() {
+    this.dialogOrderId.set(null);
+    this.dialogMode.set(null);
+    this.dialogInput.set('');
+    this.dialogError.set('');
+  }
+
+  submitDialog() {
+    const msg     = this.dialogInput().trim();
+    const orderId = this.dialogOrderId()!;
+    const mode    = this.dialogMode()!;
+
+    if (!msg) { this.dialogError.set('Veuillez saisir un message.'); return; }
+
+    this.dialogSubmitting.set(true);
+
+    if (mode === 'question') {
+      this.realtime.invoke('AskClient', orderId, msg)
+        .then(() => { this.closeDialog(); })
+        .catch(() => { this.dialogError.set('Envoi échoué, vérifiez la connexion.'); this.dialogSubmitting.set(false); });
+    } else {
+      // Annulation : mettre à jour le statut puis notifier le client avec la raison
+      this.orderSvc.cancel(orderId).subscribe({
+        next: u => {
+          this.orders.update(l => l.map(o => o.id === u.id ? u : o));
+          this.toast.warning(`Commande annulée — Table ${u.table?.number ?? ''}`);
+          this.realtime.invoke('NotifyCancelReason', orderId, msg)
+            .finally(() => this.closeDialog());
+        },
+        error: () => {
+          this.dialogError.set('Impossible d\'annuler la commande.');
+          this.dialogSubmitting.set(false);
+        }
+      });
+    }
+  }
+
+  dismissReplyPopup() { this.clientReplyPopup.set(null); }
 
   hasNext(status: string) { return status in NEXT; }
   labelFor(s: string) { return STATUS_LABELS[s] ?? s; }

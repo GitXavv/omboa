@@ -41,7 +41,17 @@
           <span class="log-row__type log-type--{{ log.event_type | lowercase }}">{{ log.event_type }}</span>
           <span class="log-row__desc">{{ log.description }}</span>
           <span class="log-row__time">{{ log.created_at | date:'dd/MM/yy HH:mm:ss' }}</span>
-          <span class="log-row__user">{{ log.user?.full_name ?? '—' }}</span>
+          <span class="log-row__user">
+            @if (log.event_type === 'QR_SCANNED' && log.metadata) {
+              @if (log.metadata['is_anonymous']) {
+                <span class="log-client--anonymous">Client anonyme</span>
+              } @else {
+                {{ log.metadata['client'] ?? log.user?.full_name ?? '—' }}
+              }
+            } @else {
+              {{ log.user?.full_name ?? '—' }}
+            }
+          </span>
         </div>
       }
     </div>

@@ -85,5 +85,11 @@
 .log-row__time  { color: var(--color-text-muted); font-variant-numeric: tabular-nums; font-size: 0.775rem; }
 .log-row__user  { color: var(--color-text-muted); font-size: 0.775rem; }
 
+.log-client--anonymous {
+  font-style: italic;
+  color: var(--color-text-light);
+  opacity: 0.65;
+}
+
 /* ── Pagination ─────────────────────────────────────────────────────────────── */
 .logs-pagination { padding: 8px 0; }

@@ -31,6 +31,10 @@ export class OrderService {
     return this.http.get<Order>(`${this.base}/${id}`);
   }
 
+  getByCode(code: string): Observable<Order> {
+    return this.http.get<Order>(`${this.base}/by-code/${code}`);
+  }
+
   getAll(status?: OrderStatus): Observable<Order[]> {
     const params = status ? `?status=${status}` : '';
     return this.http.get<Order[]>(`${this.base}${params}`);

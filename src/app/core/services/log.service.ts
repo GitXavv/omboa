@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Log } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -16,7 +16,17 @@ export class LogService {
     if (params?.from)       query.set('from', params.from);
     if (params?.to)         query.set('to', params.to);
     if (params?.page)       query.set('page', String(params.page));
-    return this.http.get<{ data: Log[]; total: number }>(`${this.base}?${query}`);
+    return this.http.get<{ data: Log[]; total: number }>(`${this.base}?${query}`).pipe(
+      map(r => ({
+        ...r,
+        data: r.data.map(log => ({
+          ...log,
+          metadata: typeof log.metadata === 'string'
+            ? (() => { try { return JSON.parse(log.metadata as string); } catch { return null; } })()
+            : log.metadata
+        }))
+      }))
+    );
   }
 
   download(): Observable<Blob> {

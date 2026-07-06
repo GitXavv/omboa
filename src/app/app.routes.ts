@@ -19,6 +19,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/table/table.component').then(m => m.TableComponent)
   },
 
+  // ── Ma commande (public) ─────────────────────
+  {
+    path: 'ma-commande',
+    loadComponent: () => import('./features/ma-commande/ma-commande.component').then(m => m.MaCommandeComponent)
+  },
+
   // ── Auth ─────────────────────────────────────
   {
     path: 'auth',

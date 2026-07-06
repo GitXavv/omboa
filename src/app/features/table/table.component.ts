@@ -42,9 +42,16 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly tableError       = signal<string | null>(null);
   readonly submitting       = signal(false);
   readonly orderId          = signal<string | null>(null);
+  readonly orderCode        = signal<string | null>(null);
+  readonly codeCopied       = signal(false);
   readonly selectedProduct  = signal<Product | null>(null);
   readonly commandeTooltip  = signal(false);
   readonly showLoyaltyPromo = signal(false);
+
+  // Popup cuisine → client
+  readonly kitchenPopup     = signal<{ type: 'question' | 'cancel'; message: string } | null>(null);
+  readonly kitchenReply     = signal('');
+  readonly kitchenReplySent = signal(false);
 
   // Paiement
   readonly payMethod     = signal<PaymentMethod>('cash');
@@ -99,6 +106,14 @@ export class TableComponent implements OnInit, OnDestroy {
         if (ev.type === 'order:status' && ev.payload.orderId === this.orderId()) {
           if (ev.payload.status === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
           if (ev.payload.status === 'ready')     this.toast.success('Votre commande est prête ! Elle arrive bientôt. 🎉');
+        }
+        if (ev.type === 'kitchen:question') {
+          this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
+          this.kitchenReply.set('');
+          this.kitchenReplySent.set(false);
+        }
+        if (ev.type === 'kitchen:cancel') {
+          this.kitchenPopup.set({ type: 'cancel', message: ev.payload.reason });
         }
       })
     );
@@ -163,6 +178,26 @@ export class TableComponent implements OnInit, OnDestroy {
     this.showLoyaltyPromo.set(false);
   }
 
+  dismissKitchenPopup() {
+    this.kitchenPopup.set(null);
+    this.kitchenReply.set('');
+    this.kitchenReplySent.set(false);
+  }
+
+  submitKitchenReply() {
+    const reply = this.kitchenReply().trim();
+    if (!reply || this.kitchenReplySent()) return;
+    const tableNumber = String(this.table()?.number ?? '');
+    this.rt.invoke('ReplyToKitchen', this.orderId()!, reply, tableNumber)
+      .then(() => this.kitchenReplySent.set(true));
+  }
+
+  copyCode() {
+    const code = this.orderCode();
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => this.codeCopied.set(true));
+  }
+
   submitOrder() {
     const tableId = this.table()?.id;
     if (!tableId || !this.cart.items().length) return;
@@ -189,6 +224,11 @@ export class TableComponent implements OnInit, OnDestroy {
         }).subscribe({
           next: () => {
             this.orderId.set(order.id);
+            this.orderCode.set(order.code ?? null);
+            // Sauvegarde en localStorage pour la page "Ma commande"
+            localStorage.setItem('omboa_current_order', JSON.stringify({ id: order.id, code: order.code }));
+            // Rejoindre le groupe SignalR de cette commande pour recevoir les messages cuisine
+            this.rt.invoke('JoinOrder', order.id);
             this.cart.clear();
             this.step.set('confirmation');
             this.submitting.set(false);

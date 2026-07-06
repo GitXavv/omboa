@@ -17,7 +17,7 @@
       }
     </ul>
 
-    <!-- Barre de recherche -->
+    <!-- Barre de recherche + bouton Ma commande -->
     <div class="navbar__search">
       <span class="navbar__search-icon" aria-hidden="true">🔍</span>
       <input
@@ -30,6 +30,11 @@
         aria-label="Rechercher un plat"
       >
     </div>
+
+    <!-- Bouton Ma commande (toujours visible) -->
+    <a routerLink="/ma-commande" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
+      <img src="icons/commandes-logo.png" alt="Ma commande" class="navbar__commande-hdr-icon">
+    </a>
 
     <!-- Actions desktop -->
     <div class="navbar__actions">

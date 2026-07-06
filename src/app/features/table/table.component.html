@@ -350,6 +350,24 @@
         <p class="text-muted" style="font-size:.875rem">
           Suivez le statut de votre commande ici — il se met à jour en temps réel.
         </p>
+        <!-- Code de commande -->
+        @if (orderCode()) {
+          <div class="order-code-box">
+            <p class="order-code-box__label">Votre code de commande</p>
+            <div class="order-code-box__digits">{{ orderCode() }}</div>
+            <p class="order-code-box__tip">
+              Notez ce code ! Si vous quittez cette page, vous pourrez retrouver votre commande en le saisissant dans l'espace « Ma commande ».
+            </p>
+            <button
+              class="btn btn--outline btn--sm order-code-box__copy"
+              (click)="copyCode()"
+              [disabled]="codeCopied()"
+            >
+              @if (codeCopied()) { ✓ Code copié } @else { Copier le code }
+            </button>
+          </div>
+        }
+
         @if (!auth.isLoggedIn()) {
           <div class="confirmation__loyalty-hint">
             <span>🌟</span>
@@ -402,6 +420,51 @@
           </div>
         }
       </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Popup cuisine → client ──────────────────────────────────────────────── -->
+@if (kitchenPopup()) {
+  <div class="kitchen-popup-overlay" (click)="kitchenPopup()!.type === 'cancel' && dismissKitchenPopup()">
+    <div class="kitchen-popup" (click)="$event.stopPropagation()">
+
+      @if (kitchenPopup()!.type === 'question') {
+        <div class="kitchen-popup__header kitchen-popup__header--question">
+          💬 Message de la cuisine
+        </div>
+        <div class="kitchen-popup__body">
+          <p class="kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
+          @if (!kitchenReplySent()) {
+            <textarea
+              class="kitchen-popup__reply-input"
+              rows="3"
+              placeholder="Votre réponse…"
+              [value]="kitchenReply()"
+              (input)="kitchenReply.set($any($event.target).value)"
+            ></textarea>
+            <button class="btn btn--primary btn--full" (click)="submitKitchenReply()" [disabled]="!kitchenReply().trim()">
+              Envoyer
+            </button>
+          } @else {
+            <p class="kitchen-popup__sent">✓ Réponse envoyée à la cuisine.</p>
+            <button class="btn btn--ghost btn--sm kitchen-popup__close-btn" (click)="dismissKitchenPopup()">
+              Fermer
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="kitchen-popup__header kitchen-popup__header--cancel">
+          ✕ Commande annulée
+        </div>
+        <div class="kitchen-popup__body">
+          <p class="kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
+          <button class="btn btn--primary btn--full" (click)="dismissKitchenPopup()">
+            Ok
+          </button>
+        </div>
+      }
 
     </div>
   </div>

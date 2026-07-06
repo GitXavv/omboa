@@ -38,6 +38,7 @@ export interface Order {
   table_id: string;
   customer_id: string | null;
   status: OrderStatus;
+  code?: string | null;
   total_amount: number | null;
   created_at: string;
   updated_at: string;

@@ -1,0 +1,142 @@
+<div class="mc-page">
+  <div class="container mc-container">
+
+    <div class="mc-header">
+      <img src="icons/commandes-logo.png" alt="Ma commande" class="mc-header__logo">
+      <h1>Ma commande</h1>
+    </div>
+
+    @if (loading()) {
+      <app-loader label="Recherche de votre commande…" />
+    }
+
+    @else if (order()) {
+      <!-- Commande active trouvée -->
+      <div class="mc-order card">
+
+        <div class="mc-order__head">
+          <div class="mc-order__meta">
+            <span class="mc-order__table">📍 Table {{ order()!.table?.number ?? '—' }}</span>
+            <span class="mc-order__date text-muted">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <span class="mc-order__status mc-status--{{ order()!.status }}">
+            {{ statusLabels[order()!.status] ?? order()!.status }}
+          </span>
+        </div>
+
+        <!-- Items -->
+        @if (order()!.order_items?.length) {
+          <ul class="mc-order__items">
+            @for (item of order()!.order_items!; track item.id) {
+              <li class="mc-order__item">
+                @if (item.product_image_url) {
+                  <img [src]="item.product_image_url" [alt]="item.product_name ?? ''" class="mc-order__item-img" loading="lazy">
+                } @else {
+                  <span class="mc-order__item-placeholder">🍽️</span>
+                }
+                <div class="mc-order__item-info">
+                  <span class="mc-order__item-name">{{ item.product_name ?? 'Plat' }}</span>
+                  <span class="mc-order__item-qty text-muted">× {{ item.quantity }}</span>
+                </div>
+                <span class="mc-order__item-price">{{ item.unit_price * item.quantity | number:'1.0-0' }} FCFA</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <!-- Code -->
+        @if (order()!.code) {
+          <div class="mc-order__code">
+            <span class="mc-order__code-label">Code</span>
+            <span class="mc-order__code-value">{{ order()!.code }}</span>
+            <button class="btn btn--ghost btn--sm" (click)="copyCode()" [disabled]="codeCopied()">
+              @if (codeCopied()) { ✓ Copié } @else { Copier }
+            </button>
+          </div>
+        }
+
+        <button class="btn btn--ghost btn--sm mc-order__clear" (click)="clearOrder()">
+          Effacer / Nouvelle commande
+        </button>
+      </div>
+    }
+
+    @else {
+      <!-- Aucune commande en mémoire -->
+      <div class="mc-empty">
+        <p class="text-muted">Aucune commande active sur cet appareil.</p>
+
+        <!-- Saisie du code -->
+        <div class="mc-search card">
+          <h3>Vous avez un code de commande ?</h3>
+          <p class="text-muted" style="font-size:.9rem">Saisissez les 6 chiffres pour retrouver votre commande en cours.</p>
+          <div class="mc-search__row">
+            <input
+              type="text"
+              class="mc-search__input"
+              placeholder="ex: 482037"
+              maxlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [value]="codeInput()"
+              (input)="codeInput.set($any($event.target).value)"
+              (keydown.enter)="searchByCode()"
+            >
+            <button class="btn btn--primary" (click)="searchByCode()" [disabled]="searching()">
+              @if (searching()) { … } @else { Rechercher }
+            </button>
+          </div>
+          @if (searchError()) {
+            <p class="mc-search__error">{{ searchError() }}</p>
+          }
+        </div>
+
+        <a routerLink="/menu" class="btn btn--ghost btn--sm">Consulter le menu</a>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- ── Popup cuisine → client ──────────────────────────────────────────────── -->
+@if (kitchenPopup()) {
+  <div class="mc-kitchen-overlay" (click)="kitchenPopup()!.type === 'cancel' && dismissKitchenPopup()">
+    <div class="mc-kitchen-popup" (click)="$event.stopPropagation()">
+
+      @if (kitchenPopup()!.type === 'question') {
+        <div class="mc-kitchen-popup__header mc-kitchen-popup__header--question">
+          💬 Message de la cuisine
+        </div>
+        <div class="mc-kitchen-popup__body">
+          <p class="mc-kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
+          @if (!kitchenReplySent()) {
+            <textarea
+              class="mc-kitchen-popup__reply"
+              rows="3"
+              placeholder="Votre réponse…"
+              [value]="kitchenReply()"
+              (input)="kitchenReply.set($any($event.target).value)"
+            ></textarea>
+            <button class="btn btn--primary btn--full" (click)="submitKitchenReply()" [disabled]="!kitchenReply().trim()">
+              Envoyer
+            </button>
+          } @else {
+            <p class="mc-kitchen-popup__sent">✓ Réponse envoyée à la cuisine.</p>
+            <button class="btn btn--ghost btn--sm" style="align-self:center" (click)="dismissKitchenPopup()">
+              Fermer
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="mc-kitchen-popup__header mc-kitchen-popup__header--cancel">
+          ✕ Commande annulée
+        </div>
+        <div class="mc-kitchen-popup__body">
+          <p class="mc-kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
+          <button class="btn btn--primary btn--full" (click)="dismissKitchenPopup()">Ok</button>
+        </div>
+      }
+
+    </div>
+  </div>
+}

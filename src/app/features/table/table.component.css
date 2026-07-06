@@ -422,6 +422,29 @@
 .confirmation__loyalty-hint span { font-size: 1.5rem; }
 .confirmation__loyalty-hint p    { font-size: 0.9rem; color: var(--color-text-muted); }
 
+/* ── Code de commande ─────────────────────────────────────────────────────── */
+.order-code-box {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.order-code-box__label { font-size: 0.8125rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.order-code-box__digits {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.2em;
+}
+.order-code-box__tip { font-size: 0.8125rem; color: var(--color-text-muted); text-align: center; line-height: 1.5; }
+.order-code-box__copy:disabled { opacity: 1; background: var(--color-success-bg); color: var(--color-success); border-color: transparent; cursor: default; }
+
 /* ── Modal produit ────────────────────────────────────────────────────────── */
 .product-modal-overlay {
   position: fixed;
@@ -569,3 +592,79 @@
   from { transform: translateY(100%); opacity: 0.5; }
   to   { transform: translateY(0);    opacity: 1; }
 }
+
+/* ── Popup cuisine → client ──────────────────────────────────────────────── */
+.kitchen-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInOverlay 150ms ease;
+}
+
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+.kitchen-popup {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: popupIn 200ms cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes popupIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.kitchen-popup__header {
+  padding: 18px 20px 14px;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.kitchen-popup__header--question { color: var(--color-accent); border-bottom: 2px solid rgba(209,173,103,0.25); }
+.kitchen-popup__header--cancel   { color: var(--color-error);  border-bottom: 2px solid rgba(239,83,80,0.25); }
+
+.kitchen-popup__body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.kitchen-popup__message {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.kitchen-popup__reply-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-family: var(--font-body);
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+.kitchen-popup__reply-input:focus { outline: none; border-color: var(--color-primary); }
+.kitchen-popup__sent {
+  font-size: 0.9rem;
+  color: var(--color-success);
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+.kitchen-popup__close-btn { align-self: center; }
