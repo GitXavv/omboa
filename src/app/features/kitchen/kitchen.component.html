@@ -145,11 +145,6 @@
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
                   {{ methodLabels[o.payment.method] ?? o.payment.method }}
                 </span>
-                @if (o.payment.method === 'cash' && o.payment.cash_confirmation_code && o.status === 'ready') {
-                  <span class="order-card__cash-code" title="Code à communiquer verbalement au client">
-                    Code : <strong>{{ o.payment.cash_confirmation_code }}</strong>
-                  </span>
-                }
                 @if (o.status === 'paid') {
                   <span class="order-card__paid-badge">✓ Paiement confirmé</span>
                 }
@@ -160,7 +155,7 @@
                 <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '—' }}</li>
               }
             </ul>
-            @if (o.payment?.method === 'cash' && o.status === 'ready') {
+            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
               <div class="order-card__ready-note">⏳ En attente de la confirmation du paiement client</div>
             }
             @if (confirmingId() === o.id) {
@@ -172,6 +167,11 @@
                 </div>
               </div>
             } @else {
+              @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
+                <div class="order-card__actions">
+                  <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
+                </div>
+              }
               <div class="order-card__actions">
                 <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
                 <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
@@ -310,6 +310,41 @@
       <div class="kitchen-dialog__footer">
         <button class="kitchen-dialog__btn kitchen-dialog__btn--question" style="flex:1" (click)="dismissReplyPopup()">Ok</button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- ── Popup code de confirmation espèce ──────────────────────────────────── -->
+@if (cashCodePopup()) {
+  <div class="kitchen-dialog-overlay" (click)="closeCashCodePopup()">
+    <div class="kitchen-dialog" (click)="$event.stopPropagation()">
+
+      <div class="kitchen-dialog__header">
+        <span class="kitchen-dialog__title">🔑 Code de confirmation espèce</span>
+        <button class="kitchen-dialog__close" (click)="closeCashCodePopup()">✕</button>
+      </div>
+
+      <div class="kitchen-dialog__body">
+        <p class="kitchen-cashcode__hint">Communiquez ce code verbalement au client (sensible à la casse)</p>
+
+        <div class="kitchen-cashcode__display">{{ cashCodePopup()!.code }}</div>
+
+        <div class="kitchen-cashcode__timer"
+          [class.kitchen-cashcode__timer--urgent]="cashCodePopup()!.countdown <= 10"
+          [class.kitchen-cashcode__timer--expired]="cashCodePopup()!.countdown <= 0">
+          @if (cashCodePopup()!.countdown > 0) {
+            Expire dans {{ cashCodePopup()!.countdown }}s
+          } @else {
+            Code expiré — régénérez-en un nouveau
+          }
+        </div>
+      </div>
+
+      <div class="kitchen-dialog__footer">
+        <button class="kitchen-dialog__btn kitchen-dialog__btn--cancel" (click)="closeCashCodePopup()">Fermer</button>
+        <button class="kitchen-dialog__btn kitchen-dialog__btn--question" (click)="regenerateCashCode()">Régénérer</button>
+      </div>
+
     </div>
   </div>
 }

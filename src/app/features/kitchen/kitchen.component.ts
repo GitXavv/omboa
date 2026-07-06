@@ -81,6 +81,10 @@ export class KitchenComponent implements OnInit, OnDestroy {
   // Popup rappel serveur
   readonly serverReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
 
+  // Popup génération du code espèce
+  readonly cashCodePopup = signal<{ code: string; orderId: string; countdown: number } | null>(null);
+  private cashCodeInterval?: ReturnType<typeof setInterval>;
+
   readonly pendingOrders   = computed(() => this.orders().filter(o => o.status === 'pending'));
   readonly preparingOrders = computed(() => this.orders().filter(o => o.status === 'preparing'));
   // 'ready' et 'paid' partagent la même colonne (plat prêt, en attente de livraison)
@@ -107,6 +111,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.sub?.unsubscribe();
     this.realtime.disconnect();
+    clearInterval(this.cashCodeInterval);
   }
 
   private loadOrders() {
@@ -230,6 +235,33 @@ export class KitchenComponent implements OnInit, OnDestroy {
 
   dismissReplyPopup()    { this.clientReplyPopup.set(null); }
   dismissReminderPopup() { this.serverReminderPopup.set(null); }
+
+  openGenerateCashCode(orderId: string) {
+    clearInterval(this.cashCodeInterval);
+    this.orderSvc.generateCashCode(orderId).subscribe({
+      next: ({ code }) => {
+        this.cashCodePopup.set({ code, orderId, countdown: 60 });
+        this.cashCodeInterval = setInterval(() => {
+          const c = this.cashCodePopup()!.countdown - 1;
+          this.cashCodePopup.update(p => p ? { ...p, countdown: c } : null);
+          if (c <= 0) clearInterval(this.cashCodeInterval);
+        }, 1000);
+      },
+      error: () => this.toast.error('Impossible de générer le code.')
+    });
+  }
+
+  regenerateCashCode() {
+    const orderId = this.cashCodePopup()?.orderId;
+    if (!orderId) return;
+    clearInterval(this.cashCodeInterval);
+    this.openGenerateCashCode(orderId);
+  }
+
+  closeCashCodePopup() {
+    clearInterval(this.cashCodeInterval);
+    this.cashCodePopup.set(null);
+  }
 
   hasNext(order: Order)       { return nextStatus(order) !== null; }
   nextLabelFor(order: Order)  { return nextLabel(order); }

@@ -63,4 +63,10 @@ export class OrderService {
   cancelCashPayment(orderId: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/payments/cash/${orderId}`);
   }
+
+  generateCashCode(orderId: string): Observable<{ code: string; expires_at: string }> {
+    return this.http.post<{ code: string; expires_at: string }>(
+      `${environment.apiUrl}/payments/cash/generate-code/${orderId}`, {}
+    );
+  }
 }

@@ -72,6 +72,7 @@ export interface Payment {
   discount_amount: number;
   status: PaymentStatus;
   cash_confirmation_code: string | null;
+  cash_code_expires_at: string | null;
   created_at: string;
 }
 

@@ -423,3 +423,44 @@
   padding: 2px 10px;
   border-radius: var(--radius-full);
 }
+
+/* Bouton "Générer le code" */
+.order-card__btn--gencode {
+  flex: 1;
+  background: rgba(255,193,7,0.12);
+  border-color: rgba(255,193,7,0.45);
+  color: #ffc107;
+}
+.order-card__btn--gencode:hover { background: rgba(255,193,7,0.22); }
+
+/* ── Popup code espèce ────────────────────────────────────────────────────── */
+.kitchen-cashcode__hint {
+  font-size: 0.8125rem;
+  color: rgba(240,232,220,0.55);
+  margin: 0;
+  text-align: center;
+}
+
+.kitchen-cashcode__display {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-align: center;
+  color: #ffc107;
+  background: rgba(255,193,7,0.08);
+  border: 2px solid rgba(255,193,7,0.3);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  user-select: all;
+}
+
+.kitchen-cashcode__timer {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+  color: rgba(240,232,220,0.65);
+  transition: color var(--transition-fast);
+}
+.kitchen-cashcode__timer--urgent  { color: var(--color-warning); }
+.kitchen-cashcode__timer--expired { color: var(--color-error); }
