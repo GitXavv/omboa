@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 type Step = 'menu' | 'cart' | 'tracking';
@@ -29,7 +29,7 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [LoaderComponent, DecimalPipe, RouterLink],
+  imports: [LoaderComponent, DecimalPipe, DatePipe, RouterLink],
   templateUrl: './table.component.html',
   styleUrl: './table.component.css'
 })
@@ -81,6 +81,11 @@ export class TableComponent implements OnInit, OnDestroy {
     if (o.total_amount != null) return o.total_amount;
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
+
+  // Code de service (affiché après 'paid', utilisé pour confirmer la livraison)
+  readonly serviceCode  = signal<string | null>(null);
+  readonly receiptPopup = signal(false);
+  private readonly SVC_KEY = () => `omboa_svc_${this.orderId()}`;
 
   // Popup paiement en espèce
   readonly cashPopupStep      = signal<'info' | 'code' | null>(null);
@@ -134,6 +139,11 @@ export class TableComponent implements OnInit, OnDestroy {
                   this.trackedOrder.set(order);
                   this.step.set('tracking');
                   this.rt.invoke('JoinOrder', order.id).catch(() => {});
+                  // Restaurer le code de service si la commande est déjà payée
+                  if (order.status === 'paid') {
+                    const svc = localStorage.getItem(`omboa_svc_${order.id}`);
+                    if (svc) this.serviceCode.set(svc);
+                  }
                   // Rouvrir le popup espèce si un paiement était en attente
                   if (order.payment?.method === 'cash' && order.payment.status === 'pending') {
                     this.cashPopupStep.set('info');
@@ -176,7 +186,20 @@ export class TableComponent implements OnInit, OnDestroy {
           this.trackedOrder.update(o => o ? { ...o, status: s } : null);
           if (s === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
           if (s === 'ready')     this.toast.success('Votre commande est prête ! Choisissez votre mode de paiement ci-dessous. 💳');
+          if (s === 'served') {
+            const svcKey = this.SVC_KEY();
+            if (svcKey) localStorage.removeItem(svcKey);
+            localStorage.removeItem(this.STORAGE_KEY);
+            this.serviceCode.set(null);
+            this.receiptPopup.set(true);
+          }
           if (TERMINAL_STATUSES.includes(s)) localStorage.removeItem(this.STORAGE_KEY);
+        }
+        if (ev.type === 'order:paid' && this.orderId()) {
+          const code = ev.payload.serviceCode;
+          this.serviceCode.set(code);
+          const svcKey = this.SVC_KEY();
+          if (svcKey) localStorage.setItem(svcKey, code);
         }
         if (ev.type === 'kitchen:question') {
           this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
@@ -414,6 +437,13 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   backToCashInfo() { this.cashPopupStep.set('info'); }
+
+  // ── Reçu ─────────────────────────────────────────────────────────────────
+  printReceipt() { window.print(); }
+  closeReceiptPopup() {
+    this.receiptPopup.set(false);
+    this.startNewOrder();
+  }
 
   submitCashCode() {
     const code    = this.cashCodeInput().trim();

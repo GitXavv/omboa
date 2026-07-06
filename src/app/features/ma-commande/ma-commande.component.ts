@@ -61,6 +61,10 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
 
+  // Code de service (affiché après 'paid')
+  readonly serviceCode  = signal<string | null>(null);
+  readonly receiptPopup = signal(false);
+
   // Popup paiement en espèce
   readonly cashPopupStep      = signal<'info' | 'code' | null>(null);
   readonly cashCodeInput      = signal('');
@@ -92,6 +96,11 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
           } else {
             this.order.set(o);
             this.connectRealtime(stored.id);
+            // Restaurer le code de service si commande déjà payée
+            if (o.status === 'paid') {
+              const svc = localStorage.getItem(`omboa_svc_${o.id}`);
+              if (svc) this.serviceCode.set(svc);
+            }
             // Rouvrir le popup espèce si paiement en attente au retour
             if (o.payment?.method === 'cash' && o.payment.status === 'pending') {
               this.cashPopupStep.set('info');
@@ -126,7 +135,18 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
           if (ev.type === 'order:status' && ev.payload.orderId === orderId) {
             const s = ev.payload.status as OrderStatus;
             this.order.update(o => o ? { ...o, status: s } : null);
+            if (s === 'served') {
+              localStorage.removeItem(`omboa_svc_${orderId}`);
+              localStorage.removeItem(this.STORAGE_KEY);
+              this.serviceCode.set(null);
+              this.receiptPopup.set(true);
+            }
             if (TERMINAL_STATUSES.includes(s)) localStorage.removeItem(this.STORAGE_KEY);
+          }
+          if (ev.type === 'order:paid') {
+            const code = ev.payload.serviceCode;
+            this.serviceCode.set(code);
+            localStorage.setItem(`omboa_svc_${orderId}`, code);
           }
           if (ev.type === 'kitchen:question') {
             this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
@@ -277,6 +297,13 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   }
 
   backToCashInfo() { this.cashPopupStep.set('info'); }
+
+  // ── Reçu ─────────────────────────────────────────────────────────────────
+  printReceipt() { window.print(); }
+  closeReceiptPopup() {
+    this.receiptPopup.set(false);
+    this.clearOrder();
+  }
 
   submitCashCode() {
     const code    = this.cashCodeInput().trim();

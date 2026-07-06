@@ -69,4 +69,8 @@ export class OrderService {
       `${environment.apiUrl}/payments/cash/generate-code/${orderId}`, {}
     );
   }
+
+  serve(id: string, code: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/${id}/serve`, { code });
+  }
 }

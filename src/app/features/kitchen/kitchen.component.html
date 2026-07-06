@@ -44,12 +44,12 @@
           <div class="order-card" [class.order-card--confirming]="confirmingId() === o.id">
             <div class="order-card__head">
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
-              <span class="order-card__time">{{ timeSince(o.created_at) }}</span>
+              <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
-                  {{ methodLabels[o.payment.method] ?? o.payment.method }}
+                  {{ methodLabels[o.payment.method] || o.payment.method }}
                 </span>
               </div>
             }
@@ -92,12 +92,12 @@
           <div class="order-card order-card--preparing" [class.order-card--confirming]="confirmingId() === o.id">
             <div class="order-card__head">
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
-              <span class="order-card__time">{{ timeSince(o.created_at) }}</span>
+              <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
-                  {{ methodLabels[o.payment.method] ?? o.payment.method }}
+                  {{ methodLabels[o.payment.method] || o.payment.method }}
                 </span>
               </div>
             }
@@ -135,15 +135,15 @@
           <span class="kitchen-col__count">{{ readyOrders().length }}</span>
         </div>
         @for (o of readyOrders(); track o.id) {
-          <div class="order-card order-card--ready" [class.order-card--confirming]="confirmingId() === o.id">
+          <div class="order-card order-card--ready">
             <div class="order-card__head">
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
-              <span class="order-card__time">{{ timeSince(o.created_at) }}</span>
+              <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
-                  {{ methodLabels[o.payment.method] ?? o.payment.method }}
+                  {{ methodLabels[o.payment.method] || o.payment.method }}
                 </span>
                 @if (o.status === 'paid') {
                   <span class="order-card__paid-badge">✓ Paiement confirmé</span>
@@ -158,29 +158,19 @@
             @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
               <div class="order-card__ready-note">⏳ En attente de la confirmation du paiement client</div>
             }
-            @if (confirmingId() === o.id) {
-              <div class="order-card__confirm">
-                <p>Passer à <strong>«&nbsp;{{ labelFor(nextStatusFor(o)!) }}&nbsp;»</strong> ?</p>
-                <div class="order-card__confirm-btns">
-                  <button class="order-card__btn order-card__btn--no" (click)="dismissConfirm()">Non</button>
-                  <button class="order-card__btn order-card__btn--yes" (click)="confirm(o)">Confirmer</button>
-                </div>
-              </div>
-            } @else {
-              @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
-                <div class="order-card__actions">
-                  <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
-                </div>
-              }
+            <div class="order-card__actions">
+              <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
+              <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
+            </div>
+            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
               <div class="order-card__actions">
-                <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
-                <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
+                <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
               </div>
-              @if (hasNext(o)) {
-                <div class="order-card__actions">
-                  <button class="order-card__btn order-card__btn--advance" (click)="requestAdvance(o.id)">{{ nextLabelFor(o) }} →</button>
-                </div>
-              }
+            }
+            @if (o.status === 'paid') {
+              <div class="order-card__actions">
+                <button class="order-card__btn order-card__btn--serve" (click)="openServePopup(o)">🍽️ Confirmer le service</button>
+              </div>
             }
           </div>
         }
@@ -198,16 +188,13 @@
           [class.order-card--confirming]="confirmingId() === o.id">
           <div class="order-card__head">
             <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
-            <span class="order-card__time">{{ timeSince(o.created_at) }}</span>
+            <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
           </div>
           @if (o.payment) {
             <div class="order-card__payment">
               <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
-                {{ methodLabels[o.payment.method] ?? o.payment.method }}
+                {{ methodLabels[o.payment.method] || o.payment.method }}
               </span>
-              @if (o.payment.method === 'cash' && o.payment.cash_confirmation_code && o.status === 'ready') {
-                <span class="order-card__cash-code">Code : <strong>{{ o.payment.cash_confirmation_code }}</strong></span>
-              }
               @if (o.status === 'paid') {
                 <span class="order-card__paid-badge">✓ Paiement confirmé</span>
               }
@@ -236,9 +223,19 @@
               <button class="order-card__btn order-card__btn--ask" (click)="openDialog(o.id, 'question')">💬 Questionner</button>
               <button class="order-card__btn order-card__btn--cancel" (click)="openDialog(o.id, 'cancel')">✕ Annuler</button>
             </div>
+            @if (o.payment && o.payment.method === 'cash' && o.payment.status === 'pending' && o.status === 'ready') {
+              <div class="order-card__actions">
+                <button class="order-card__btn order-card__btn--gencode" (click)="openGenerateCashCode(o.id)">🔑 Générer le code</button>
+              </div>
+            }
             @if (hasNext(o)) {
               <div class="order-card__actions">
                 <button class="order-card__btn order-card__btn--advance" (click)="requestAdvance(o.id)">{{ nextLabelFor(o) }} →</button>
+              </div>
+            }
+            @if (o.status === 'paid') {
+              <div class="order-card__actions">
+                <button class="order-card__btn order-card__btn--serve" (click)="openServePopup(o)">🍽️ Confirmer le service</button>
               </div>
             }
           }
@@ -343,6 +340,52 @@
       <div class="kitchen-dialog__footer">
         <button class="kitchen-dialog__btn kitchen-dialog__btn--cancel" (click)="closeCashCodePopup()">Fermer</button>
         <button class="kitchen-dialog__btn kitchen-dialog__btn--question" (click)="regenerateCashCode()">Régénérer</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Popup code de service (paid → served) ──────────────────────────────── -->
+@if (serveCodePopup()) {
+  <div class="kitchen-dialog-overlay">
+    <div class="kitchen-dialog" (click)="$event.stopPropagation()">
+
+      <div class="kitchen-dialog__header">
+        <span class="kitchen-dialog__title">🍽️ Code de service — Table {{ serveCodePopup()!.tableNumber }}</span>
+        <button class="kitchen-dialog__close" (click)="closeServePopup()">✕</button>
+      </div>
+
+      <div class="kitchen-dialog__body">
+        <p class="kitchen-cashcode__hint">
+          Demandez au client de vous dicter son code de service à 5 caractères (sensible à la casse), puis saisissez-le ci-dessous pour confirmer la remise de la commande.
+        </p>
+        <input
+          class="kitchen-servecode__input"
+          type="text"
+          maxlength="5"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          placeholder="Ex : aB3Kz"
+          [value]="serveCodeInput()"
+          (input)="serveCodeInput.set($any($event.target).value)"
+          (keydown.enter)="submitServeCode()"
+          autofocus
+        />
+        @if (serveCodeError()) {
+          <p class="kitchen-dialog__error">{{ serveCodeError() }}</p>
+        }
+      </div>
+
+      <div class="kitchen-dialog__footer">
+        <button class="kitchen-dialog__btn kitchen-dialog__btn--cancel" (click)="closeServePopup()">Annuler</button>
+        <button
+          class="kitchen-dialog__btn kitchen-dialog__btn--serve-confirm"
+          [disabled]="serveCodeSubmitting() || serveCodeInput().length !== 5"
+          (click)="submitServeCode()">
+          @if (serveCodeSubmitting()) { … } @else { Valider le service }
+        </button>
       </div>
 
     </div>

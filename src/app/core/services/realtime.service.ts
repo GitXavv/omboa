@@ -5,12 +5,14 @@ import { environment } from '../../../environments/environment';
 export type RealtimeEvent =
   | { type: 'order:new';           payload: { orderId: string; tableNumber: string } }
   | { type: 'order:status';        payload: { orderId: string; status: string } }
+  | { type: 'order:paid';          payload: { serviceCode: string } }
   | { type: 'table:status';        payload: { tableId: string; isOccupied: boolean } }
   | { type: 'kitchen:question';    payload: { question: string } }
   | { type: 'kitchen:cancel';      payload: { reason: string } }
   | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string } }
   | { type: 'server:reminder';     payload: { tableNumber: string; orderId: string } }
   | { type: 'payment:method';      payload: { orderId: string; method: string; cashCode: string | null } }
+  | { type: 'payment:removed';     payload: { orderId: string } }
   | { type: 'connected' }
   | { type: 'disconnected' };
 
@@ -63,11 +65,19 @@ export class RealtimeService implements OnDestroy {
       this.events$.next({ type: 'payment:method', payload: { orderId, method, cashCode } })
     );
 
+    this.connection.on('ServiceCode', (serviceCode: string) =>
+      this.events$.next({ type: 'order:paid', payload: { serviceCode } })
+    );
+
+    this.connection.on('PaymentRemoved', (orderId: string) =>
+      this.events$.next({ type: 'payment:removed', payload: { orderId } })
+    );
+
     this.connection.onclose(() => this.events$.next({ type: 'disconnected' }));
+    // 'connected' = reconnexion uniquement (pas le premier démarrage)
     this.connection.onreconnected(() => this.events$.next({ type: 'connected' }));
 
     await this.connection.start();
-    this.events$.next({ type: 'connected' });
   }
 
   async invoke(method: string, ...args: unknown[]) {

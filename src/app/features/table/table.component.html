@@ -362,6 +362,15 @@
             </div>
           }
 
+          <!-- Code de service affiché en secours sur la card quand status = paid -->
+          @if (trackedOrder()!.status === 'paid' && serviceCode()) {
+            <div class="tracking-svc-code">
+              <span class="tracking-svc-code__label">Votre code de service</span>
+              <span class="tracking-svc-code__value">{{ serviceCode() }}</span>
+              <span class="tracking-svc-code__hint">Dictez ce code au serveur·euse qui viendra avec votre commande.</span>
+            </div>
+          }
+
           @if (trackedOrder()!.status === 'pending') {
             <button
               class="btn btn--outline btn--sm tracking-card__cancel"
@@ -556,6 +565,118 @@
         </div>
       }
 
+    </div>
+  </div>
+}
+
+<!-- ── Popup code de service (NON-FERMABLE avant livraison) ───────────────── -->
+@if (serviceCode() && trackedOrder()?.status === 'paid') {
+  <div class="svc-popup-overlay">
+    <div class="svc-popup">
+      <div class="svc-popup__header">🍽️ Votre commande est payée !</div>
+      <div class="svc-popup__body">
+        <p class="svc-popup__text">
+          Voici votre code de service. Le·la ou les serveurs·euses qui viendront avec votre commande dans quelques instants vous demanderont de leur dicter ce code pour confirmer la remise de votre commande.
+        </p>
+        <div class="svc-popup__code">{{ serviceCode() }}</div>
+        <p class="svc-popup__hint">Sensible à la casse · Ne le partagez pas</p>
+        @if (!auth.isLoggedIn()) {
+          <p class="svc-popup__anon">(action irréversible pour les clients sans compte)</p>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Popup reçu ─────────────────────────────────────────────────────────── -->
+@if (receiptPopup() && trackedOrder()) {
+  <div class="receipt-overlay">
+    <div class="receipt-popup">
+
+      <!-- Entête du reçu (masqué à l'impression) -->
+      <div class="receipt-popup__toolbar no-print">
+        <span class="receipt-popup__toolbar-title">Votre reçu est prêt !</span>
+        <div class="receipt-popup__toolbar-btns">
+          <button class="btn btn--primary" (click)="printReceipt()">🖨️ Imprimer / Télécharger</button>
+          <button class="btn btn--ghost" (click)="closeReceiptPopup()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Contenu du reçu (inclus dans l'impression) -->
+      <div class="receipt" id="receipt-content">
+
+        <!-- Entête sombre -->
+        <div class="receipt__header">
+          <div class="receipt__brand">
+            <span class="receipt__brand-name">Omboa</span>
+            <span class="receipt__brand-sub">Restaurant</span>
+          </div>
+          <div class="receipt__meta">
+            <span class="receipt__meta-title">REÇU</span>
+            <span class="receipt__meta-date">{{ trackedOrder()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="receipt__meta-ref">Table {{ trackedOrder()!.table?.number ?? '—' }}</span>
+          </div>
+        </div>
+
+        <!-- Section articles -->
+        <div class="receipt__section">
+          <div class="receipt__section-title">Articles commandés</div>
+          <table class="receipt__table">
+            <thead>
+              <tr>
+                <th class="receipt__th">Article</th>
+                <th class="receipt__th receipt__th--center">Qté</th>
+                <th class="receipt__th receipt__th--right">Prix unit.</th>
+                <th class="receipt__th receipt__th--right">Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of trackedOrder()!.order_items ?? []; track item.id) {
+                <tr class="receipt__row">
+                  <td class="receipt__td">{{ item.product_name ?? 'Article' }}</td>
+                  <td class="receipt__td receipt__td--center">{{ item.quantity }}</td>
+                  <td class="receipt__td receipt__td--right">{{ item.unit_price | number:'1.0-0' }} FCFA</td>
+                  <td class="receipt__td receipt__td--right">{{ item.unit_price * item.quantity | number:'1.0-0' }} FCFA</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section récapitulatif -->
+        <div class="receipt__section">
+          <div class="receipt__section-title">Récapitulatif</div>
+          <div class="receipt__summary">
+            @if (trackedOrder()!.payment?.discount_amount && trackedOrder()!.payment!.discount_amount! > 0) {
+              <div class="receipt__summary-row">
+                <span>Sous-total</span>
+                <span>{{ (trackingTotal() + trackedOrder()!.payment!.discount_amount!) | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="receipt__summary-row receipt__summary-row--discount">
+                <span>Réduction (points)</span>
+                <span>−{{ trackedOrder()!.payment!.discount_amount! | number:'1.0-0' }} FCFA</span>
+              </div>
+            }
+            <div class="receipt__summary-row receipt__summary-row--total">
+              <span>Total payé</span>
+              <strong>{{ trackingTotal() | number:'1.0-0' }} FCFA</strong>
+            </div>
+            @if (trackedOrder()!.payment?.method) {
+              <div class="receipt__summary-row">
+                <span>Mode de paiement</span>
+                <span>{{ trackedOrder()!.payment!.method === 'cash' ? 'Espèces' : trackedOrder()!.payment!.method === 'orange_money' ? 'Orange Money' : 'MTN MoMo' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="receipt__footer">
+          <p>Merci de votre visite chez Omboa !</p>
+          <p class="receipt__footer-sub">Nous espérons vous revoir très bientôt.</p>
+        </div>
+
+      </div>
     </div>
   </div>
 }
