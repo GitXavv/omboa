@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Order } from '../../core/models';
+import { Order, OrderStatus, PaymentMethod } from '../../core/models';
 import { OrderService } from '../../core/services/order.service';
 import { RealtimeService } from '../../core/services/realtime.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
 interface StoredOrder { id: string; code: string; }
@@ -14,7 +15,7 @@ const TERMINAL_STATUSES = ['cancelled', 'served'];
 const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
   preparing: 'En préparation',
-  ready:     'Prête — elle arrive bientôt !',
+  ready:     'Prête — finalisez votre paiement',
   paid:      'Payée — en attente de livraison',
   served:    'Servie',
   cancelled: 'Annulée',
@@ -30,6 +31,7 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
 export class MaCommandeComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly rt       = inject(RealtimeService);
+  readonly auth             = inject(AuthService);
 
   readonly loading      = signal(true);
   readonly order        = signal<Order | null>(null);
@@ -44,11 +46,37 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   readonly kitchenReply     = signal('');
   readonly kitchenReplySent = signal(false);
 
-  readonly statusLabels = STATUS_LABELS;
+  // Paiement inline (affiché quand status = ready et pas encore de paiement)
+  readonly payMethod      = signal<PaymentMethod>('cash');
+  readonly payPhone       = signal('');
+  readonly submitting     = signal(false);
+  readonly usePoints      = signal(false);
+  readonly pointsToUse    = signal(0);
+  readonly loyaltyBalance = signal(0);
+
+  readonly orderTotal = computed(() => {
+    const o = this.order();
+    if (!o) return 0;
+    if (o.total_amount != null) return o.total_amount;
+    return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
+  });
+
+  // Popup paiement en espèce
+  readonly cashPopupStep      = signal<'info' | 'code' | null>(null);
+  readonly cashCodeInput      = signal('');
+  readonly cashCodeError      = signal('');
+  readonly cashCodeSubmitting = signal(false);
+  readonly cashCountdown      = signal(0);
+  readonly cashRemindDisabled = signal(true);
+  readonly cashChangeDisabled = signal(true);
+  readonly cashReminderSent   = signal(false);
+
+  readonly statusLabels     = STATUS_LABELS;
   readonly terminalStatuses = TERMINAL_STATUSES;
 
   private readonly STORAGE_KEY = 'omboa_current_order';
   private rtSub?: Subscription;
+  private cashCountdownInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit() {
     const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -64,6 +92,12 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
           } else {
             this.order.set(o);
             this.connectRealtime(stored.id);
+            // Rouvrir le popup espèce si paiement en attente au retour
+            if (o.payment?.method === 'cash' && o.payment.status === 'pending') {
+              this.cashPopupStep.set('info');
+              this.cashReminderSent.set(false);
+              this.startCashCountdown();
+            }
           }
           this.loading.set(false);
         },
@@ -81,6 +115,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.rtSub?.unsubscribe();
     this.rt.disconnect();
+    clearInterval(this.cashCountdownInterval);
   }
 
   private connectRealtime(orderId: string) {
@@ -89,11 +124,9 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
       .then(() => {
         this.rtSub = this.rt.events$.subscribe(ev => {
           if (ev.type === 'order:status' && ev.payload.orderId === orderId) {
-            const o = this.order();
-            if (o) this.order.set({ ...o, status: ev.payload.status as Order['status'] });
-            if (TERMINAL_STATUSES.includes(ev.payload.status)) {
-              localStorage.removeItem(this.STORAGE_KEY);
-            }
+            const s = ev.payload.status as OrderStatus;
+            this.order.update(o => o ? { ...o, status: s } : null);
+            if (TERMINAL_STATUSES.includes(s)) localStorage.removeItem(this.STORAGE_KEY);
           }
           if (ev.type === 'kitchen:question') {
             this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
@@ -165,11 +198,103 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     if (!id || this.cancelling()) return;
     this.cancelling.set(true);
     this.orderSvc.cancel(id).subscribe({
-      next: () => {
-        this.cancelling.set(false);
-        // L'update de statut arrivera via SignalR (kitchen:cancel ou order:status)
-      },
+      next: () => this.cancelling.set(false),
       error: () => this.cancelling.set(false)
+    });
+  }
+
+  // ── Paiement inline ────────────────────────────────────────────────────────
+  submitPayment() {
+    const orderId = this.order()?.id;
+    if (!orderId) return;
+    this.submitting.set(true);
+    this.orderSvc.pay({
+      order_id:        orderId,
+      method:          this.payMethod(),
+      phone_number:    this.payPhone() || undefined,
+      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
+    }).subscribe({
+      next: payment => {
+        this.order.update(o => o ? { ...o, payment } : null);
+        this.submitting.set(false);
+        if (payment.method === 'cash' && payment.status === 'pending') {
+          this.cashPopupStep.set('info');
+          this.cashReminderSent.set(false);
+          this.startCashCountdown();
+        }
+      },
+      error: () => this.submitting.set(false)
+    });
+  }
+
+  // ── Cash popup ─────────────────────────────────────────────────────────────
+  private startCashCountdown() {
+    clearInterval(this.cashCountdownInterval);
+    this.cashCountdown.set(30);
+    this.cashRemindDisabled.set(true);
+    this.cashChangeDisabled.set(true);
+    this.cashCountdownInterval = setInterval(() => {
+      const c = this.cashCountdown() - 1;
+      this.cashCountdown.set(c);
+      if (c <= 0) {
+        clearInterval(this.cashCountdownInterval);
+        this.cashRemindDisabled.set(false);
+        this.cashChangeDisabled.set(false);
+      }
+    }, 1000);
+  }
+
+  sendServerReminder() {
+    if (this.cashRemindDisabled()) return;
+    const orderId     = this.order()!.id;
+    const tableNumber = String(this.order()!.table?.number ?? '');
+    this.cashRemindDisabled.set(true);
+    this.rt.invoke('RemindServer', orderId, tableNumber)
+      .then(() => { this.cashReminderSent.set(true); this.startCashCountdown(); })
+      .catch(() => this.cashRemindDisabled.set(false));
+  }
+
+  changeCashPayment() {
+    if (this.cashChangeDisabled()) return;
+    const orderId = this.order()!.id;
+    this.cashChangeDisabled.set(true);
+    this.orderSvc.cancelCashPayment(orderId).subscribe({
+      next: () => {
+        clearInterval(this.cashCountdownInterval);
+        this.cashPopupStep.set(null);
+        this.cashReminderSent.set(false);
+        this.order.update(o => o ? { ...o, payment: undefined } : null);
+        this.payPhone.set('');
+      },
+      error: () => this.cashChangeDisabled.set(false)
+    });
+  }
+
+  openCashCodeForm() {
+    this.cashCodeInput.set('');
+    this.cashCodeError.set('');
+    this.cashPopupStep.set('code');
+  }
+
+  backToCashInfo() { this.cashPopupStep.set('info'); }
+
+  submitCashCode() {
+    const code    = this.cashCodeInput().trim();
+    const orderId = this.order()!.id;
+    if (code.length !== 5) { this.cashCodeError.set('Le code doit contenir exactement 5 caractères.'); return; }
+
+    this.cashCodeSubmitting.set(true);
+    this.cashCodeError.set('');
+    this.orderSvc.confirmCash(orderId, code).subscribe({
+      next: () => {
+        this.cashPopupStep.set(null);
+        this.cashCodeSubmitting.set(false);
+        clearInterval(this.cashCountdownInterval);
+      },
+      error: err => {
+        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez la casse.');
+        this.cashCodeSubmitting.set(false);
+      }
     });
   }
 }

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Category, Order, OrderStatus, Product, TableStatus } from '../../core/models';
+import { Category, Order, OrderStatus, PaymentMethod, Product, TableStatus } from '../../core/models';
 import { CartService } from '../../core/services/cart.service';
 import { MenuService } from '../../core/services/menu.service';
 import { TableService } from '../../core/services/table.service';
@@ -12,16 +12,15 @@ import { RealtimeService } from '../../core/services/realtime.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { PaymentMethod } from '../../core/models';
 
-type Step = 'menu' | 'cart' | 'payment' | 'confirmation' | 'tracking';
+type Step = 'menu' | 'cart' | 'tracking';
 
 const TERMINAL_STATUSES = ['cancelled', 'served'];
 
 const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
   preparing: 'En préparation',
-  ready:     'Prête — elle arrive bientôt !',
+  ready:     'Prête — finalisez votre paiement',
   paid:      'Payée — en attente de livraison',
   served:    'Servie',
   cancelled: 'Annulée',
@@ -43,7 +42,6 @@ export class TableComponent implements OnInit, OnDestroy {
   private readonly toast    = inject(ToastService);
   private readonly rt       = inject(RealtimeService);
   private readonly route    = inject(ActivatedRoute);
-  private readonly router   = inject(Router);
 
   readonly step             = signal<Step>('menu');
   readonly table            = signal<TableStatus | null>(null);
@@ -59,35 +57,40 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly commandeTooltip  = signal(false);
   readonly showLoyaltyPromo = signal(false);
 
-  // Tracking d'une commande existante (table occupée + localStorage)
-  readonly trackedOrder       = signal<Order | null>(null);
+  // Suivi de commande en cours
+  readonly trackedOrder        = signal<Order | null>(null);
   readonly trackedStatusLabels = STATUS_LABELS;
-  readonly cancelling         = signal(false);
+  readonly cancelling          = signal(false);
 
   // Popup cuisine → client
   readonly kitchenPopup     = signal<{ type: 'question' | 'cancel'; message: string } | null>(null);
   readonly kitchenReply     = signal('');
   readonly kitchenReplySent = signal(false);
 
-  // Paiement
-  readonly payMethod     = signal<PaymentMethod>('cash');
-  readonly payPhone      = signal('');
-  readonly confirmedAmount = signal<number | null>(null);
-
-  // Popup paiement en espèce
-  readonly cashPopupStep     = signal<'info' | 'code' | null>(null);
-  readonly cashCodeInput     = signal('');
-  readonly cashCodeError     = signal('');
-  readonly cashCodeSubmitting = signal(false);
-  readonly cashCountdown     = signal(0);
-  readonly cashRemindDisabled = signal(true);
-  readonly cashChangeDisabled = signal(true);
-  readonly cashReminderSent   = signal(false);
-
-  // Points fidélité
+  // Paiement inline (affiché dans tracking quand status = ready)
+  readonly payMethod      = signal<PaymentMethod>('cash');
+  readonly payPhone       = signal('');
   readonly usePoints      = signal(false);
   readonly pointsToUse    = signal(0);
   readonly loyaltyBalance = signal(0);
+
+  // Total calculé depuis les items (total_amount non encore défini avant paiement)
+  readonly trackingTotal = computed(() => {
+    const o = this.trackedOrder();
+    if (!o) return 0;
+    if (o.total_amount != null) return o.total_amount;
+    return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
+  });
+
+  // Popup paiement en espèce
+  readonly cashPopupStep      = signal<'info' | 'code' | null>(null);
+  readonly cashCodeInput      = signal('');
+  readonly cashCodeError      = signal('');
+  readonly cashCodeSubmitting = signal(false);
+  readonly cashCountdown      = signal(0);
+  readonly cashRemindDisabled = signal(true);
+  readonly cashChangeDisabled = signal(true);
+  readonly cashReminderSent   = signal(false);
 
   readonly cartQuantity = (productId: string) =>
     this.cart.items().find(i => i.product.id === productId)?.quantity ?? 0;
@@ -96,17 +99,15 @@ export class TableComponent implements OnInit, OnDestroy {
   private longPressTimer?: ReturnType<typeof setTimeout>;
   private tooltipHideTimer?: ReturnType<typeof setTimeout>;
   private cashCountdownInterval?: ReturnType<typeof setInterval>;
-  private readonly PROMO_KEY    = 'omboa_loyalty_promo_dismissed';
-  private readonly STORAGE_KEY  = 'omboa_current_order';
+  private readonly PROMO_KEY   = 'omboa_loyalty_promo_dismissed';
+  private readonly STORAGE_KEY = 'omboa_current_order';
 
   ngOnInit() {
     const tableId = this.route.snapshot.paramMap.get('tableId')!;
     this.cart.setTable(tableId);
 
     const dismissed = parseInt(localStorage.getItem(this.PROMO_KEY) ?? '0', 10);
-    if (!this.auth.isLoggedIn() && dismissed < 2) {
-      this.showLoyaltyPromo.set(true);
-    }
+    if (!this.auth.isLoggedIn() && dismissed < 2) this.showLoyaltyPromo.set(true);
 
     let storedOrder: { id: string; code: string } | null = null;
     try {
@@ -133,6 +134,12 @@ export class TableComponent implements OnInit, OnDestroy {
                   this.trackedOrder.set(order);
                   this.step.set('tracking');
                   this.rt.invoke('JoinOrder', order.id).catch(() => {});
+                  // Rouvrir le popup espèce si un paiement était en attente
+                  if (order.payment?.method === 'cash' && order.payment.status === 'pending') {
+                    this.cashPopupStep.set('info');
+                    this.cashReminderSent.set(false);
+                    this.startCashCountdown();
+                  }
                 } else {
                   localStorage.removeItem(this.STORAGE_KEY);
                   this.tableError.set('Cette table est occupée. Retrouvez votre commande via « Ma commande ».');
@@ -165,14 +172,11 @@ export class TableComponent implements OnInit, OnDestroy {
     this.subs.add(
       this.rt.events$.subscribe(ev => {
         if (ev.type === 'order:status' && ev.payload.orderId === this.orderId()) {
-          const s = ev.payload.status;
-          // Mise à jour du statut de la commande trackée
-          this.trackedOrder.update(o => o ? { ...o, status: s as OrderStatus } : null);
+          const s = ev.payload.status as OrderStatus;
+          this.trackedOrder.update(o => o ? { ...o, status: s } : null);
           if (s === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
-          if (s === 'ready')     this.toast.success('Votre commande est prête ! Elle arrive bientôt. 🎉');
-          if (TERMINAL_STATUSES.includes(s)) {
-            localStorage.removeItem(this.STORAGE_KEY);
-          }
+          if (s === 'ready')     this.toast.success('Votre commande est prête ! Choisissez votre mode de paiement ci-dessous. 💳');
+          if (TERMINAL_STATUSES.includes(s)) localStorage.removeItem(this.STORAGE_KEY);
         }
         if (ev.type === 'kitchen:question') {
           this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
@@ -226,9 +230,8 @@ export class TableComponent implements OnInit, OnDestroy {
 
   removeFromCart(p: Product) { this.cart.decrement(p.id); }
 
-  goToCart()    { this.step.set('cart'); }
-  goToMenu()    { this.step.set('menu'); }
-  goToPayment() { this.step.set('payment'); }
+  goToCart() { this.step.set('cart'); }
+  goToMenu() { this.step.set('menu'); }
 
   onCommandeTouchStart() {
     this.longPressTimer = setTimeout(() => this.commandeTooltip.set(true), 500);
@@ -266,7 +269,72 @@ export class TableComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(code).then(() => this.codeCopied.set(true));
   }
 
-  // ── Tracking : annuler la commande ──────────────────────────────────────
+  // ── Soumission de commande → tracking immédiat, paiement différé ─────────
+  submitOrder() {
+    const tableId = this.table()?.id;
+    if (!tableId || !this.cart.items().length) return;
+
+    this.submitting.set(true);
+    const payload = {
+      table_id:    tableId,
+      customer_id: this.auth.currentUser()?.id,
+      items: this.cart.items().map(i => ({
+        product_id: i.product.id,
+        quantity:   i.quantity,
+        unit_price: i.product.price,
+        notes:      i.notes || undefined
+      }))
+    };
+
+    this.orderSvc.create(payload).subscribe({
+      next: order => {
+        this.orderId.set(order.id);
+        this.orderCode.set(order.code ?? null);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ id: order.id, code: order.code }));
+        this.trackedOrder.set(order);
+        this.rt.invoke('JoinOrder', order.id).catch(() => {});
+        this.cart.clear();
+        this.submitting.set(false);
+        this.step.set('tracking');
+        this.toast.success('Commande transmise à la cuisine !');
+      },
+      error: () => {
+        this.toast.error('Impossible de créer la commande. Réessayez.');
+        this.submitting.set(false);
+      }
+    });
+  }
+
+  // ── Paiement (déclenché depuis le tracking quand status = ready) ──────────
+  submitPayment() {
+    const orderId = this.orderId();
+    if (!orderId) return;
+    this.submitting.set(true);
+    this.orderSvc.pay({
+      order_id:        orderId,
+      method:          this.payMethod(),
+      phone_number:    this.payPhone() || undefined,
+      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
+    }).subscribe({
+      next: payment => {
+        this.trackedOrder.update(o => o ? { ...o, payment } : null);
+        this.submitting.set(false);
+        if (payment.method === 'cash' && payment.status === 'pending') {
+          this.cashPopupStep.set('info');
+          this.cashReminderSent.set(false);
+          this.startCashCountdown();
+        } else {
+          this.toast.success('Paiement enregistré ! Votre commande arrive bientôt. 🎉');
+        }
+      },
+      error: () => {
+        this.toast.error('Erreur lors du paiement. Réessayez.');
+        this.submitting.set(false);
+      }
+    });
+  }
+
+  // ── Tracking : annuler ───────────────────────────────────────────────────
   cancelTrackedOrder() {
     const id = this.orderId();
     if (!id || this.cancelling()) return;
@@ -295,75 +363,6 @@ export class TableComponent implements OnInit, OnDestroy {
     this.loadMenu();
   }
 
-  // ── Paiement ─────────────────────────────────────────────────────────────
-  submitOrder() {
-    // Re-paiement pour une commande existante (changement de mode)
-    if (this.orderId()) {
-      this.repayExistingOrder();
-      return;
-    }
-
-    const tableId = this.table()?.id;
-    if (!tableId || !this.cart.items().length) return;
-
-    this.submitting.set(true);
-    const payload = {
-      table_id:    tableId,
-      customer_id: this.auth.currentUser()?.id,
-      items: this.cart.items().map(i => ({
-        product_id: i.product.id,
-        quantity:   i.quantity,
-        unit_price: i.product.price,
-        notes:      i.notes || undefined
-      }))
-    };
-
-    this.orderSvc.create(payload).subscribe({
-      next: order => {
-        this.orderId.set(order.id);
-        this.orderCode.set(order.code ?? null);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({ id: order.id, code: order.code }));
-        this.rt.invoke('JoinOrder', order.id).catch(() => {});
-        this.processPayment(order.id);
-      },
-      error: () => {
-        this.toast.error('Impossible de créer la commande. Réessayez.');
-        this.submitting.set(false);
-      }
-    });
-  }
-
-  private repayExistingOrder() {
-    this.submitting.set(true);
-    this.processPayment(this.orderId()!);
-  }
-
-  private processPayment(orderId: string) {
-    this.orderSvc.pay({
-      order_id:        orderId,
-      method:          this.payMethod(),
-      phone_number:    this.payPhone() || undefined,
-      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
-    }).subscribe({
-      next: payment => {
-        this.confirmedAmount.set(payment.amount);
-        this.cart.clear();
-        this.step.set('confirmation');
-        this.submitting.set(false);
-
-        if (payment.method === 'cash' && payment.status === 'pending') {
-          this.cashPopupStep.set('info');
-          this.cashReminderSent.set(false);
-          this.startCashCountdown();
-        }
-      },
-      error: () => {
-        this.toast.error('Erreur lors du paiement. Réessayez.');
-        this.submitting.set(false);
-      }
-    });
-  }
-
   // ── Cash popup ───────────────────────────────────────────────────────────
   private startCashCountdown() {
     clearInterval(this.cashCountdownInterval);
@@ -383,14 +382,11 @@ export class TableComponent implements OnInit, OnDestroy {
 
   sendServerReminder() {
     if (this.cashRemindDisabled()) return;
-    const orderId      = this.orderId()!;
-    const tableNumber  = String(this.table()?.number ?? '');
+    const orderId     = this.orderId()!;
+    const tableNumber = String(this.table()?.number ?? '');
     this.cashRemindDisabled.set(true);
     this.rt.invoke('RemindServer', orderId, tableNumber)
-      .then(() => {
-        this.cashReminderSent.set(true);
-        this.startCashCountdown();
-      })
+      .then(() => { this.cashReminderSent.set(true); this.startCashCountdown(); })
       .catch(() => this.cashRemindDisabled.set(false));
   }
 
@@ -402,9 +398,10 @@ export class TableComponent implements OnInit, OnDestroy {
       next: () => {
         clearInterval(this.cashCountdownInterval);
         this.cashPopupStep.set(null);
-        this.payPhone.set('');
-        this.step.set('payment');
         this.cashReminderSent.set(false);
+        // Retire le paiement du trackedOrder → le formulaire de paiement réapparaît
+        this.trackedOrder.update(o => o ? { ...o, payment: undefined } : null);
+        this.payPhone.set('');
       },
       error: () => this.cashChangeDisabled.set(false)
     });
@@ -432,7 +429,7 @@ export class TableComponent implements OnInit, OnDestroy {
         clearInterval(this.cashCountdownInterval);
         this.toast.success('Paiement confirmé !');
       },
-      error: (err) => {
+      error: err => {
         this.cashCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez la casse.');
         this.cashCodeSubmitting.set(false);
       }

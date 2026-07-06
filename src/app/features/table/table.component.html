@@ -255,143 +255,11 @@
             <span>Total</span>
             <strong class="cart-total__amount">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
           </div>
-          <button class="btn btn--primary btn--full btn--lg" (click)="goToPayment()">
-            Procéder au paiement →
+          <button class="btn btn--primary btn--full btn--lg" [disabled]="submitting()" (click)="submitOrder()">
+            @if (submitting()) { Envoi en cours… } @else { Commander → }
           </button>
         </div>
       }
-    </div>
-  }
-
-  <!-- ── ÉTAPE 3 : Paiement ───────────────────────────────────────── -->
-  @if (step() === 'payment') {
-    <div class="payment-page container">
-      @if (!orderId()) {
-        <button class="btn btn--ghost btn--sm" (click)="goToCart()">← Retour à ma commande</button>
-      }
-      <h2>Paiement</h2>
-
-      <div class="payment-layout">
-        <!-- Choix mode de paiement -->
-        <div class="payment-methods card">
-          <h4>Mode de paiement</h4>
-          <div class="payment-method-list">
-            @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'🟠'},{id:'mtn_momo',label:'MTN MoMo',icon:'🟡'}]) ; track m.id) {
-              <label class="payment-method-option" [class.selected]="payMethod() === m.id">
-                <input type="radio" name="method" [value]="m.id" [checked]="payMethod() === m.id" (change)="payMethod.set($any(m.id))">
-                <span class="payment-method-option__icon">{{ m.icon }}</span>
-                <span>{{ m.label }}</span>
-              </label>
-            }
-          </div>
-
-          @if (payMethod() === 'orange_money' || payMethod() === 'mtn_momo') {
-            <div class="form-group" style="margin-top:16px">
-              <label>Numéro de téléphone</label>
-              <input
-                type="tel"
-                class="form-control"
-                placeholder="ex: 6XX XXX XXX"
-                [value]="payPhone()"
-                (input)="payPhone.set($any($event.target).value)"
-              >
-            </div>
-          }
-        </div>
-
-        <!-- Récapitulatif -->
-        <div class="payment-summary">
-          <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:12px">
-            <h4>Récapitulatif</h4>
-
-            @if (orderId()) {
-              <!-- Re-paiement : commande déjà créée, montant connu -->
-              <div class="flex-between">
-                <span class="text-muted" style="font-size:.9rem">Commande déjà enregistrée</span>
-              </div>
-              <hr class="divider">
-              <div class="flex-between">
-                <strong>Total</strong>
-                <strong style="color:var(--color-primary)">{{ confirmedAmount() | number:'1.0-0' }} FCFA</strong>
-              </div>
-            } @else {
-              @for (item of cart.items(); track item.product.id) {
-                <div class="flex-between" style="font-size:.9375rem">
-                  <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                  <span>{{ item.product.price * item.quantity | number:'1.0-0' }} FCFA</span>
-                </div>
-              }
-              <hr class="divider">
-              <div class="flex-between">
-                <strong>Total</strong>
-                <strong style="color:var(--color-primary)">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
-              </div>
-            }
-
-            <!-- Points fidélité -->
-            @if (auth.isLoggedIn() && loyaltyBalance() > 0 && !orderId()) {
-              <div class="loyalty-toggle">
-                <label class="flex-between" style="cursor:pointer;gap:12px">
-                  <span>Utiliser mes points ({{ loyaltyBalance() }} pts)</span>
-                  <input type="checkbox" [checked]="usePoints()" (change)="usePoints.update(v=>!v)">
-                </label>
-              </div>
-            }
-
-            <button
-              class="btn btn--primary btn--full btn--lg"
-              [disabled]="submitting() || ((payMethod()==='orange_money'||payMethod()==='mtn_momo') && !payPhone())"
-              (click)="submitOrder()"
-            >
-              @if (submitting()) { Traitement… } @else { Confirmer & payer }
-            </button>
-
-            <p class="text-muted" style="font-size:.8125rem;text-align:center">
-              Le paiement sera traité à la table. Vous serez servi directement.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- ── ÉTAPE 4 : Confirmation ───────────────────────────────────── -->
-  @if (step() === 'confirmation') {
-    <div class="confirmation container">
-      <div class="confirmation__inner card">
-        <div class="confirmation__icon">🎉</div>
-        <h2>Commande confirmée !</h2>
-        <p>Votre commande a bien été transmise à la cuisine. Nous vous servirons directement à votre table.</p>
-        <p class="text-muted" style="font-size:.875rem">
-          Suivez le statut de votre commande ici — il se met à jour en temps réel.
-        </p>
-        <!-- Code de commande -->
-        @if (orderCode()) {
-          <div class="order-code-box">
-            <p class="order-code-box__label">Votre code de commande</p>
-            <div class="order-code-box__digits">{{ orderCode() }}</div>
-            <p class="order-code-box__tip">
-              Notez ce code ! Si vous quittez cette page, vous pourrez retrouver votre commande en le saisissant dans l'espace « Ma commande ».
-            </p>
-            <button
-              class="btn btn--outline btn--sm order-code-box__copy"
-              (click)="copyCode()"
-              [disabled]="codeCopied()"
-            >
-              @if (codeCopied()) { ✓ Code copié } @else { Copier le code }
-            </button>
-          </div>
-        }
-
-        @if (!auth.isLoggedIn()) {
-          <div class="confirmation__loyalty-hint">
-            <span>🌟</span>
-            <p>Créez un compte O'Mboa pour cumuler des points fidélité à chaque visite !</p>
-            <a routerLink="/auth/register" class="btn btn--accent btn--sm">Créer un compte</a>
-          </div>
-        }
-        <a routerLink="/" class="btn btn--ghost btn--sm">Retour à l'accueil</a>
-      </div>
     </div>
   }
 
@@ -444,6 +312,52 @@
               <span class="tracking-card__code-value">{{ orderCode() }}</span>
               <button class="btn btn--ghost btn--sm" (click)="copyCode()" [disabled]="codeCopied()">
                 @if (codeCopied()) { ✓ Copié } @else { Copier }
+              </button>
+            </div>
+          }
+
+          <!-- Formulaire de paiement — affiché uniquement quand la commande est prête et non encore payée -->
+          @if (trackedOrder()!.status === 'ready' && !trackedOrder()!.payment) {
+            <div class="tracking-payment">
+              <h3 class="tracking-payment__title">Finalisez votre paiement</h3>
+              <p class="tracking-payment__sub">Choisissez votre mode de paiement pour confirmer.</p>
+
+              <div class="payment-method-list">
+                @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'🟠'},{id:'mtn_momo',label:'MTN MoMo',icon:'🟡'}]); track m.id) {
+                  <label class="payment-method-option" [class.selected]="payMethod() === m.id">
+                    <input type="radio" name="track-pay-method" [value]="m.id" [checked]="payMethod() === m.id" (change)="payMethod.set($any(m.id))">
+                    <span class="payment-method-option__icon">{{ m.icon }}</span>
+                    <span>{{ m.label }}</span>
+                  </label>
+                }
+              </div>
+
+              @if (payMethod() === 'orange_money' || payMethod() === 'mtn_momo') {
+                <div class="form-group" style="margin-top:12px">
+                  <label>Numéro de téléphone</label>
+                  <input type="tel" class="form-control" placeholder="ex: 6XX XXX XXX"
+                    [value]="payPhone()"
+                    (input)="payPhone.set($any($event.target).value)">
+                </div>
+              }
+
+              @if (auth.isLoggedIn() && loyaltyBalance() > 0) {
+                <div class="loyalty-toggle" style="margin-top:12px">
+                  <label class="flex-between" style="cursor:pointer;gap:12px">
+                    <span>Utiliser mes points ({{ loyaltyBalance() }} pts)</span>
+                    <input type="checkbox" [checked]="usePoints()" (change)="usePoints.update(v=>!v)">
+                  </label>
+                </div>
+              }
+
+              <div class="tracking-payment__total">
+                Total : <strong>{{ trackingTotal() | number:'1.0-0' }} FCFA</strong>
+              </div>
+
+              <button class="btn btn--primary btn--full btn--lg"
+                [disabled]="submitting() || ((payMethod()==='orange_money'||payMethod()==='mtn_momo') && !payPhone())"
+                (click)="submitPayment()">
+                @if (submitting()) { Traitement… } @else { Confirmer le paiement }
               </button>
             </div>
           }

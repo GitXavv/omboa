@@ -55,6 +55,43 @@
           </div>
         }
 
+        <!-- Formulaire de paiement inline (commande prête, pas encore payée) -->
+        @if (order()!.status === 'ready' && !order()!.payment) {
+          <div class="mc-payment">
+            <h3 class="mc-payment__title">Finalisez votre paiement</h3>
+            <p class="mc-payment__sub">Votre commande est prête ! Choisissez votre mode de paiement.</p>
+
+            <div class="payment-method-list">
+              @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'🟠'},{id:'mtn_momo',label:'MTN MoMo',icon:'🟡'}]); track m.id) {
+                <label class="payment-method-option" [class.selected]="payMethod() === m.id">
+                  <input type="radio" name="mc-pay-method" [value]="m.id" [checked]="payMethod() === m.id" (change)="payMethod.set($any(m.id))">
+                  <span class="payment-method-option__icon">{{ m.icon }}</span>
+                  <span>{{ m.label }}</span>
+                </label>
+              }
+            </div>
+
+            @if (payMethod() === 'orange_money' || payMethod() === 'mtn_momo') {
+              <div class="form-group" style="margin-top:12px">
+                <label>Numéro de téléphone</label>
+                <input type="tel" class="form-control" placeholder="ex: 6XX XXX XXX"
+                  [value]="payPhone()"
+                  (input)="payPhone.set($any($event.target).value)">
+              </div>
+            }
+
+            <div class="mc-payment__total">
+              Total : <strong>{{ orderTotal() | number:'1.0-0' }} FCFA</strong>
+            </div>
+
+            <button class="btn btn--primary btn--full btn--lg"
+              [disabled]="submitting() || ((payMethod()==='orange_money'||payMethod()==='mtn_momo') && !payPhone())"
+              (click)="submitPayment()">
+              @if (submitting()) { Traitement… } @else { Confirmer le paiement }
+            </button>
+          </div>
+        }
+
         @if (order()!.status === 'pending') {
           <button
             class="btn btn--outline btn--sm mc-order__cancel"
@@ -107,6 +144,76 @@
 
   </div>
 </div>
+
+<!-- ── Popup paiement en espèce ──────────────────────────────────────────── -->
+@if (cashPopupStep()) {
+  <div class="mc-cash-overlay">
+    <div class="mc-cash-popup">
+
+      @if (cashPopupStep() === 'info') {
+        <div class="mc-cash-popup__header">💵 Paiement en espèce</div>
+        <div class="mc-cash-popup__body">
+          <p class="mc-cash-popup__text">
+            Votre commande a bien été reçue. Un·e serveur·euse va venir vers votre table
+            pour encaisser votre paiement. Il ou elle vous communiquera verbalement un
+            <strong>code à 5 caractères</strong> que vous devrez saisir pour confirmer le paiement.
+            Ce code est <strong>sensible à la casse</strong>.
+          </p>
+          @if (cashReminderSent()) {
+            <p class="mc-cash-popup__reminder-sent">✓ Rappel envoyé à la cuisine.</p>
+          }
+        </div>
+        <div class="mc-cash-popup__actions">
+          <button class="btn btn--primary btn--full" (click)="openCashCodeForm()">
+            Entrer le code de confirmation
+          </button>
+          <button class="btn btn--outline btn--full" [disabled]="cashRemindDisabled()" (click)="sendServerReminder()">
+            @if (cashRemindDisabled() && cashCountdown() > 0) {
+              Aucun·e serveur·euse n'est venu·e ({{ cashCountdown() }}s)
+            } @else {
+              Aucun·e serveur·euse n'est venu·e à ma table
+            }
+          </button>
+          <button class="btn btn--ghost btn--full" [disabled]="cashChangeDisabled()" (click)="changeCashPayment()">
+            @if (cashChangeDisabled() && cashCountdown() > 0) {
+              Changer de mode de paiement ({{ cashCountdown() }}s)
+            } @else {
+              Changer de mode de paiement
+            }
+          </button>
+        </div>
+      }
+
+      @if (cashPopupStep() === 'code') {
+        <div class="mc-cash-popup__header">🔑 Code de confirmation</div>
+        <div class="mc-cash-popup__body">
+          <p class="mc-cash-popup__text">
+            Saisissez le code à 5 caractères que le serveur vous a communiqué.
+            Attention : le code est <strong>sensible à la casse</strong>.
+          </p>
+          <input type="text" class="mc-cash-popup__code-input"
+            placeholder="Ex : aB3kZ" maxlength="5"
+            autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+            [value]="cashCodeInput()"
+            (input)="cashCodeInput.set($any($event.target).value)"
+            (keydown.enter)="submitCashCode()">
+          @if (cashCodeError()) {
+            <p class="mc-cash-popup__error">{{ cashCodeError() }}</p>
+          }
+        </div>
+        <div class="mc-cash-popup__actions">
+          <button class="btn btn--primary btn--full"
+            [disabled]="cashCodeSubmitting() || cashCodeInput().trim().length !== 5"
+            (click)="submitCashCode()">
+            @if (cashCodeSubmitting()) { Vérification… } @else { Valider le code }
+          </button>
+          <button class="btn btn--ghost btn--full" (click)="backToCashInfo()">← Retour</button>
+        </div>
+      }
+
+    </div>
+  </div>
+}
 
 <!-- ── Popup cuisine → client ──────────────────────────────────────────────── -->
 @if (kitchenPopup()) {
