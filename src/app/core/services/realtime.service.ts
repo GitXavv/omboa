@@ -9,10 +9,11 @@ export type RealtimeEvent =
   | { type: 'table:status';        payload: { tableId: string; isOccupied: boolean } }
   | { type: 'kitchen:question';    payload: { question: string } }
   | { type: 'kitchen:cancel';      payload: { reason: string } }
-  | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string } }
+  | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string; question: string } }
   | { type: 'server:reminder';     payload: { tableNumber: string; orderId: string } }
   | { type: 'delivery:reminder';   payload: { tableNumber: string; orderId: string } }
   | { type: 'server:issue';        payload: { tableNumber: string; orderId: string } }
+  | { type: 'admin:table-issue';   payload: { tableId: string; tableNumber: string } }
   | { type: 'payment:method';      payload: { orderId: string; method: string; cashCode: string | null } }
   | { type: 'payment:removed';     payload: { orderId: string } }
   | { type: 'connected' }
@@ -56,8 +57,8 @@ export class RealtimeService implements OnDestroy {
       this.events$.next({ type: 'kitchen:cancel', payload: { reason } })
     );
 
-    this.connection.on('ClientReply', (reply: string, tableNumber: string, orderId: string) =>
-      this.events$.next({ type: 'client:reply', payload: { reply, tableNumber, orderId } })
+    this.connection.on('ClientReply', (reply: string, tableNumber: string, orderId: string, question: string) =>
+      this.events$.next({ type: 'client:reply', payload: { reply, tableNumber, orderId, question } })
     );
 
     this.connection.on('ServerReminder', (tableNumber: string, orderId: string) =>
@@ -70,6 +71,10 @@ export class RealtimeService implements OnDestroy {
 
     this.connection.on('ServerIssue', (tableNumber: string, orderId: string) =>
       this.events$.next({ type: 'server:issue', payload: { tableNumber, orderId } })
+    );
+
+    this.connection.on('TableIssue', (tableId: string, tableNumber: string) =>
+      this.events$.next({ type: 'admin:table-issue', payload: { tableId, tableNumber } })
     );
 
     this.connection.on('PaymentMethod', (orderId: string, method: string, cashCode: string | null) =>

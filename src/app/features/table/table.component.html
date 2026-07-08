@@ -6,6 +6,34 @@
       <h2>Oups !</h2>
       <p>{{ tableError() }}</p>
       <a routerLink="/" class="btn btn--primary">Retour à l'accueil</a>
+
+      @if (tableErrorType() === 'occupied') {
+        @if (tableIssueReported()) {
+          <p class="text-muted" style="font-size:.875rem">✓ Les responsables ont été alertés.</p>
+        } @else {
+          <button class="btn btn--ghost btn--sm" (click)="requestReportTableIssue()">
+            Mais il n'y a personne d'autre sur cette table
+          </button>
+        }
+      }
+    </div>
+  </div>
+}
+
+<!-- ── Popup confirmation signalement table ─────────────────────────────────── -->
+@if (reportingTableIssue()) {
+  <div class="order-confirm-overlay" (click)="cancelReportTableIssue()">
+    <div class="order-confirm" (click)="$event.stopPropagation()">
+      <p>
+        Les responsables seront immédiatement alertés de ce problème, procéderont à des
+        vérifications et, dans la plupart des cas, passeront en personne vérifier l'état
+        physique de la table.
+      </p>
+      <p class="order-confirm__question">Alerter les responsables ?</p>
+      <div class="order-confirm__actions">
+        <button class="btn btn--ghost btn--full" (click)="cancelReportTableIssue()">Annuler</button>
+        <button class="btn btn--primary btn--full" (click)="confirmReportTableIssue()">Alerter</button>
+      </div>
     </div>
   </div>
 }
@@ -249,15 +277,16 @@
 
         <div class="cart-notes card">
           <label for="order-notes">Note de commande</label>
-          <input
+          <textarea
             id="order-notes"
-            type="text"
-            class="form-control"
+            class="form-control cart-notes__textarea"
+            rows="3"
             maxlength="50"
             placeholder='Mentionnez quelque chose de précis que vous pensez que la cuisine devra savoir à propos de votre commande. Par exemple : "Ne mettez pas trop de condiments dans mon poulet DG".'
             [value]="orderNotes()"
-            (input)="orderNotes.set($any($event.target).value)"
-          >
+            (input)="orderNotes.set($any($event.target).value.replace('\n', ''))"
+            (keydown.enter)="$event.preventDefault()"
+          ></textarea>
           <span class="cart-notes__count">{{ orderNotes().length }}/50</span>
         </div>
 
@@ -289,6 +318,23 @@
           <button class="btn btn--primary btn--full" [disabled]="submitting()" (click)="confirmSubmitOrder()">
             @if (submitting()) { Envoi en cours… } @else { Confirmer }
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Popup explicatif du code de commande ─────────────────────────────── -->
+  @if (orderCodePopup()) {
+    <div class="order-confirm-overlay" (click)="dismissOrderCodePopup()">
+      <div class="order-confirm" (click)="$event.stopPropagation()">
+        <p class="order-confirm__question">Votre code de commande : {{ orderCode() }}</p>
+        <p>
+          Ce code identifie votre commande. Il figurera sur votre facture si votre commande
+          aboutit, et vous sera demandé à la sortie pour confirmer que vous quittez bien votre
+          table.
+        </p>
+        <div class="order-confirm__actions">
+          <button class="btn btn--primary btn--full" (click)="dismissOrderCodePopup()">Ok</button>
         </div>
       </div>
     </div>

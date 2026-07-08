@@ -218,7 +218,8 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     const reply = this.kitchenReply().trim();
     if (!reply || this.kitchenReplySent()) return;
     const tableNumber = String(this.order()?.table?.number ?? '');
-    this.rt.invoke('ReplyToKitchen', this.order()!.id, reply, tableNumber)
+    const question = this.kitchenPopup()?.message ?? '';
+    this.rt.invoke('ReplyToKitchen', this.order()!.id, reply, tableNumber, question)
       .then(() => this.kitchenReplySent.set(true));
   }
 

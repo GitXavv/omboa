@@ -51,6 +51,10 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly openIds          = signal<Set<string>>(new Set());
   readonly loading          = signal(true);
   readonly tableError       = signal<string | null>(null);
+  readonly tableErrorType   = signal<'occupied' | 'other-table-active' | null>(null);
+  readonly reportingTableIssue = signal(false);
+  readonly tableIssueReported  = signal(false);
+  readonly orderCodePopup      = signal(false);
   readonly submitting       = signal(false);
   readonly orderId          = signal<string | null>(null);
   readonly orderCode        = signal<string | null>(null);
@@ -150,52 +154,20 @@ export class TableComponent implements OnInit, OnDestroy {
           return;
         }
 
-        if (t.is_occupied) {
-          if (storedOrder) {
-            this.orderSvc.getById(storedOrder.id).subscribe({
-              next: order => {
-                if (order.table_id === tableId && !TERMINAL_STATUSES.includes(order.status)) {
-                  this.table.set(t);
-                  this.orderId.set(order.id);
-                  this.orderCode.set(order.code ?? null);
-                  this.trackedOrder.set(order);
-                  this.step.set('tracking');
-                  this.rt.invoke('JoinOrder', order.id).catch(() => {});
-                  // Restaurer le code de service si la commande est déjà payée
-                  if (order.status === 'paid') {
-                    const svc = localStorage.getItem(`omboa_svc_${order.id}`);
-                    if (svc) this.serviceCode.set(svc);
-                  }
-                  // Rouvrir le popup espèce si un paiement était en attente
-                  if (order.payment?.method === 'cash' && order.payment.status === 'pending') {
-                    this.cashPopupStep.set('info');
-                    this.cashReminderSent.set(false);
-                    this.startCashCountdown();
-                  }
-                } else {
-                  localStorage.removeItem(this.STORAGE_KEY);
-                  this.tableError.set('Cette table est occupée. Retrouvez votre commande via « Ma commande ».');
-                }
-                this.loading.set(false);
-              },
-              error: () => {
-                localStorage.removeItem(this.STORAGE_KEY);
-                this.tableError.set('Cette table est occupée. Retrouvez votre commande via « Ma commande ».');
-                this.loading.set(false);
-              }
-            });
-          } else {
-            this.tableError.set('Cette table est déjà occupée. Si vous avez déjà passé une commande, retrouvez-la via « Ma commande ».');
-            this.loading.set(false);
-          }
-          return;
+        if (storedOrder) {
+          this.orderSvc.getById(storedOrder.id).subscribe({
+            next: order => this.resolveWithStoredOrder(t, tableId, order),
+            error: () => {
+              localStorage.removeItem(this.STORAGE_KEY);
+              this.continueToTable(t, tableId);
+            }
+          });
+        } else {
+          this.continueToTable(t, tableId);
         }
-
-        this.table.set(t);
-        this.loadMenu();
       },
-      error: () => {
-        this.tableError.set('Table introuvable. Vérifiez votre QR code.');
+      error: err => {
+        this.tableError.set(err?.error?.message ?? 'Table introuvable. Vérifiez votre QR code.');
         this.loading.set(false);
       }
     });
@@ -242,6 +214,61 @@ export class TableComponent implements OnInit, OnDestroy {
     clearTimeout(this.tooltipHideTimer);
     clearTimeout(this.cartPulseTimer);
     clearInterval(this.cashCountdownInterval);
+  }
+
+  // Une commande active (peu importe la table) prime sur tout : on ne laisse jamais un
+  // client démarrer/poursuivre une commande sur une table pendant qu'une autre est en cours
+  // ailleurs sur son appareil (sinon rien n'empêche de commander à deux tables à la fois).
+  private resolveWithStoredOrder(t: TableStatus, tableId: string, order: Order) {
+    const stillActive = !TERMINAL_STATUSES.includes(order.status);
+
+    if (stillActive && order.table_id !== tableId) {
+      this.table.set(t);
+      this.tableError.set(
+        `Vous avez déjà une commande en cours à la table ${order.table?.number ?? '—'}. ` +
+        `Terminez-la avant d'en commencer une nouvelle.`
+      );
+      this.tableErrorType.set('other-table-active');
+      this.loading.set(false);
+      return;
+    }
+
+    if (stillActive && order.table_id === tableId) {
+      this.table.set(t);
+      this.orderId.set(order.id);
+      this.orderCode.set(order.code ?? null);
+      this.trackedOrder.set(order);
+      this.step.set('tracking');
+      this.rt.invoke('JoinOrder', order.id).catch(() => {});
+      if (order.status === 'paid') {
+        const svc = localStorage.getItem(`omboa_svc_${order.id}`);
+        if (svc) this.serviceCode.set(svc);
+      }
+      if (order.payment?.method === 'cash' && order.payment.status === 'pending') {
+        this.cashPopupStep.set('info');
+        this.cashReminderSent.set(false);
+        this.startCashCountdown();
+      }
+      this.loading.set(false);
+      return;
+    }
+
+    // Commande terminale (servie/libérée/annulée) : obsolète, on nettoie et on continue.
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.continueToTable(t, tableId);
+  }
+
+  private continueToTable(t: TableStatus, tableId: string) {
+    if (t.is_occupied) {
+      this.table.set(t);
+      this.tableError.set('Cette table est déjà occupée. Si vous avez déjà passé une commande, retrouvez-la via « Ma commande ».');
+      this.tableErrorType.set('occupied');
+      this.loading.set(false);
+      return;
+    }
+
+    this.table.set(t);
+    this.loadMenu();
   }
 
   private loadMenu() {
@@ -321,9 +348,26 @@ export class TableComponent implements OnInit, OnDestroy {
     const reply = this.kitchenReply().trim();
     if (!reply || this.kitchenReplySent()) return;
     const tableNumber = String(this.table()?.number ?? '');
-    this.rt.invoke('ReplyToKitchen', this.orderId()!, reply, tableNumber)
+    const question = this.kitchenPopup()?.message ?? '';
+    this.rt.invoke('ReplyToKitchen', this.orderId()!, reply, tableNumber, question)
       .then(() => this.kitchenReplySent.set(true));
   }
+
+  // ── Signalement "table occupée à tort" ────────────────────────────────────
+  requestReportTableIssue() { this.reportingTableIssue.set(true); }
+  cancelReportTableIssue()  { this.reportingTableIssue.set(false); }
+
+  confirmReportTableIssue() {
+    this.reportingTableIssue.set(false);
+    const tableId = this.route.snapshot.paramMap.get('tableId');
+    if (!tableId) return;
+    const tableNumber = this.table()?.number ?? '—';
+    this.rt.invoke('ReportTableIssue', tableId, tableNumber)
+      .then(() => { this.tableIssueReported.set(true); this.toast.success('Les responsables ont été alertés.'); })
+      .catch(() => this.toast.error('Impossible d\'envoyer le signalement. Réessayez.'));
+  }
+
+  dismissOrderCodePopup() { this.orderCodePopup.set(false); }
 
   copyCode() {
     const code = this.orderCode();
@@ -371,6 +415,7 @@ export class TableComponent implements OnInit, OnDestroy {
         this.step.set('tracking');
         this.scrollToTop();
         this.toast.success('Commande transmise à la cuisine !');
+        if (order.code) this.orderCodePopup.set(true);
       },
       error: () => {
         this.toast.error('Impossible de créer la commande. Réessayez.');

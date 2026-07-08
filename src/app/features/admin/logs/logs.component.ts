@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { LogService } from '../../../core/services/log.service';
 import { Log } from '../../../core/models';
 import { DatePipe, LowerCasePipe } from '@angular/common';
@@ -16,6 +16,7 @@ import { ToastService } from '../../../core/services/toast.service';
 export class LogsComponent implements OnInit {
   private readonly logSvc = inject(LogService);
   private readonly toast  = inject(ToastService);
+  private readonly route  = inject(ActivatedRoute);
 
   readonly logs        = signal<Log[]>([]);
   readonly total       = signal(0);
@@ -23,6 +24,7 @@ export class LogsComponent implements OnInit {
   readonly page        = signal(1);
   readonly eventType   = signal('');
   readonly downloading = signal(false);
+  readonly entityId    = signal<string | null>(null);
 
   readonly eventTypes = [
     '', 'ORDER_CREATED', 'ORDER_STATUS_CHANGED', 'QR_SCANNED',
@@ -53,14 +55,27 @@ export class LogsComponent implements OnInit {
     'LOGS_DOWNLOADED':     'Logs téléchargés',
   };
 
-  ngOnInit() { this.load(); }
+  ngOnInit() {
+    this.entityId.set(this.route.snapshot.queryParamMap.get('entity_id'));
+    this.load();
+  }
 
   load() {
     this.loading.set(true);
-    this.logSvc.getAll({ event_type: this.eventType() || undefined, page: this.page() }).subscribe({
+    this.logSvc.getAll({
+      event_type: this.eventType() || undefined,
+      entity_id: this.entityId() || undefined,
+      page: this.page()
+    }).subscribe({
       next: r => { this.logs.set(r.data); this.total.set(r.total); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
+  }
+
+  clearEntityFilter() {
+    this.entityId.set(null);
+    this.page.set(1);
+    this.load();
   }
 
   download() {

@@ -382,7 +382,7 @@
 /* ── Note de commande ──────────────────────────────────────────────────────── */
 .cart-notes { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .cart-notes label { font-size: 0.8125rem; font-weight: 600; color: var(--color-text); }
-.cart-notes input { font-size: 0.875rem; }
+.cart-notes__textarea { font-size: 0.875rem; resize: none; height: 84px; font-family: inherit; }
 .cart-notes__count { align-self: flex-end; font-size: 0.6875rem; color: var(--color-text-light); }
 
 /* ── Popup confirmation de commande ───────────────────────────────────────── */

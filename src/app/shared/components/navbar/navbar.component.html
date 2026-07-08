@@ -31,16 +31,18 @@
       >
     </div>
 
-    <!-- Bouton Ma commande (toujours visible) -->
-    <a routerLink="/ma-commande" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
-      <img src="icons/commandes-logo.png" alt="Ma commande" class="navbar__commande-hdr-icon">
-    </a>
+    <!-- Bouton Ma commande (clients uniquement — le staff ne commande pas) -->
+    @if (!auth.isStaff()) {
+      <a routerLink="/ma-commande" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
+        <img src="icons/commandes-logo.png" alt="Ma commande" class="navbar__commande-hdr-icon">
+      </a>
+    }
 
     <!-- Actions desktop -->
     <div class="navbar__actions">
 
-      <!-- Panier (connectés uniquement) -->
-      @if (auth.isLoggedIn()) {
+      <!-- Panier (clients connectés uniquement — pas le staff) -->
+      @if (auth.isLoggedIn() && !auth.isStaff()) {
       <div class="navbar__cart-wrap">
         <button class="navbar__cart-btn" (click)="toggleCart()" [class.active]="cartOpen()" aria-label="Ma commande">
           🛒
@@ -143,7 +145,7 @@
     <span class="bottom-nav__label">Accueil</span>
   </a>
   <!-- Panier si connecté + items, sinon Auth/Compte -->
-  @if (auth.isLoggedIn() && cart.count() > 0) {
+  @if (auth.isLoggedIn() && !auth.isStaff() && cart.count() > 0) {
     <button class="bottom-nav__item" (click)="toggleCart()">
       <span class="bottom-nav__icon">🛒 <span class="bottom-nav__cart-badge">{{ cart.count() }}</span></span>
       <span class="bottom-nav__label">Ma commande</span>

@@ -8,10 +8,6 @@
         {{ activeCount() }} commande{{ activeCount() !== 1 ? 's' : '' }} active{{ activeCount() !== 1 ? 's' : '' }}
       </span>
     </div>
-    <div class="kitchen-status" [class.kitchen-status--on]="connected()">
-      <span class="kitchen-status__dot"></span>
-      {{ connected() ? 'En ligne' : 'Hors ligne' }}
-    </div>
   </header>
 
   @if (loading()) {
@@ -46,6 +42,12 @@
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
               <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
+            @if (o.table && !o.table.is_active) {
+              <div class="order-card__table-disabled">⚠️ Table désactivée</div>
+            }
+            @if (o.notes) {
+              <div class="order-card__order-note">📝 {{ o.notes }}</div>
+            }
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
@@ -96,6 +98,12 @@
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
               <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
+            @if (o.table && !o.table.is_active) {
+              <div class="order-card__table-disabled">⚠️ Table désactivée</div>
+            }
+            @if (o.notes) {
+              <div class="order-card__order-note">📝 {{ o.notes }}</div>
+            }
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
@@ -144,6 +152,12 @@
               <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
               <span class="order-card__time" [class.order-card__time--urgent]="elapsedUrgent(o.created_at)">⏱ {{ elapsed(o.created_at) }}</span>
             </div>
+            @if (o.table && !o.table.is_active) {
+              <div class="order-card__table-disabled">⚠️ Table désactivée</div>
+            }
+            @if (o.notes) {
+              <div class="order-card__order-note">📝 {{ o.notes }}</div>
+            }
             @if (o.payment) {
               <div class="order-card__payment">
                 <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
@@ -310,6 +324,9 @@
         <span class="kitchen-dialog__title">📩 Réponse — Table {{ clientReplyPopup()!.tableNumber }}</span>
       </div>
       <div class="kitchen-dialog__body">
+        @if (clientReplyPopup()!.question) {
+          <p class="kitchen-reply__question">Vous aviez demandé : « {{ clientReplyPopup()!.question }} »</p>
+        }
         <p class="kitchen-reply__text">{{ clientReplyPopup()!.reply }}</p>
       </div>
       <div class="kitchen-dialog__footer">

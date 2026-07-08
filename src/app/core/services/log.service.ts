@@ -10,11 +10,12 @@ export class LogService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(params?: { event_type?: string; from?: string; to?: string; page?: number }): Observable<{ data: Log[]; total: number }> {
+  getAll(params?: { event_type?: string; from?: string; to?: string; entity_id?: string; page?: number }): Observable<{ data: Log[]; total: number }> {
     const query = new URLSearchParams();
     if (params?.event_type) query.set('event_type', params.event_type);
     if (params?.from)       query.set('from', params.from);
     if (params?.to)         query.set('to', params.to);
+    if (params?.entity_id)  query.set('entity_id', params.entity_id);
     if (params?.page)       query.set('page', String(params.page));
     return this.http.get<{ data: Log[]; total: number }>(`${this.base}?${query}`).pipe(
       map(r => ({

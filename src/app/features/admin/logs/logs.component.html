@@ -5,6 +5,11 @@
       <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
       <h2>Logs d'activité</h2>
       <p class="text-muted">{{ total() }} événement{{ total() !== 1 ? 's' : '' }} enregistré{{ total() !== 1 ? 's' : '' }}</p>
+      @if (entityId()) {
+        <p class="text-muted" style="font-size:.8125rem">
+          Filtré sur un élément précis — <button class="btn btn--ghost btn--sm" style="padding:2px 8px" (click)="clearEntityFilter()">Retirer ce filtre</button>
+        </p>
+      }
     </div>
     <button class="btn btn--ghost btn--sm" [disabled]="downloading()" (click)="download()">
       {{ downloading() ? '…' : '⬇' }} Télécharger .txt

@@ -55,7 +55,6 @@ export class KitchenComponent implements OnInit, OnDestroy {
 
   readonly orders       = signal<Order[]>([]);
   readonly loading      = signal(true);
-  readonly connected    = signal(false);
   readonly confirmingId = signal<string | null>(null);
   readonly confirmMode  = signal<'advance'>('advance');
   readonly mobileTab    = signal<OrderStatus>('pending');
@@ -71,7 +70,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
   readonly dialogError      = signal('');
 
   // Popup réponse client
-  readonly clientReplyPopup = signal<{ reply: string; tableNumber: string } | null>(null);
+  readonly clientReplyPopup = signal<{ reply: string; tableNumber: string; question: string } | null>(null);
 
   // Popup rappel serveur (paiement espèce)
   readonly serverReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
@@ -117,12 +116,10 @@ export class KitchenComponent implements OnInit, OnDestroy {
     this.sub = this.realtime.events$.subscribe(ev => {
       if (ev.type === 'connected') {
         // Reconnexion : re-rejoindre le groupe et recharger
-        this.connected.set(true);
         this.realtime.invoke('JoinKitchen')
           .then(() => this.loadOrders())
           .catch(() => {});
       }
-      if (ev.type === 'disconnected') this.connected.set(false);
 
       if (ev.type === 'order:new') {
         this.orderSvc.getById(ev.payload.orderId).subscribe(o =>
@@ -170,8 +167,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
 
     this.realtime.connect(this.auth.getToken() ?? undefined)
       .then(() => this.realtime.invoke('JoinKitchen'))
-      .then(() => this.connected.set(true))
-      .catch(() => this.connected.set(false));
+      .catch(() => {});
   }
 
   ngOnDestroy() {

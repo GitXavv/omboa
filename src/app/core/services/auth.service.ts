@@ -22,6 +22,8 @@ export class AuthService {
   readonly isOwner   = computed(() => this.currentUser()?.role === 'owner');
   readonly isCook    = computed(() => this.currentUser()?.role === 'cook');
   readonly isReceptionist = computed(() => this.currentUser()?.role === 'receptionist');
+  // Staff = ne peut pas passer de commande ni scanner de table comme un client
+  readonly isStaff   = computed(() => ['owner', 'cook', 'receptionist'].includes(this.currentUser()?.role ?? ''));
 
   constructor(private http: HttpClient, private router: Router) {}
 

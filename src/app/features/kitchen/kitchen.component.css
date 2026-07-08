@@ -170,6 +170,26 @@
 .order-card__time { font-size: 0.75rem; color: rgba(240,232,220,0.4); font-variant-numeric: tabular-nums; }
 .order-card__time--urgent { color: var(--color-warning); font-weight: 600; }
 
+.order-card__table-disabled {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-error);
+  background: rgba(239,83,80,0.12);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+
+/* Note de commande — discrète, ne doit pas concurrencer les items */
+.order-card__order-note {
+  font-size: 0.8125rem;
+  color: rgba(240,232,220,0.5);
+  font-style: italic;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
 /* ── Liste items ─────────────────────────────────────────────────────────── */
 .order-card__items {
   display: flex;
@@ -373,6 +393,12 @@
 .kitchen-dialog__btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Popup réponse client ────────────────────────────────────────────────── */
+.kitchen-reply__question {
+  font-size: 0.875rem;
+  color: rgba(240,232,220,0.5);
+  font-style: italic;
+  margin: 0 0 10px;
+}
 .kitchen-reply__text {
   font-size: 1.0625rem;
   color: #f0e8dc;
