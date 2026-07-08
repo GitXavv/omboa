@@ -16,14 +16,14 @@ export class CartService {
 
   setTable(id: string) { this.tableId.set(id); }
 
-  add(product: Product, notes = '') {
+  add(product: Product, notes = '', quantity = 1) {
     const existing = this.items().find(i => i.product.id === product.id && i.notes === notes);
     if (existing) {
       this.items.update(items =>
-        items.map(i => i === existing ? { ...i, quantity: i.quantity + 1 } : i)
+        items.map(i => i === existing ? { ...i, quantity: i.quantity + quantity } : i)
       );
     } else {
-      this.items.update(items => [...items, { product, quantity: 1, notes }]);
+      this.items.update(items => [...items, { product, quantity, notes }]);
     }
   }
 

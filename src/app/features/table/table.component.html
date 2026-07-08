@@ -29,6 +29,7 @@
       <div class="commandes-btn-wrap">
         <button
           class="commandes-btn"
+          [class.commandes-btn--pulse]="cartPulse()"
           (click)="goToCart()"
           title="Ma commande"
           (touchstart)="onCommandeTouchStart()"
@@ -199,14 +200,6 @@
       </div>
     </div>
 
-    <!-- Bouton flottant quand commande non vide -->
-    @if (cart.count() > 0) {
-      <div class="cart-fab">
-        <button class="btn btn--primary btn--lg" (click)="goToCart()">
-          Voir ma commande · {{ cart.count() }} article(s) · {{ cart.total() | number:'1.0-0' }} FCFA
-        </button>
-      </div>
-    }
   }
 
   <!-- ── ÉTAPE 2 : Ma commande ────────────────────────────────────── -->
@@ -250,16 +243,54 @@
           }
         </div>
 
+        @if (cartPrepMinutes() > 0) {
+          <div class="cart-prep-estimate">⏱ Durée de préparation estimée : environ {{ cartPrepMinutes() }} min</div>
+        }
+
+        <div class="cart-notes card">
+          <label for="order-notes">Note de commande</label>
+          <input
+            id="order-notes"
+            type="text"
+            class="form-control"
+            maxlength="50"
+            placeholder='Mentionnez quelque chose de précis que vous pensez que la cuisine devra savoir à propos de votre commande. Par exemple : "Ne mettez pas trop de condiments dans mon poulet DG".'
+            [value]="orderNotes()"
+            (input)="orderNotes.set($any($event.target).value)"
+          >
+          <span class="cart-notes__count">{{ orderNotes().length }}/50</span>
+        </div>
+
         <div class="cart-total card">
           <div class="flex-between">
             <span>Total</span>
             <strong class="cart-total__amount">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
           </div>
-          <button class="btn btn--primary btn--full btn--lg" [disabled]="submitting()" (click)="submitOrder()">
-            @if (submitting()) { Envoi en cours… } @else { Commander → }
+          <button class="btn btn--primary btn--full btn--lg" [disabled]="submitting()" (click)="requestSubmitOrder()">
+            @if (submitting()) { Envoi en cours… } @else { Passer la commande }
           </button>
         </div>
       }
+    </div>
+  }
+
+  <!-- ── Popup confirmation de commande ───────────────────────────────────── -->
+  @if (confirmingSubmit()) {
+    <div class="order-confirm-overlay" (click)="cancelSubmitOrder()">
+      <div class="order-confirm" (click)="$event.stopPropagation()">
+        <p>
+          La cuisine recevra votre commande à l'instant où vous l'aurez confirmée. Vous pourrez
+          suivre l'état d'avancement de votre commande en temps réel depuis cette page. Vous aurez
+          la possibilité d'annuler votre commande tant que la cuisine ne l'aura pas encore traitée.
+        </p>
+        <p class="order-confirm__question">Confirmer la commande ?</p>
+        <div class="order-confirm__actions">
+          <button class="btn btn--ghost btn--full" (click)="cancelSubmitOrder()">Annuler</button>
+          <button class="btn btn--primary btn--full" [disabled]="submitting()" (click)="confirmSubmitOrder()">
+            @if (submitting()) { Envoi en cours… } @else { Confirmer }
+          </button>
+        </div>
+      </div>
     </div>
   }
 
@@ -292,6 +323,13 @@
             <span class="tracking-card__status tracking-status--{{ trackedOrder()!.status }}">
               {{ trackedStatusLabels[trackedOrder()!.status] ?? trackedOrder()!.status }}
             </span>
+          </div>
+
+          <div class="tracking-card__meta">
+            <span>🕐 Reçue en cuisine à {{ trackedOrder()!.created_at | date:'HH:mm' }}</span>
+            @if (trackedPrepMinutes() > 0) {
+              <span>⏱ Préparation estimée : environ {{ trackedPrepMinutes() }} min</span>
+            }
           </div>
 
           @if (trackedOrder()!.order_items?.length) {
@@ -409,16 +447,15 @@
       <div class="product-modal__body">
         <h3 class="product-modal__name">{{ selectedProduct()!.name }}</h3>
         <span class="product-modal__price">{{ selectedProduct()!.price | number:'1.0-0' }} FCFA</span>
+        <span class="product-modal__duration">⏱ Durée moyenne de préparation : {{ selectedProduct()!.cook_duration }} min</span>
 
         @if (selectedProduct()!.is_available) {
           <div class="product-modal__actions">
-            @if (cartQuantity(selectedProduct()!.id) > 0) {
-              <div class="product-modal__qty">
-                <button class="btn btn--ghost btn--sm" (click)="cart.decrement(selectedProduct()!.id)">−</button>
-                <span class="product-modal__qty-count">{{ cartQuantity(selectedProduct()!.id) }}</span>
-                <button class="btn btn--ghost btn--sm" (click)="cart.increment(selectedProduct()!.id)">+</button>
-              </div>
-            }
+            <div class="product-modal__qty">
+              <button class="btn btn--ghost btn--sm" [disabled]="modalQuantity() <= 1" (click)="decrementModalQty()">−</button>
+              <span class="product-modal__qty-count">{{ modalQuantity() }}</span>
+              <button class="btn btn--ghost btn--sm" (click)="incrementModalQty()">+</button>
+            </div>
             <button class="btn btn--primary btn--full" (click)="addToCart(selectedProduct()!)">
               Ajouter à ma commande
             </button>
@@ -490,11 +527,13 @@
             Votre commande a bien été reçue. Un·e serveur·euse va venir vers votre table
             pour encaisser votre paiement. Il ou elle vous communiquera verbalement un
             <strong>code à 5 caractères</strong> que vous devrez saisir pour confirmer le paiement.
-            Ce code est <strong>sensible à la casse</strong>.
           </p>
 
           @if (cashReminderSent()) {
             <p class="cash-popup__reminder-sent">✓ Rappel envoyé à la cuisine.</p>
+          }
+          @if (serverIssueSent()) {
+            <p class="cash-popup__reminder-sent">✓ Signalement envoyé à l'administration.</p>
           }
         </div>
         <div class="cash-popup__actions">
@@ -523,6 +562,13 @@
               Changer de mode de paiement
             }
           </button>
+          <button
+            class="btn btn--ghost btn--full"
+            [disabled]="serverIssueSent()"
+            (click)="reportServerIssue()"
+          >
+            @if (serverIssueSent()) { ✓ Signalé à l'administration } @else { Le serveur refuse de me donner le code }
+          </button>
         </div>
       }
 
@@ -534,12 +580,11 @@
         <div class="cash-popup__body">
           <p class="cash-popup__text">
             Saisissez le code à 5 caractères que le serveur vous a communiqué.
-            Attention : le code est <strong>sensible à la casse</strong>.
           </p>
           <input
             type="text"
             class="cash-popup__code-input"
-            placeholder="Ex : aB3kZ"
+            placeholder="Ex : a3bkz"
             maxlength="5"
             autocomplete="off"
             autocorrect="off"
@@ -579,10 +624,14 @@
           Voici votre code de service. Le·la ou les serveurs·euses qui viendront avec votre commande dans quelques instants vous demanderont de leur dicter ce code pour confirmer la remise de votre commande.
         </p>
         <div class="svc-popup__code">{{ serviceCode() }}</div>
-        <p class="svc-popup__hint">Sensible à la casse · Ne le partagez pas</p>
-        @if (!auth.isLoggedIn()) {
-          <p class="svc-popup__anon">(action irréversible pour les clients sans compte)</p>
-        }
+        <p class="svc-popup__hint">Ne le partagez pas</p>
+        <button
+          class="btn btn--outline btn--full svc-popup__reminder-btn"
+          [disabled]="deliveryReminderSent()"
+          (click)="sendDeliveryReminder()"
+        >
+          @if (deliveryReminderSent()) { ✓ Rappel envoyé à la cuisine } @else { Aucun·e serveur·euse n'est encore venu·e avec ma commande }
+        </button>
       </div>
     </div>
   </div>

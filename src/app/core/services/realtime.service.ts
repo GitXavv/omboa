@@ -11,6 +11,8 @@ export type RealtimeEvent =
   | { type: 'kitchen:cancel';      payload: { reason: string } }
   | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string } }
   | { type: 'server:reminder';     payload: { tableNumber: string; orderId: string } }
+  | { type: 'delivery:reminder';   payload: { tableNumber: string; orderId: string } }
+  | { type: 'server:issue';        payload: { tableNumber: string; orderId: string } }
   | { type: 'payment:method';      payload: { orderId: string; method: string; cashCode: string | null } }
   | { type: 'payment:removed';     payload: { orderId: string } }
   | { type: 'connected' }
@@ -60,6 +62,14 @@ export class RealtimeService implements OnDestroy {
 
     this.connection.on('ServerReminder', (tableNumber: string, orderId: string) =>
       this.events$.next({ type: 'server:reminder', payload: { tableNumber, orderId } })
+    );
+
+    this.connection.on('DeliveryReminder', (tableNumber: string, orderId: string) =>
+      this.events$.next({ type: 'delivery:reminder', payload: { tableNumber, orderId } })
+    );
+
+    this.connection.on('ServerIssue', (tableNumber: string, orderId: string) =>
+      this.events$.next({ type: 'server:issue', payload: { tableNumber, orderId } })
     );
 
     this.connection.on('PaymentMethod', (orderId: string, method: string, cashCode: string | null) =>

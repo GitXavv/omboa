@@ -73,8 +73,11 @@ export class KitchenComponent implements OnInit, OnDestroy {
   // Popup réponse client
   readonly clientReplyPopup = signal<{ reply: string; tableNumber: string } | null>(null);
 
-  // Popup rappel serveur
+  // Popup rappel serveur (paiement espèce)
   readonly serverReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
+
+  // Popup rappel livraison (commande payée, personne n'est encore venue servir)
+  readonly deliveryReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
 
   // Popup génération du code espèce (cuisine → code pour que le client le saisisse)
   readonly cashCodePopup = signal<{ code: string; orderId: string; countdown: number } | null>(null);
@@ -159,6 +162,9 @@ export class KitchenComponent implements OnInit, OnDestroy {
       }
       if (ev.type === 'server:reminder') {
         this.serverReminderPopup.set(ev.payload);
+      }
+      if (ev.type === 'delivery:reminder') {
+        this.deliveryReminderPopup.set(ev.payload);
       }
     });
 
@@ -317,7 +323,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
         this.toast.success('Commande servie !');
       },
       error: err => {
-        this.serveCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez les majuscules et minuscules.');
+        this.serveCodeError.set(err?.error?.message ?? 'Code incorrect.');
         this.serveCodeSubmitting.set(false);
       }
     });
@@ -326,6 +332,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
   // ── Popups info ───────────────────────────────────────────────────────────
   dismissReplyPopup()    { this.clientReplyPopup.set(null); }
   dismissReminderPopup() { this.serverReminderPopup.set(null); }
+  dismissDeliveryReminderPopup() { this.deliveryReminderPopup.set(null); }
 
   hasNext(order: Order)       { return nextStatus(order) !== null; }
   nextLabelFor(order: Order)  { return nextLabel(order); }

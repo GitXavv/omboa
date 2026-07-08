@@ -7,6 +7,7 @@ import { OrderService } from '../../core/services/order.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { AuthService } from '../../core/services/auth.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { estimatePrepMinutes } from '../../core/utils/prep-time';
 
 interface StoredOrder { id: string; code: string; }
 
@@ -62,6 +63,11 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
 
+  readonly orderPrepMinutes = computed(() => {
+    const items = this.order()?.order_items ?? [];
+    return estimatePrepMinutes(items.map(i => ({ duration: i.product_cook_duration ?? 15, quantity: i.quantity })));
+  });
+
   // Code de service (affiché après 'paid')
   readonly serviceCode  = signal<string | null>(null);
   readonly receiptPopup = signal(false);
@@ -75,6 +81,10 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   readonly cashRemindDisabled = signal(true);
   readonly cashChangeDisabled = signal(true);
   readonly cashReminderSent   = signal(false);
+  readonly serverIssueSent    = signal(false);
+
+  // Rappel livraison (commande payée, personne n'est encore venue servir)
+  readonly deliveryReminderSent = signal(false);
 
   readonly statusLabels     = STATUS_LABELS;
   readonly terminalStatuses = TERMINAL_STATUSES;
@@ -275,6 +285,25 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
       .catch(() => this.cashRemindDisabled.set(false));
   }
 
+  reportServerIssue() {
+    if (this.serverIssueSent()) return;
+    const orderId     = this.order()!.id;
+    const tableNumber = String(this.order()!.table?.number ?? '');
+    this.rt.invoke('ReportServerIssue', orderId, tableNumber)
+      .then(() => this.serverIssueSent.set(true))
+      .catch(() => {});
+  }
+
+  // ── Rappel livraison (popup code de service) ──────────────────────────────
+  sendDeliveryReminder() {
+    if (this.deliveryReminderSent()) return;
+    const orderId     = this.order()!.id;
+    const tableNumber = String(this.order()!.table?.number ?? '');
+    this.rt.invoke('RemindDelivery', orderId, tableNumber)
+      .then(() => this.deliveryReminderSent.set(true))
+      .catch(() => {});
+  }
+
   changeCashPayment() {
     if (this.cashChangeDisabled()) return;
     const orderId = this.order()!.id;
@@ -320,7 +349,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
         clearInterval(this.cashCountdownInterval);
       },
       error: err => {
-        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez la casse.');
+        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect.');
         this.cashCodeSubmitting.set(false);
       }
     });

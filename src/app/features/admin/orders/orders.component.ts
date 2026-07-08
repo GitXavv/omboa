@@ -50,7 +50,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
-    this.rt.connect(this.auth.getToken() ?? undefined);
+    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin'));
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'order:new' || ev.type === 'order:status') {
         this.load();

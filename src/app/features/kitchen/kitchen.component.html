@@ -330,7 +330,7 @@
       </div>
 
       <div class="kitchen-dialog__body">
-        <p class="kitchen-cashcode__hint">Communiquez ce code verbalement au client (sensible à la casse)</p>
+        <p class="kitchen-cashcode__hint">Communiquez ce code verbalement au client</p>
 
         <div class="kitchen-cashcode__display">{{ cashCodePopup()!.code }}</div>
 
@@ -366,7 +366,7 @@
 
       <div class="kitchen-dialog__body">
         <p class="kitchen-cashcode__hint">
-          Demandez au client de vous dicter son code de service à 5 caractères (sensible à la casse), puis saisissez-le ci-dessous pour confirmer la remise de la commande.
+          Demandez au client de vous dicter son code de service à 5 caractères, puis saisissez-le ci-dessous pour confirmer la remise de la commande.
         </p>
         <input
           class="kitchen-servecode__input"
@@ -375,7 +375,7 @@
           autocomplete="off"
           autocorrect="off"
           spellcheck="false"
-          placeholder="Ex : aB3Kz"
+          placeholder="Ex : a3bkz"
           [value]="serveCodeInput()"
           (input)="serveCodeInput.set($any($event.target).value)"
           (keydown.enter)="submitServeCode()"
@@ -415,6 +415,26 @@
       </div>
       <div class="kitchen-dialog__footer">
         <button class="kitchen-dialog__btn kitchen-dialog__btn--question" style="flex:1" (click)="dismissReminderPopup()">Ok, j'y vais</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Popup rappel livraison (client attend sa commande) ──────────────────── -->
+@if (deliveryReminderPopup()) {
+  <div class="kitchen-dialog-overlay" (click)="dismissDeliveryReminderPopup()">
+    <div class="kitchen-dialog" (click)="$event.stopPropagation()">
+      <div class="kitchen-dialog__header">
+        <span class="kitchen-dialog__title" style="color:var(--color-warning)">⏰ Rappel — Table {{ deliveryReminderPopup()!.tableNumber }}</span>
+      </div>
+      <div class="kitchen-dialog__body">
+        <p class="kitchen-reply__text">
+          Le client à la table <strong>{{ deliveryReminderPopup()!.tableNumber }}</strong> signale qu'aucun serveur
+          n'est encore venu avec sa commande.
+        </p>
+      </div>
+      <div class="kitchen-dialog__footer">
+        <button class="kitchen-dialog__btn kitchen-dialog__btn--question" style="flex:1" (click)="dismissDeliveryReminderPopup()">Ok, j'y vais</button>
       </div>
     </div>
   </div>

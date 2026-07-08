@@ -165,3 +165,35 @@
   .dash-strip__stat { padding-right: 0; }
   .dash-strip__n { font-size: 2.25rem; }
 }
+
+/* ── Popup interruptif (signalement serveur) ──────────────────────────────── */
+.admin-alert-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.admin-alert {
+  background: var(--color-bg-card);
+  border: 1.5px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+.admin-alert__header {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-error);
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+.admin-alert__body { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+.admin-alert__body p { margin: 0; color: var(--color-text); line-height: 1.6; }
+.admin-alert__footer { padding: 14px 22px 20px; }

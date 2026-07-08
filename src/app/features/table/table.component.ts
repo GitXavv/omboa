@@ -12,6 +12,7 @@ import { RealtimeService } from '../../core/services/realtime.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { estimatePrepMinutes } from '../../core/utils/prep-time';
 
 type Step = 'menu' | 'cart' | 'tracking';
 
@@ -55,8 +56,13 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly orderCode        = signal<string | null>(null);
   readonly codeCopied       = signal(false);
   readonly selectedProduct  = signal<Product | null>(null);
+  readonly modalQuantity    = signal(1);
   readonly commandeTooltip  = signal(false);
   readonly showLoyaltyPromo = signal(false);
+  readonly cartPulse        = signal(false);
+  readonly orderNotes       = signal('');
+  readonly confirmingSubmit = signal(false);
+  private cartPulseTimer?: ReturnType<typeof setTimeout>;
 
   // Suivi de commande en cours
   readonly trackedOrder        = signal<Order | null>(null);
@@ -83,6 +89,17 @@ export class TableComponent implements OnInit, OnDestroy {
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
 
+  // Durée de préparation estimée — panier pas encore validé
+  readonly cartPrepMinutes = computed(() =>
+    estimatePrepMinutes(this.cart.items().map(i => ({ duration: i.product.cook_duration, quantity: i.quantity })))
+  );
+
+  // Durée de préparation estimée — commande déjà validée
+  readonly trackedPrepMinutes = computed(() => {
+    const items = this.trackedOrder()?.order_items ?? [];
+    return estimatePrepMinutes(items.map(i => ({ duration: i.product_cook_duration ?? 15, quantity: i.quantity })));
+  });
+
   // Code de service (affiché après 'paid', utilisé pour confirmer la livraison)
   readonly serviceCode  = signal<string | null>(null);
   readonly receiptPopup = signal(false);
@@ -97,6 +114,10 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly cashRemindDisabled = signal(true);
   readonly cashChangeDisabled = signal(true);
   readonly cashReminderSent   = signal(false);
+  readonly serverIssueSent    = signal(false);
+
+  // Rappel livraison (commande payée, personne n'est encore venue servir)
+  readonly deliveryReminderSent = signal(false);
 
   readonly cartQuantity = (productId: string) =>
     this.cart.items().find(i => i.product.id === productId)?.quantity ?? 0;
@@ -219,6 +240,7 @@ export class TableComponent implements OnInit, OnDestroy {
     this.rt.disconnect();
     clearTimeout(this.longPressTimer);
     clearTimeout(this.tooltipHideTimer);
+    clearTimeout(this.cartPulseTimer);
     clearInterval(this.cashCountdownInterval);
   }
 
@@ -243,19 +265,35 @@ export class TableComponent implements OnInit, OnDestroy {
 
   isOpen(id: string) { return this.openIds().has(id); }
 
-  openProduct(p: Product)  { this.selectedProduct.set(p); document.body.style.overflow = 'hidden'; }
+  openProduct(p: Product)  { this.selectedProduct.set(p); this.modalQuantity.set(1); document.body.style.overflow = 'hidden'; }
   closeProduct()           { this.selectedProduct.set(null); document.body.style.overflow = ''; }
 
+  incrementModalQty() { this.modalQuantity.update(q => q + 1); }
+  decrementModalQty() { this.modalQuantity.update(q => Math.max(1, q - 1)); }
+
   addToCart(p: Product) {
-    this.cart.add(p);
+    this.cart.add(p, '', this.modalQuantity());
     this.toast.success(`${p.name} ajouté à ma commande`);
+    this.triggerCartPulse();
     if (this.selectedProduct()) this.closeProduct();
   }
 
   removeFromCart(p: Product) { this.cart.decrement(p.id); }
 
-  goToCart() { this.step.set('cart'); }
-  goToMenu() { this.step.set('menu'); }
+  private triggerCartPulse() {
+    clearTimeout(this.cartPulseTimer);
+    this.cartPulse.set(false);
+    // Un tick pour permettre à Angular de retirer puis remettre la classe (redéclenche l'animation CSS)
+    requestAnimationFrame(() => {
+      this.cartPulse.set(true);
+      this.cartPulseTimer = setTimeout(() => this.cartPulse.set(false), 700);
+    });
+  }
+
+  goToCart() { this.step.set('cart'); this.scrollToTop(); }
+  goToMenu() { this.step.set('menu'); this.scrollToTop(); }
+
+  private scrollToTop() { window.scrollTo({ top: 0 }); }
 
   onCommandeTouchStart() {
     this.longPressTimer = setTimeout(() => this.commandeTooltip.set(true), 500);
@@ -294,7 +332,16 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   // ── Soumission de commande → tracking immédiat, paiement différé ─────────
-  submitOrder() {
+  requestSubmitOrder() {
+    const tableId = this.table()?.id;
+    if (!tableId || !this.cart.items().length) return;
+    this.confirmingSubmit.set(true);
+  }
+
+  cancelSubmitOrder() { this.confirmingSubmit.set(false); }
+
+  confirmSubmitOrder() {
+    this.confirmingSubmit.set(false);
     const tableId = this.table()?.id;
     if (!tableId || !this.cart.items().length) return;
 
@@ -302,6 +349,7 @@ export class TableComponent implements OnInit, OnDestroy {
     const payload = {
       table_id:    tableId,
       customer_id: this.auth.currentUser()?.id,
+      notes:       this.orderNotes().trim() || undefined,
       items: this.cart.items().map(i => ({
         product_id: i.product.id,
         quantity:   i.quantity,
@@ -318,8 +366,10 @@ export class TableComponent implements OnInit, OnDestroy {
         this.trackedOrder.set(order);
         this.rt.invoke('JoinOrder', order.id).catch(() => {});
         this.cart.clear();
+        this.orderNotes.set('');
         this.submitting.set(false);
         this.step.set('tracking');
+        this.scrollToTop();
         this.toast.success('Commande transmise à la cuisine !');
       },
       error: () => {
@@ -414,6 +464,25 @@ export class TableComponent implements OnInit, OnDestroy {
       .catch(() => this.cashRemindDisabled.set(false));
   }
 
+  reportServerIssue() {
+    if (this.serverIssueSent()) return;
+    const orderId     = this.orderId()!;
+    const tableNumber = String(this.table()?.number ?? '');
+    this.rt.invoke('ReportServerIssue', orderId, tableNumber)
+      .then(() => this.serverIssueSent.set(true))
+      .catch(() => {});
+  }
+
+  // ── Rappel livraison (popup code de service) ──────────────────────────────
+  sendDeliveryReminder() {
+    if (this.deliveryReminderSent()) return;
+    const orderId     = this.orderId()!;
+    const tableNumber = String(this.table()?.number ?? '');
+    this.rt.invoke('RemindDelivery', orderId, tableNumber)
+      .then(() => this.deliveryReminderSent.set(true))
+      .catch(() => {});
+  }
+
   changeCashPayment() {
     if (this.cashChangeDisabled()) return;
     const orderId = this.orderId()!;
@@ -461,7 +530,7 @@ export class TableComponent implements OnInit, OnDestroy {
         this.toast.success('Paiement confirmé !');
       },
       error: err => {
-        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect. Vérifiez la casse.');
+        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect.');
         this.cashCodeSubmitting.set(false);
       }
     });

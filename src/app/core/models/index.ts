@@ -27,6 +27,7 @@ export interface Product {
   image_url: string | null;
   is_available: boolean;
   display_order: number;
+  cook_duration: number;
   created_at: string;
   category?: Category;
 }
@@ -39,6 +40,7 @@ export interface Order {
   customer_id: string | null;
   status: OrderStatus;
   code?: string | null;
+  notes?: string | null;
   total_amount: number | null;
   created_at: string;
   updated_at: string;
@@ -58,6 +60,7 @@ export interface OrderItem {
   created_at: string;
   product_name?: string;
   product_image_url?: string;
+  product_cook_duration?: number;
 }
 
 export type PaymentMethod = 'cash' | 'orange_money' | 'mtn_momo';

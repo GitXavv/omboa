@@ -80,6 +80,15 @@
           </span>
           <span class="dash-nav__go">→</span>
         </a>
+
+        <a routerLink="/reception" class="dash-nav__row">
+          <span class="dash-nav__idx">VI</span>
+          <span class="dash-nav__info">
+            <span class="dash-nav__name">Réception</span>
+            <span class="dash-nav__desc">Tables & dernières commandes</span>
+          </span>
+          <span class="dash-nav__go">→</span>
+        </a>
       </nav>
 
       <!-- Commandes récentes -->
@@ -106,3 +115,20 @@
 
   }
 </div>
+
+<!-- ── Popup interruptif : serveur refuse de donner son code espèce ─────────── -->
+@if (serverIssuePopup()) {
+  <div class="admin-alert-overlay" (click)="dismissServerIssuePopup()">
+    <div class="admin-alert" (click)="$event.stopPropagation()">
+      <div class="admin-alert__header">⚠️ Table {{ serverIssuePopup()!.tableNumber }}</div>
+      <div class="admin-alert__body">
+        <p>Le client de la table <strong>{{ serverIssuePopup()!.tableNumber }}</strong> signale que le
+        serveur refuse de lui communiquer son code de confirmation de paiement en espèce.</p>
+        <p class="text-muted" style="font-size:.875rem">Merci d'aller vérifier ce qu'il se passe à cette table.</p>
+      </div>
+      <div class="admin-alert__footer">
+        <button class="btn btn--primary btn--full" (click)="dismissServerIssuePopup()">J'y vais</button>
+      </div>
+    </div>
+  </div>
+}

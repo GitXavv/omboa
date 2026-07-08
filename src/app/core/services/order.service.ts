@@ -8,6 +8,7 @@ export interface CreateOrderPayload {
   table_id: string;
   customer_id?: string;
   items: { product_id: string; quantity: number; unit_price: number; notes?: string }[];
+  notes?: string;
 }
 
 export interface CreatePaymentPayload {

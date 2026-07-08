@@ -166,6 +166,15 @@
             </div>
           </div>
 
+          <div class="form-row">
+            <div class="form-group">
+              <label>Durée moyenne de préparation (min) *</label>
+              <input type="number" class="form-control" placeholder="15" min="1" step="1"
+                [value]="formProduct().cook_duration ?? 15"
+                (input)="formProduct.update(p => ({...p, cook_duration: +$any($event.target).value}))">
+            </div>
+          </div>
+
           <label class="toggle-label">
             <input type="checkbox"
               [checked]="formProduct().is_available ?? true"

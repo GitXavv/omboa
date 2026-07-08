@@ -29,6 +29,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly loading = signal(true);
   readonly statusFr = STATUS_FR;
 
+  // Popup interruptif : un serveur refuse de donner son code de confirmation espèce
+  readonly serverIssuePopup = signal<{ tableNumber: string; orderId: string } | null>(null);
+
   readonly pendingCount   = computed(() => this.orders().filter(o => o.status === 'pending').length);
   readonly preparingCount = computed(() => this.orders().filter(o => o.status === 'preparing').length);
   readonly activeCount    = computed(() => this.pendingCount() + this.preparingCount() + this.orders().filter(o => o.status === 'ready').length);
@@ -39,13 +42,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
-    this.rt.connect(this.auth.getToken() ?? undefined);
+    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin'));
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'order:new' || ev.type === 'order:status') this.load();
+      if (ev.type === 'server:issue') this.serverIssuePopup.set(ev.payload);
     });
   }
 
   ngOnDestroy() { this.sub?.unsubscribe(); this.rt.disconnect(); }
+
+  dismissServerIssuePopup() { this.serverIssuePopup.set(null); }
 
   private load() {
     this.orderSvc.getAll().subscribe({

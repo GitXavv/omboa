@@ -402,7 +402,7 @@ p  { line-height: 1.7; }
   user-select: all;
 }
 .svc-popup__hint { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
-.svc-popup__anon { font-size: 0.8125rem; color: var(--color-warning); text-align: center; margin: 0; }
+.svc-popup__reminder-btn { margin-top: 8px; }
 
 /* ── Popup reçu (partagé table + ma-commande) ─────────────────────────────── */
 .receipt-overlay {
