@@ -15,6 +15,31 @@
 
   <div class="menu-body container">
 
+    @if (!searchQuery() && trendProducts().length) {
+      <!-- Volet "Notre sélection" — défilement horizontal -->
+      <div class="menu-trend">
+        <div class="menu-trend__header">
+          <span class="section-tag">Mis en avant</span>
+          <h2>Notre sélection</h2>
+        </div>
+        <div class="menu-trend__scroller">
+          @for (p of trendProducts(); track p.id) {
+            <button class="menu-trend__card" (click)="openProduct(p)">
+              <div class="menu-trend__img">
+                @if (p.image_url) {
+                  <img [src]="p.image_url" [alt]="p.name" loading="lazy">
+                } @else {
+                  <span>🍽️</span>
+                }
+              </div>
+              <span class="menu-trend__name">{{ p.name }}</span>
+              <span class="menu-trend__price">{{ p.price | number:'1.0-0' }} FCFA</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
     @if (searchQuery()) {
 
       <!-- Résultats de recherche -->

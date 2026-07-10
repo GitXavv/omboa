@@ -10,8 +10,8 @@ export class TableService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<TableStatus[]> {
-    return this.http.get<TableStatus[]>(this.base);
+  getAll(restaurantId: string): Observable<TableStatus[]> {
+    return this.http.get<TableStatus[]>(`${this.base}?restaurantId=${restaurantId}`);
   }
 
   getById(id: string): Observable<TableStatus> {

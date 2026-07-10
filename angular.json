@@ -38,6 +38,11 @@
                 "glob": "**/*",
                 "input": "src/icons",
                 "output": "icons"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/sounds",
+                "output": "sounds"
               }
             ],
             "styles": [

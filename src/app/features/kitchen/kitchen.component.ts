@@ -2,13 +2,15 @@ import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../core/services/order.service';
 import { RealtimeService } from '../../core/services/realtime.service';
-import { AuthService } from '../../core/services/auth.service';
+import { StaffAuthService } from '../../core/services/staff-auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Order, OrderStatus, Payment } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
 export const STATUS_LABELS: Record<string, string> = {
   pending:   'En attente',
+  confirmed: 'Acceptée',
   preparing: 'En préparation',
   ready:     'Prêt',
   paid:      'Payé',
@@ -23,18 +25,21 @@ const METHOD_LABELS: Record<string, string> = {
   mtn_momo:     'MTN MoMo'
 };
 
+// La cuisine ne fait avancer que confirmed → preparing → ready. L'acceptation
+// (pending→confirmed) revient au réceptionniste, la suite (paiement/service) aussi.
+const KITCHEN_STATUSES: OrderStatus[] = ['confirmed', 'preparing', 'ready'];
+
 function nextStatus(order: Order): OrderStatus | null {
   switch (order.status) {
-    case 'pending':   return 'preparing';
+    case 'confirmed': return 'preparing';
     case 'preparing': return 'ready';
-    // 'ready' et 'paid' : pas de bouton "suivant" simple
     default: return null;
   }
 }
 
 function nextLabel(order: Order): string {
   switch (order.status) {
-    case 'pending':   return 'Accepter la commande';
+    case 'confirmed': return 'Commencer la préparation';
     case 'preparing': return 'Marquer prêt';
     default:          return '';
   }
@@ -50,55 +55,23 @@ function nextLabel(order: Order): string {
 export class KitchenComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly realtime = inject(RealtimeService);
-  readonly auth             = inject(AuthService);
+  readonly auth             = inject(StaffAuthService);
   private readonly toast    = inject(ToastService);
+  private readonly notif    = inject(NotificationService);
 
   readonly orders       = signal<Order[]>([]);
   readonly loading      = signal(true);
   readonly confirmingId = signal<string | null>(null);
-  readonly confirmMode  = signal<'advance'>('advance');
-  readonly mobileTab    = signal<OrderStatus>('pending');
+  readonly mobileTab    = signal<OrderStatus>('confirmed');
 
   // Chronomètre (mis à jour chaque seconde)
   readonly now = signal(Date.now());
 
-  // Dialog question / annulation
-  readonly dialogOrderId    = signal<string | null>(null);
-  readonly dialogMode       = signal<'question' | 'cancel' | null>(null);
-  readonly dialogInput      = signal('');
-  readonly dialogSubmitting = signal(false);
-  readonly dialogError      = signal('');
-
-  // Popup réponse client
-  readonly clientReplyPopup = signal<{ reply: string; tableNumber: string; question: string } | null>(null);
-
-  // Popup rappel serveur (paiement espèce)
-  readonly serverReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
-
-  // Popup rappel livraison (commande payée, personne n'est encore venue servir)
-  readonly deliveryReminderPopup = signal<{ tableNumber: string; orderId: string } | null>(null);
-
-  // Popup génération du code espèce (cuisine → code pour que le client le saisisse)
-  readonly cashCodePopup = signal<{ code: string; orderId: string; countdown: number } | null>(null);
-  private cashCodeInterval?: ReturnType<typeof setInterval>;
-
-  // Popup saisie du code de service (cuisine entre le code dicté par le client)
-  readonly serveCodePopup      = signal<{ orderId: string; tableNumber: string } | null>(null);
-  readonly serveCodeInput      = signal('');
-  readonly serveCodeError      = signal('');
-  readonly serveCodeSubmitting = signal(false);
-
-  readonly pendingOrders   = computed(() => this.orders().filter(o => o.status === 'pending'));
+  readonly confirmedOrders = computed(() => this.orders().filter(o => o.status === 'confirmed'));
   readonly preparingOrders = computed(() => this.orders().filter(o => o.status === 'preparing'));
-  readonly readyOrders     = computed(() => this.orders().filter(o => o.status === 'ready' || o.status === 'paid'));
-  readonly mobileOrders    = computed(() => {
-    const tab = this.mobileTab();
-    if (tab === 'ready') return this.readyOrders();
-    return this.orders().filter(o => o.status === tab);
-  });
-  readonly activeCount     = computed(() =>
-    this.pendingOrders().length + this.preparingOrders().length + this.readyOrders().length
-  );
+  readonly readyOrders     = computed(() => this.orders().filter(o => o.status === 'ready'));
+  readonly mobileOrders    = computed(() => this.orders().filter(o => o.status === this.mobileTab()));
+  readonly activeCount     = computed(() => this.orders().length);
 
   readonly labels       = STATUS_LABELS;
   readonly methodLabels = METHOD_LABELS;
@@ -108,6 +81,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadOrders();
+    this.notif.requestPermission();
 
     // Chronomètre global (1 tick/s)
     this.clockInterval = setInterval(() => this.now.set(Date.now()), 1000);
@@ -116,24 +90,27 @@ export class KitchenComponent implements OnInit, OnDestroy {
     this.sub = this.realtime.events$.subscribe(ev => {
       if (ev.type === 'connected') {
         // Reconnexion : re-rejoindre le groupe et recharger
-        this.realtime.invoke('JoinKitchen')
+        this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId)
           .then(() => this.loadOrders())
           .catch(() => {});
       }
 
-      if (ev.type === 'order:new') {
+      if (ev.type === 'order:confirmed') {
         this.orderSvc.getById(ev.payload.orderId).subscribe(o =>
           this.orders.update(list => [o, ...list])
         );
-        this.toast.info(`🔔 Nouvelle commande — Table ${ev.payload.tableNumber}`);
+        this.toast.info(`🔔 Commande acceptée — Table ${ev.payload.tableNumber}`);
+        this.notif.playNewOrderSound();
+        this.notif.showBrowserNotification('Nouvelle commande en cuisine', `Table ${ev.payload.tableNumber}`);
       }
       if (ev.type === 'order:status') {
         const { orderId, status } = ev.payload;
-        this.orders.update(list => list.map(o => o.id === orderId
-          ? { ...o, status: status as OrderStatus } : o
-        ));
-        if (['served', 'cancelled'].includes(status)) {
-          setTimeout(() => this.orders.update(l => l.filter(o => o.id !== orderId)), 3000);
+        if (!KITCHEN_STATUSES.includes(status as OrderStatus)) {
+          this.orders.update(l => l.filter(o => o.id !== orderId));
+        } else {
+          this.orders.update(list => list.map(o => o.id === orderId
+            ? { ...o, status: status as OrderStatus } : o
+          ));
         }
       }
       if (ev.type === 'payment:method') {
@@ -154,19 +131,10 @@ export class KitchenComponent implements OnInit, OnDestroy {
           o.id === orderId ? { ...o, payment: undefined } : o
         ));
       }
-      if (ev.type === 'client:reply') {
-        this.clientReplyPopup.set(ev.payload);
-      }
-      if (ev.type === 'server:reminder') {
-        this.serverReminderPopup.set(ev.payload);
-      }
-      if (ev.type === 'delivery:reminder') {
-        this.deliveryReminderPopup.set(ev.payload);
-      }
     });
 
     this.realtime.connect(this.auth.getToken() ?? undefined)
-      .then(() => this.realtime.invoke('JoinKitchen'))
+      .then(() => this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId))
       .catch(() => {});
   }
 
@@ -174,13 +142,12 @@ export class KitchenComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
     this.realtime.disconnect();
     clearInterval(this.clockInterval);
-    clearInterval(this.cashCodeInterval);
   }
 
   private loadOrders() {
     this.orderSvc.getAll().subscribe({
       next: all => {
-        this.orders.set(all.filter(o => !['served', 'released', 'cancelled'].includes(o.status)));
+        this.orders.set(all.filter(o => KITCHEN_STATUSES.includes(o.status)));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -203,8 +170,8 @@ export class KitchenComponent implements OnInit, OnDestroy {
     return (Date.now() - new Date(dateStr).getTime()) > 15 * 60 * 1000; // > 15 min
   }
 
-  // ── Avancement simple (pending → preparing → ready) ──────────────────────
-  requestAdvance(id: string) { this.confirmMode.set('advance'); this.confirmingId.set(id); }
+  // ── Avancement simple (confirmed → preparing → ready) ────────────────────
+  requestAdvance(id: string) { this.confirmingId.set(id); }
   dismissConfirm()           { this.confirmingId.set(null); }
 
   confirm(order: Order) {
@@ -219,116 +186,6 @@ export class KitchenComponent implements OnInit, OnDestroy {
       error: () => this.toast.error('Erreur lors du changement de statut.')
     });
   }
-
-  // ── Dialogue question / annulation ───────────────────────────────────────
-  openDialog(orderId: string, mode: 'question' | 'cancel') {
-    this.dialogOrderId.set(orderId);
-    this.dialogMode.set(mode);
-    this.dialogInput.set('');
-    this.dialogError.set('');
-    this.dialogSubmitting.set(false);
-    this.confirmingId.set(null);
-  }
-
-  closeDialog() {
-    this.dialogOrderId.set(null);
-    this.dialogMode.set(null);
-    this.dialogInput.set('');
-    this.dialogError.set('');
-  }
-
-  submitDialog() {
-    const msg     = this.dialogInput().trim();
-    const orderId = this.dialogOrderId()!;
-    const mode    = this.dialogMode()!;
-
-    if (!msg) { this.dialogError.set('Veuillez saisir un message.'); return; }
-
-    this.dialogSubmitting.set(true);
-
-    if (mode === 'question') {
-      this.realtime.invoke('AskClient', orderId, msg)
-        .then(() => this.closeDialog())
-        .catch(() => { this.dialogError.set('Envoi échoué.'); this.dialogSubmitting.set(false); });
-    } else {
-      this.orderSvc.cancel(orderId).subscribe({
-        next: u => {
-          this.orders.update(l => l.map(o => o.id === u.id ? { ...u, payment: o.payment } : o));
-          this.toast.warning(`Commande annulée — Table ${u.table?.number || ''}`);
-          this.realtime.invoke('NotifyCancelReason', orderId, msg)
-            .finally(() => this.closeDialog());
-        },
-        error: () => {
-          this.dialogError.set('Impossible d\'annuler la commande.');
-          this.dialogSubmitting.set(false);
-        }
-      });
-    }
-  }
-
-  // ── Popup code espèce (cuisine génère le code pour le client) ─────────────
-  openGenerateCashCode(orderId: string) {
-    clearInterval(this.cashCodeInterval);
-    this.orderSvc.generateCashCode(orderId).subscribe({
-      next: ({ code }) => {
-        this.cashCodePopup.set({ code, orderId, countdown: 60 });
-        this.cashCodeInterval = setInterval(() => {
-          const c = this.cashCodePopup()!.countdown - 1;
-          this.cashCodePopup.update(p => p ? { ...p, countdown: c } : null);
-          if (c <= 0) clearInterval(this.cashCodeInterval);
-        }, 1000);
-      },
-      error: () => this.toast.error('Impossible de générer le code.')
-    });
-  }
-
-  regenerateCashCode() {
-    const orderId = this.cashCodePopup()?.orderId;
-    if (!orderId) return;
-    clearInterval(this.cashCodeInterval);
-    this.openGenerateCashCode(orderId);
-  }
-
-  closeCashCodePopup() {
-    clearInterval(this.cashCodeInterval);
-    this.cashCodePopup.set(null);
-  }
-
-  // ── Popup code de service (cuisine entre le code dicté par le client) ─────
-  openServePopup(order: Order) {
-    this.confirmingId.set(null);
-    this.serveCodePopup.set({ orderId: order.id, tableNumber: order.table?.number || '—' });
-    this.serveCodeInput.set('');
-    this.serveCodeError.set('');
-    this.serveCodeSubmitting.set(false);
-  }
-
-  closeServePopup() { this.serveCodePopup.set(null); }
-
-  submitServeCode() {
-    const code   = this.serveCodeInput().trim();
-    const popup  = this.serveCodePopup()!;
-    if (code.length !== 5) { this.serveCodeError.set('Le code doit contenir exactement 5 caractères.'); return; }
-
-    this.serveCodeSubmitting.set(true);
-    this.serveCodeError.set('');
-    this.orderSvc.serve(popup.orderId, code).subscribe({
-      next: () => {
-        this.serveCodePopup.set(null);
-        this.serveCodeSubmitting.set(false);
-        this.toast.success('Commande servie !');
-      },
-      error: err => {
-        this.serveCodeError.set(err?.error?.message ?? 'Code incorrect.');
-        this.serveCodeSubmitting.set(false);
-      }
-    });
-  }
-
-  // ── Popups info ───────────────────────────────────────────────────────────
-  dismissReplyPopup()    { this.clientReplyPopup.set(null); }
-  dismissReminderPopup() { this.serverReminderPopup.set(null); }
-  dismissDeliveryReminderPopup() { this.deliveryReminderPopup.set(null); }
 
   hasNext(order: Order)       { return nextStatus(order) !== null; }
   nextLabelFor(order: Order)  { return nextLabel(order); }

@@ -1,0 +1,130 @@
+<div class="reception-page">
+
+  <header class="reception-header">
+    <div class="reception-header__left">
+      <h1>Réception</h1>
+      <div class="reception-status" [class.reception-status--on]="connected()">
+        <span class="reception-status__dot"></span>
+        {{ connected() ? 'En ligne' : 'Hors ligne' }}
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-loader label="Chargement des commandes…" />
+  } @else {
+
+    <div class="reception-tabs">
+      <button class="reception-tab" [class.active]="tab() === 'pending'" (click)="tab.set('pending')">
+        Nouvelles @if (pendingOrders().length) { <span class="reception-tab__badge">{{ pendingOrders().length }}</span> }
+      </button>
+      <button class="reception-tab" [class.active]="tab() === 'kitchen'" (click)="tab.set('kitchen')">
+        En cuisine @if (kitchenOrders().length) { <span class="reception-tab__badge">{{ kitchenOrders().length }}</span> }
+      </button>
+      <button class="reception-tab" [class.active]="tab() === 'checkout'" (click)="tab.set('checkout')">
+        À encaisser @if (checkoutOrders().length) { <span class="reception-tab__badge reception-tab__badge--ready">{{ checkoutOrders().length }}</span> }
+      </button>
+      <button class="reception-tab" [class.active]="tab() === 'paid'" (click)="tab.set('paid')">
+        Payées @if (paidOrders().length) { <span class="reception-tab__badge reception-tab__badge--ready">{{ paidOrders().length }}</span> }
+      </button>
+    </div>
+
+    <div class="reception-board">
+      @for (o of tabOrders(); track o.id) {
+        <div class="order-card">
+          <div class="order-card__head">
+            <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
+            @if (o.table && !o.table.is_active) {
+              <span class="order-card__table-disabled">⚠️ Table désactivée</span>
+            }
+          </div>
+
+          @if (o.notes) {
+            <div class="order-card__order-note">📝 {{ o.notes }}</div>
+          }
+
+          @if (o.payment) {
+            <div class="order-card__payment">
+              <span class="order-card__payment-badge order-card__payment-badge--{{ o.payment.method }}">
+                {{ methodLabels[o.payment.method] || o.payment.method }}
+              </span>
+              @if (o.payment.status === 'pending') {
+                <span class="order-card__payment-pending">en attente de confirmation</span>
+              }
+            </div>
+          }
+
+          <ul class="order-card__items">
+            @for (item of (o.order_items ?? []); track item.id) {
+              <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '—' }}</li>
+            }
+          </ul>
+
+          @if (!auth.isOwner()) {
+            <div class="order-card__actions">
+              @switch (o.status) {
+                @case ('pending') {
+                  <button class="order-card__btn order-card__btn--advance" [disabled]="acceptingId() === o.id" (click)="accept(o)">
+                    @if (acceptingId() === o.id) { … } @else { Accepter → cuisine }
+                  </button>
+                  <button class="order-card__btn order-card__btn--cancel" (click)="openCancelDialog(o.id)">✕ Annuler</button>
+                }
+                @case ('ready') {
+                  @if (o.payment?.method === 'cash' && o.payment?.status === 'pending') {
+                    <button class="order-card__btn order-card__btn--advance" (click)="confirmCash(o)">💵 Confirmer paiement espèces</button>
+                  } @else if (!o.payment) {
+                    <span class="order-card__waiting">⏳ En attente du choix de paiement du client</span>
+                  } @else {
+                    <span class="order-card__waiting">⏳ Paiement en cours de traitement</span>
+                  }
+                  <button class="order-card__btn order-card__btn--cancel" (click)="openCancelDialog(o.id)">✕ Annuler</button>
+                }
+                @case ('paid') {
+                  <button class="order-card__btn order-card__btn--serve" (click)="markServed(o)">🍽️ Marquer servi</button>
+                }
+                @default {
+                  <span class="order-card__waiting">⏳ En préparation en cuisine</span>
+                  <button class="order-card__btn order-card__btn--cancel" (click)="openCancelDialog(o.id)">✕ Annuler</button>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+      @if (!tabOrders().length) { <p class="reception-empty">Rien ici pour le moment.</p> }
+    </div>
+
+  }
+</div>
+
+<!-- ── Dialogue annulation avec raison ─────────────────────────────────────── -->
+@if (cancelOrderId()) {
+  <div class="reception-dialog-overlay" (click)="closeCancelDialog()">
+    <div class="reception-dialog" (click)="$event.stopPropagation()">
+      <div class="reception-dialog__header">
+        <span class="reception-dialog__title">✕ Annuler la commande</span>
+        <button class="reception-dialog__close" (click)="closeCancelDialog()">✕</button>
+      </div>
+      <div class="reception-dialog__body">
+        <label class="reception-dialog__label">Raison de l'annulation (transmise au client) :</label>
+        <textarea
+          class="reception-dialog__textarea"
+          rows="3"
+          placeholder="Ex : Produit momentanément indisponible."
+          [value]="cancelReason()"
+          (input)="cancelReason.set($any($event.target).value)"
+          autofocus
+        ></textarea>
+        @if (cancelError()) {
+          <p class="reception-dialog__error">{{ cancelError() }}</p>
+        }
+      </div>
+      <div class="reception-dialog__footer">
+        <button class="reception-dialog__btn reception-dialog__btn--cancel" (click)="closeCancelDialog()">Retour</button>
+        <button class="reception-dialog__btn reception-dialog__btn--confirm" [disabled]="cancelSubmitting()" (click)="submitCancel()">
+          @if (cancelSubmitting()) { … } @else { Confirmer l'annulation }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
 import { CartService } from '../../core/services/cart.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 import { Category, Product } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
@@ -18,6 +19,7 @@ export class MenuComponent implements OnInit {
   private readonly cart    = inject(CartService);
   private readonly route   = inject(ActivatedRoute);
   private readonly router  = inject(Router);
+  private readonly restaurantSvc = inject(RestaurantService);
 
   readonly categories      = signal<Category[]>([]);
   readonly openIds         = signal<Set<string>>(new Set());
@@ -42,12 +44,19 @@ export class MenuComponent implements OnInit {
     return this.allProducts().filter(p => p.name.toLowerCase().includes(q));
   });
 
+  // Volet "Notre sélection" — plats marqués `trend` par l'owner, toutes catégories confondues.
+  // Pas de temps réel : recalculé uniquement au chargement de la page.
+  readonly trendProducts = computed<Product[]>(() =>
+    this.allProducts().filter(p => p.trend && p.is_available)
+  );
+
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
       this.searchQuery.set(params.get('q') ?? '');
     });
 
-    this.menuSvc.getCategories().subscribe({
+    const restaurantId = this.restaurantSvc.current()?.id ?? '';
+    this.menuSvc.getCategories(restaurantId).subscribe({
       next: cats => {
         this.categories.set(cats);
         if (cats.length) this.openIds.set(new Set([cats[0].id]));

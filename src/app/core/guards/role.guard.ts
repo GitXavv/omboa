@@ -1,13 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { StaffAuthService } from '../services/staff-auth.service';
 
+// Garde les routes staff (/:restaurantSlug/admin|kitchen|reception|exit) : vérifie le
+// rôle ET que la session staff correspond bien au restaurant de l'URL — empêche un
+// réceptionniste connecté au resto A d'atteindre /{resto-B}/reception en éditant l'URL.
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
-  const auth   = inject(AuthService);
-  const router = inject(Router);
+  const staffAuth = inject(StaffAuthService);
+  const router     = inject(Router);
   const allowed: string[] = route.data['roles'] ?? [];
-  const role = auth.currentUser()?.role;
+  const session = staffAuth.currentStaff();
+  const slug = route.parent?.paramMap.get('restaurantSlug') ?? route.paramMap.get('restaurantSlug');
 
-  if (role && allowed.includes(role)) return true;
-  return router.createUrlTree(['/']);
+  if (session && allowed.includes(session.role) && session.restaurantSlug === slug) return true;
+  return router.createUrlTree([slug ? `/${slug}/ostaff` : '/']);
 };

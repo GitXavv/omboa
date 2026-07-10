@@ -26,6 +26,7 @@
   --color-bg:        #180E07;
   --color-bg-card:   #231509;
   --color-bg-subtle: #2B1B0C;
+  --color-surface:   #2A1810;
 
   /* Textes clairs */
   --color-text:       #F2E6D8;
@@ -226,6 +227,7 @@ p  { line-height: 1.7; }
 }
 .status-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .status-badge--pending   { background: var(--color-warning-bg); color: var(--color-warning); }
+.status-badge--confirmed { background: var(--color-info-bg);    color: var(--color-info); }
 .status-badge--preparing { background: var(--color-info-bg);    color: var(--color-info); }
 .status-badge--ready     { background: #FFF8E1; color: #7A5200; }
 .status-badge--served    { background: #EDE7F6; color: #6A1B9A; }
@@ -345,64 +347,6 @@ p  { line-height: 1.7; }
   logo          → SVG ou PNG transparent, 200×200px
   og-image      → 1200×630px  (partage réseaux sociaux)
 */
-
-/* ── Popup code de service (partagé table + ma-commande) ──────────────────── */
-.svc-popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9000;
-  background: rgba(0,0,0,0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.svc-popup {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  max-width: 440px;
-  width: 100%;
-  overflow: hidden;
-  border: 1.5px solid rgba(76,175,80,0.35);
-  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
-}
-.svc-popup__header {
-  background: rgba(76,175,80,0.12);
-  color: var(--color-success);
-  font-weight: 700;
-  font-size: 1.125rem;
-  padding: 18px 22px;
-  border-bottom: 1px solid rgba(76,175,80,0.2);
-  text-align: center;
-}
-.svc-popup__body {
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-.svc-popup__text {
-  font-size: 0.9375rem;
-  color: var(--color-text);
-  text-align: center;
-  line-height: 1.6;
-  margin: 0;
-}
-.svc-popup__code {
-  font-family: var(--font-display);
-  font-size: 3rem;
-  font-weight: 900;
-  letter-spacing: 0.4em;
-  color: var(--color-success);
-  background: rgba(76,175,80,0.08);
-  border: 2px solid rgba(76,175,80,0.3);
-  border-radius: var(--radius-md);
-  padding: 16px 24px;
-  user-select: all;
-}
-.svc-popup__hint { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
-.svc-popup__reminder-btn { margin-top: 8px; }
 
 /* ── Popup reçu (partagé table + ma-commande) ─────────────────────────────── */
 .receipt-overlay {

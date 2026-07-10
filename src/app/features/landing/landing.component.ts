@@ -1,14 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { MenuService } from '../../core/services/menu.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 import { Product } from '../../core/models';
 
 interface SelectionItem {
   product: Product;
   categoryName: string;
 }
+
+// La landing page est globale (pas de contexte restaurant dans l'URL). En attendant une
+// vraie UX de découverte multi-restaurant, elle met en avant le seul restaurant existant.
+const DEFAULT_RESTAURANT_SLUG = 'o-mboa-test';
 
 @Component({
   selector: 'app-landing',
@@ -18,6 +23,8 @@ interface SelectionItem {
   styleUrl: './landing.component.css'
 })
 export class LandingComponent implements OnInit {
+  readonly restaurantSlug = DEFAULT_RESTAURANT_SLUG;
+
   readonly fallbackSelection = [
     { name: 'Ndolé aux crevettes', desc: 'Notre incontournable, mijoté lentement avec des crevettes fumées et de la poudre de noisettes.', price: 3500 },
     { name: 'Poulet DG', desc: 'Poulet braisé, banane plantain dorée, légumes sautés. Un classique de la cuisine camerounaise.', price: 4200 },
@@ -32,13 +39,15 @@ export class LandingComponent implements OnInit {
     { icon: '✅', title: 'Validez & savourez', desc: `Soumettez votre commande. Nos cuisiniers s'en occupent. Vous serez servi directement à votre table.` },
   ];
 
-  constructor(private menuService: MenuService) {}
+  constructor(private menuService: MenuService, private restaurantSvc: RestaurantService) {}
 
   ngOnInit() {
-    forkJoin({
-      categories: this.menuService.getCategories(),
-      products: this.menuService.getProducts()
-    }).subscribe({
+    this.restaurantSvc.getBySlug(DEFAULT_RESTAURANT_SLUG).pipe(
+      switchMap(restaurant => forkJoin({
+        categories: this.menuService.getCategories(restaurant.id),
+        products: this.menuService.getProducts(restaurant.id)
+      }))
+    ).subscribe({
       next: ({ categories, products }) => {
         const byCategory = new Map<string, Product[]>();
         for (const p of products.filter(p => p.is_available)) {

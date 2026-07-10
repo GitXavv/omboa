@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { TableService } from '../../../core/services/table.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Order } from '../../../core/models';
@@ -17,11 +17,10 @@ interface TableIssueNotification {
   timestamp: string;
 }
 
-const NOTIF_KEY = 'omboa_admin_table_notifications';
 const NOTIF_MAX = 20;
 
 const STATUS_FR: Record<string, string> = {
-  pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
+  pending: 'En attente', confirmed: 'Acceptée', preparing: 'En préparation', ready: 'Prête',
   paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée'
 };
 
@@ -35,16 +34,15 @@ const STATUS_FR: Record<string, string> = {
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly rt       = inject(RealtimeService);
-  private readonly auth     = inject(AuthService);
+  private readonly auth     = inject(StaffAuthService);
   private readonly tableSvc = inject(TableService);
   private readonly toast    = inject(ToastService);
+
+  readonly slug = computed(() => this.auth.currentStaff()?.restaurantSlug ?? '');
 
   readonly orders  = signal<Order[]>([]);
   readonly loading = signal(true);
   readonly statusFr = STATUS_FR;
-
-  // Popup interruptif : un serveur refuse de donner son code de confirmation espèce
-  readonly serverIssuePopup = signal<{ tableNumber: string; orderId: string } | null>(null);
 
   // Popup interruptif : signalement d'une table occupée à tort
   readonly tableIssuePopup     = signal<{ tableId: string; tableNumber: string } | null>(null);
@@ -53,7 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly notifHistoryOpen    = signal(false);
   readonly tableNotifications  = signal<TableIssueNotification[]>(this.loadNotifications());
 
-  readonly pendingCount   = computed(() => this.orders().filter(o => o.status === 'pending').length);
+  readonly pendingCount   = computed(() => this.orders().filter(o => o.status === 'pending' || o.status === 'confirmed').length);
   readonly preparingCount = computed(() => this.orders().filter(o => o.status === 'preparing').length);
   readonly activeCount    = computed(() => this.pendingCount() + this.preparingCount() + this.orders().filter(o => o.status === 'ready').length);
   readonly revenue        = computed(() => this.orders().filter(o => ['paid','served','released'].includes(o.status)).reduce((s, o) => s + (o.total_amount ?? 0), 0));
@@ -63,10 +61,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
-    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin'));
+    const restaurantId = this.auth.currentStaff()?.restaurantId;
+    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin', restaurantId));
     this.sub = this.rt.events$.subscribe(ev => {
-      if (ev.type === 'order:new' || ev.type === 'order:status') this.load();
-      if (ev.type === 'server:issue') this.serverIssuePopup.set(ev.payload);
+      if (ev.type === 'order:new' || ev.type === 'order:confirmed' || ev.type === 'order:status') this.load();
       if (ev.type === 'admin:table-issue') {
         this.tableIssuePopup.set(ev.payload);
         this.recordNotification(ev.payload);
@@ -75,8 +73,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() { this.sub?.unsubscribe(); this.rt.disconnect(); }
-
-  dismissServerIssuePopup() { this.serverIssuePopup.set(null); }
 
   private load() {
     this.orderSvc.getAll().subscribe({
@@ -126,12 +122,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
     const next = [entry, ...this.tableNotifications()].slice(0, NOTIF_MAX);
     this.tableNotifications.set(next);
-    localStorage.setItem(NOTIF_KEY, JSON.stringify(next));
+    localStorage.setItem(this.notifKey(), JSON.stringify(next));
+  }
+
+  private notifKey(): string {
+    return `omboa_admin_table_notifications_${this.auth.currentStaff()?.restaurantId ?? 'unknown'}`;
   }
 
   private loadNotifications(): TableIssueNotification[] {
     try {
-      const raw = localStorage.getItem(NOTIF_KEY);
+      const raw = localStorage.getItem(this.notifKey());
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];

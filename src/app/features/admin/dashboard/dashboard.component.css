@@ -170,6 +170,27 @@
 }
 .dash-nav__row:hover .dash-nav__idx { color: var(--color-primary); }
 
+.dash-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background-color: var(--color-text-muted);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  transition: background-color var(--transition-fast);
+}
+.dash-nav__row:hover .dash-nav__icon { background-color: var(--color-primary); }
+.dash-nav__icon--orders   { mask-image: url('/icons/nav-orders.svg');   -webkit-mask-image: url('/icons/nav-orders.svg'); }
+.dash-nav__icon--menu     { mask-image: url('/icons/nav-menu.svg');     -webkit-mask-image: url('/icons/nav-menu.svg'); }
+.dash-nav__icon--tables   { mask-image: url('/icons/nav-tables.svg');   -webkit-mask-image: url('/icons/nav-tables.svg'); }
+.dash-nav__icon--stats    { mask-image: url('/icons/nav-stats.svg');    -webkit-mask-image: url('/icons/nav-stats.svg'); }
+.dash-nav__icon--settings { mask-image: url('/icons/nav-settings.svg'); -webkit-mask-image: url('/icons/nav-settings.svg'); }
+.dash-nav__icon--kitchen  { mask-image: url('/icons/nav-kitchen.svg');  -webkit-mask-image: url('/icons/nav-kitchen.svg'); }
+
 .dash-nav__info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .dash-nav__name { font-size: 0.875rem; font-weight: 600; }
 .dash-nav__desc { font-size: 0.72rem; color: var(--color-text-muted); }

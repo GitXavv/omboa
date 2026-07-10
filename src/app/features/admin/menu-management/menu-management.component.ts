@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { MenuService } from '../../../core/services/menu.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ImageUploadService } from '../../../core/services/image-upload.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { Category, Product } from '../../../core/models';
 import { DecimalPipe } from '@angular/common';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
@@ -23,6 +24,9 @@ export class MenuManagementComponent implements OnInit {
   private readonly menuSvc   = inject(MenuService);
   private readonly toast     = inject(ToastService);
   private readonly imgUpload = inject(ImageUploadService);
+  private readonly staffAuth = inject(StaffAuthService);
+
+  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly categories  = signal<Category[]>([]);
   readonly loading     = signal(true);
@@ -74,7 +78,8 @@ export class MenuManagementComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.menuSvc.getCategoriesAdmin().subscribe({
+    const restaurantId = this.staffAuth.currentStaff()?.restaurantId ?? '';
+    this.menuSvc.getCategoriesAdmin(restaurantId).subscribe({
       next: c => { this.categories.set(c); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
@@ -124,7 +129,7 @@ export class MenuManagementComponent implements OnInit {
   }
 
   openCreateProduct(categoryId: string) {
-    this.formProduct.set({ category_id: categoryId, is_available: true, display_order: 0 });
+    this.formProduct.set({ category_id: categoryId, is_available: true, display_order: 0, trend: false });
     this.prodImagePreview.set(null);
     this.prodFile.set(null);
     this.prodFormMode.set('create');

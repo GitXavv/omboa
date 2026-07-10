@@ -1,5 +1,8 @@
-<app-navbar />
-<main class="main-content">
+@switch (headerMode()) {
+  @case ('landing') { <app-landing-header /> }
+  @case ('navbar')  { <app-navbar /> }
+}
+<main class="main-content" [class.main-content--flush]="headerMode() !== 'navbar'">
   <router-outlet />
 </main>
 <app-footer />

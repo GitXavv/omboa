@@ -2,7 +2,7 @@
 
   <div class="flex-between tables-top" style="flex-wrap:wrap;gap:12px">
     <div>
-      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <a [routerLink]="['/', slug(), 'admin']" class="btn btn--ghost btn--sm">← Tableau de bord</a>
       <h2>Tables & codes QR</h2>
       @if (!loading()) {
         <p class="text-muted">

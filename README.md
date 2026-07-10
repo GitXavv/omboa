@@ -1,32 +1,54 @@
 # O'Mboa — Frontend
 
-Application web Angular 21 pour le restaurant O'Mboa.
-Permet aux clients de parcourir le menu, de passer commande via QR code, et aux staff de gérer les opérations.
+Application web Angular 21 multi-restaurant. Chaque restaurant est accessible sous
+`/:restaurantSlug/...` ; un super admin gère la liste des restaurants depuis `/osuper`.
+Permet aux clients de parcourir le menu et de passer commande via QR code, et au staff
+(admin/cuisine/réception/sortie) de gérer les opérations de son restaurant.
 
 ## Stack
 
 - **Angular 21** — standalone components, signals, lazy loading
 - **@microsoft/signalr** — temps réel (statut commandes)
 - **Capacitor** — build Android natif
-- **Supabase Auth** — authentification via le backend
+- **Supabase Auth** — authentification client uniquement (voir plus bas pour le staff)
 
 ## Structure des pages
 
 | Route | Rôle | Accès |
 |---|---|---|
-| `/` | Landing page restaurant | Public |
-| `/menu` | Menu complet (lecture seule) | Public |
-| `/table/:tableId` | Menu + commande (après scan QR) | Public |
-| `/auth/login` | Connexion | Public |
-| `/auth/register` | Inscription | Public |
-| `/account` | Historique commandes + points fidélité | Client connecté |
-| `/admin` | Tableau de bord | Owner |
-| `/admin/orders` | Gestion commandes | Owner |
-| `/admin/menu` | Gestion menu | Owner |
-| `/admin/tables` | Gestion tables + QR codes | Owner |
-| `/admin/logs` | Logs d'activité | Owner |
-| `/admin/stats` | Statistiques | Owner |
-| `/kitchen` | Vue cuisine temps réel | Cook + Owner |
+| `/` | Landing page globale (tous restaurants) | Public |
+| `/:restaurantSlug/menu` | Menu complet (lecture seule) | Public |
+| `/:restaurantSlug/table/:tableId` | Menu + commande (après scan QR) | Public |
+| `/:restaurantSlug/ma-commande` | Suivi de commande par code | Public |
+| `/:restaurantSlug/account` | Historique commandes + points fidélité | Client connecté |
+| `/:restaurantSlug/ostaff` | Connexion staff (page cachée, clé secrète) | Public |
+| `/:restaurantSlug/admin` | Tableau de bord | Owner |
+| `/:restaurantSlug/admin/orders` | Gestion commandes | Owner |
+| `/:restaurantSlug/admin/menu` | Gestion menu | Owner |
+| `/:restaurantSlug/admin/tables` | Gestion tables + QR codes | Owner |
+| `/:restaurantSlug/admin/logs` | Logs d'activité | Owner |
+| `/:restaurantSlug/admin/stats` | Statistiques | Owner |
+| `/:restaurantSlug/admin/settings` | Clés d'accès staff (rotation) | Owner |
+| `/:restaurantSlug/kitchen` | Vue cuisine temps réel | Cook + Owner (lecture seule) |
+| `/:restaurantSlug/reception` | Front-of-house (accepter/encaisser/servir) | Receptionist + Owner |
+| `/:restaurantSlug/exit` | Recherche par code + libération de table | Exit + Owner |
+| `/osuper` | Connexion super admin (page cachée, clé secrète) | Public |
+| `/osuper/dashboard` | CRUD restaurants + stats globales | Super admin |
+| `/osuper/logs` | Logs des actions du super admin uniquement | Super admin |
+
+**Connexion/inscription client** : plus de route dédiée — c'est une modale ouverte depuis
+le bouton "Connexion / Inscription" du header, disponible sur `/menu`, `/table/:id`,
+`/ma-commande`, `/account`.
+
+## Authentification — deux systèmes distincts
+
+- **Clients** : Supabase Auth classique (téléphone + mot de passe), un compte par
+  restaurant (le numéro de téléphone n'est pas unique globalement).
+- **Staff + super admin** : pas de compte individuel. Chaque restaurant a une clé
+  secrète par rôle (owner/cook/receptionist/exit), hachée en base (bcrypt), saisie sur
+  la page cachée `/:restaurantSlug/ostaff`. Le super admin a sa propre clé, saisie sur
+  `/osuper`. Ces clés n'apparaissent dans aucun lien visible de l'app — seule
+  l'inscription à l'URL y donne accès.
 
 ## Installation
 
@@ -77,47 +99,35 @@ Palette : terracotta (`#C0602A`), vert forêt (`#1E3A1A`), or (`#E8B84B`), ivoir
 Polices : Playfair Display (titres) + DM Sans (corps).
 Toutes les variables CSS sont dans `src/styles.css`.
 
-## Comptes staff (test / production)
+## Comptes de test (Phase 2)
 
-> Les mots de passe sont gérés par Supabase Auth — la table `profiles` ne les contient pas,
-> c'est l'architecture normale.
+> ⚠️ Ce sont des clés de **test**, à changer avant toute mise en production réelle.
+> Les clés staff se changent depuis `/:restaurantSlug/admin/settings` (owner uniquement).
+> La clé super admin n'a pas d'UI de rotation pour l'instant — elle se change directement
+> en base (`UPDATE superadmin_auth SET key_hash = crypt('nouvelle_cle', gen_salt('bf'))`).
 
-| Rôle | Nom | Téléphone | Mot de passe |
-|------|-----|-----------|--------------|
-| `owner` | Xavier Olama | 6 93 01 14 69 | `Mboa_Mboa` |
-| `cook`  | Chef Cook    | 6 98 76 54 32 | `Mboa_Mboa` |
+**Restaurant de test : O'Mboa Test** (slug `o-mboa-test`) — accès staff sur
+`/o-mboa-test/ostaff` :
 
-### Créer / recréer ces comptes
+| Rôle | Clé |
+|------|-----|
+| Admin (owner) | `@Dm,Mboa` |
+| Cuisine (cook) | `cu1,Mboa` |
+| Réceptionniste | `r3c,Mboa` |
+| Sortie (exit) | `s0r,Mboa` |
 
-**Étape 1 — Inscription via l'API** (API doit être démarrée) :
+**Super admin** — accès sur `/osuper` :
 
-```bash
-# Owner
-curl -X POST http://localhost:5272/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Xavier Olama","phone":"693011469","password":"Mboa_Mboa"}'
+| Clé |
+|-----|
+| `5Npe9,Mboa` |
 
-# Cook
-curl -X POST http://localhost:5272/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Chef Cook","phone":"698765432","password":"Mboa_Mboa"}'
-```
+Les clés sont **sensibles à la casse**. Un seul champ à remplir sur chaque page de
+connexion — pas de sélection de rôle : le backend détermine le rôle à partir de la clé
+saisie.
 
-**Étape 2 — Mise à jour des rôles** dans le SQL Editor de Supabase :
-
-```sql
--- Promouvoir Xavier Olama en owner
-UPDATE profiles
-SET role = 'owner'
-WHERE id = (SELECT id FROM auth.users WHERE email = '693011469@omboa-users.app');
-
--- Promouvoir Chef Cook en cook
-UPDATE profiles
-SET role = 'cook'
-WHERE id = (SELECT id FROM auth.users WHERE email = '698765432@omboa-users.app');
-```
-
-> L'email synthétique est construit automatiquement : `{chiffres_du_téléphone}@omboa-users.app`.
+Ces clés sont insérées par la migration `sql/migration_multi_restaurant.sql` côté
+`omboa-api`, hachées via `pgcrypto`/bcrypt — jamais stockées en clair.
 
 ---
 

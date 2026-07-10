@@ -2,40 +2,41 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, catchError, throwError } from 'rxjs';
-import { Profile } from '../models';
+import { Customer } from '../models';
 import { environment } from '../../../environments/environment';
 
 interface AuthResponse {
   access_token: string;
   refresh_token: string;
   user: { id: string; phone: string };
-  profile: Profile;
+  profile: Customer;
 }
 
+// Session client (Supabase Auth) — le staff n'utilise plus jamais ce service,
+// voir StaffAuthService pour les rôles owner/cook/receptionist/exit.
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'omboa_token';
   private readonly PROFILE_KEY = 'omboa_profile';
 
-  readonly currentUser = signal<Profile | null>(this.loadProfile());
-  readonly isLoggedIn = computed(() => this.currentUser() !== null);
-  readonly isOwner   = computed(() => this.currentUser()?.role === 'owner');
-  readonly isCook    = computed(() => this.currentUser()?.role === 'cook');
-  readonly isReceptionist = computed(() => this.currentUser()?.role === 'receptionist');
-  // Staff = ne peut pas passer de commande ni scanner de table comme un client
-  readonly isStaff   = computed(() => ['owner', 'cook', 'receptionist'].includes(this.currentUser()?.role ?? ''));
+  readonly currentUser = signal<Customer | null>(this.loadProfile());
+  readonly isLoggedIn  = computed(() => this.currentUser() !== null);
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(phone: string, password: string) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, { phone, password }).pipe(
+  login(phone: string, password: string, restaurantSlug: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, {
+      phone, password, restaurant_slug: restaurantSlug
+    }).pipe(
       tap(res => this.storeSession(res)),
       catchError(err => throwError(() => err))
     );
   }
 
-  register(phone: string, password: string, full_name: string) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, { phone, password, full_name }).pipe(
+  register(phone: string, password: string, full_name: string, restaurantSlug: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, {
+      phone, password, full_name, restaurant_slug: restaurantSlug
+    }).pipe(
       tap(res => this.storeSession(res)),
       catchError(err => throwError(() => err))
     );
@@ -53,7 +54,7 @@ export class AuthService {
   }
 
   refreshProfile() {
-    return this.http.get<Profile>(`${environment.apiUrl}/auth/me`).pipe(
+    return this.http.get<Customer>(`${environment.apiUrl}/auth/me`).pipe(
       tap(profile => {
         this.currentUser.set(profile);
         localStorage.setItem(this.PROFILE_KEY, JSON.stringify(profile));
@@ -62,12 +63,15 @@ export class AuthService {
   }
 
   private storeSession(res: AuthResponse) {
+    // Mutuellement exclusif avec une session staff éventuelle.
+    localStorage.removeItem('omboa_staff_token');
+    localStorage.removeItem('omboa_staff_session');
     localStorage.setItem(this.TOKEN_KEY, res.access_token);
     localStorage.setItem(this.PROFILE_KEY, JSON.stringify(res.profile));
     this.currentUser.set(res.profile);
   }
 
-  private loadProfile(): Profile | null {
+  private loadProfile(): Customer | null {
     const raw = localStorage.getItem(this.PROFILE_KEY);
     return raw ? JSON.parse(raw) : null;
   }

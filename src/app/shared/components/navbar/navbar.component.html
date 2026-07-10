@@ -2,19 +2,13 @@
   <div class="container navbar__inner">
 
     <!-- Logo -->
-    <a routerLink="/" class="navbar__logo">
+    <a [routerLink]="['/', slug(), 'menu']" class="navbar__logo">
       <span class="navbar__logo-text">O'Mboa</span>
     </a>
 
     <!-- Liens desktop -->
     <ul class="navbar__links">
-      <li><a routerLink="/menu" routerLinkActive="active">Menu</a></li>
-      @if (auth.isOwner()) {
-        <li><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
-      }
-      @if (auth.isCook() || auth.isOwner()) {
-        <li><a routerLink="/kitchen" routerLinkActive="active">Cuisine</a></li>
-      }
+      <li><a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active">Menu</a></li>
     </ul>
 
     <!-- Barre de recherche + bouton Ma commande -->
@@ -31,18 +25,16 @@
       >
     </div>
 
-    <!-- Bouton Ma commande (clients uniquement — le staff ne commande pas) -->
-    @if (!auth.isStaff()) {
-      <a routerLink="/ma-commande" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
-        <img src="icons/commandes-logo.png" alt="Ma commande" class="navbar__commande-hdr-icon">
-      </a>
-    }
+    <!-- Bouton Ma commande -->
+    <a [routerLink]="['/', slug(), 'ma-commande']" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
+      <img src="icons/commandes-logo.png" alt="Ma commande" class="navbar__commande-hdr-icon">
+    </a>
 
     <!-- Actions desktop -->
     <div class="navbar__actions">
 
-      <!-- Panier (clients connectés uniquement — pas le staff) -->
-      @if (auth.isLoggedIn() && !auth.isStaff()) {
+      <!-- Panier (clients connectés uniquement) -->
+      @if (auth.isLoggedIn()) {
       <div class="navbar__cart-wrap">
         <button class="navbar__cart-btn" (click)="toggleCart()" [class.active]="cartOpen()" aria-label="Ma commande">
           🛒
@@ -111,13 +103,7 @@
                 <span>{{ auth.currentUser()?.phone }}</span>
               </div>
               <hr class="navbar__user-menu-divider">
-              <a routerLink="/account" class="navbar__user-menu-item">👤 Mon compte</a>
-              @if (auth.isCook() || auth.isOwner()) {
-                <a routerLink="/kitchen" class="navbar__user-menu-item">🍳 Espace cuisine</a>
-              }
-              @if (auth.isOwner()) {
-                <a routerLink="/admin" class="navbar__user-menu-item">⚙️ Administration</a>
-              }
+              <a [routerLink]="['/', slug(), 'account']" class="navbar__user-menu-item">👤 Mon compte</a>
               <hr class="navbar__user-menu-divider">
               <button class="navbar__user-menu-item navbar__user-menu-item--danger" (click)="logout()">
                 ↩ Déconnexion
@@ -126,7 +112,7 @@
           }
         </div>
       } @else {
-        <a routerLink="/auth" class="btn btn--primary btn--sm">Connexion / Inscription</a>
+        <button class="btn btn--primary btn--sm" (click)="authModal.open('login')">Connexion / Inscription</button>
       }
 
     </div>
@@ -136,7 +122,7 @@
 
 <!-- Navigation mobile fixe en bas -->
 <nav class="bottom-nav" aria-label="Navigation principale">
-  <a routerLink="/menu" routerLinkActive="active" class="bottom-nav__item">
+  <a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active" class="bottom-nav__item">
     <span class="bottom-nav__icon">🍽️</span>
     <span class="bottom-nav__label">Menu</span>
   </a>
@@ -145,7 +131,7 @@
     <span class="bottom-nav__label">Accueil</span>
   </a>
   <!-- Panier si connecté + items, sinon Auth/Compte -->
-  @if (auth.isLoggedIn() && !auth.isStaff() && cart.count() > 0) {
+  @if (auth.isLoggedIn() && cart.count() > 0) {
     <button class="bottom-nav__item" (click)="toggleCart()">
       <span class="bottom-nav__icon">🛒 <span class="bottom-nav__cart-badge">{{ cart.count() }}</span></span>
       <span class="bottom-nav__label">Ma commande</span>
@@ -154,13 +140,7 @@
     <div class="bottom-nav-account-wrap">
       @if (userMenuOpen()) {
         <div class="bottom-nav__dropdown">
-          <a routerLink="/account" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">👤 Mon compte</a>
-          @if (auth.isCook() || auth.isOwner()) {
-            <a routerLink="/kitchen" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">🍳 Espace cuisine</a>
-          }
-          @if (auth.isOwner()) {
-            <a routerLink="/admin" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">⚙️ Administration</a>
-          }
+          <a [routerLink]="['/', slug(), 'account']" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">👤 Mon compte</a>
           <hr class="bottom-nav__dropdown-divider">
           <button class="bottom-nav__dropdown-item bottom-nav__dropdown-item--danger" (click)="logout()">↩ Déconnexion</button>
         </div>
@@ -171,10 +151,10 @@
       </button>
     </div>
   } @else {
-    <a routerLink="/auth" routerLinkActive="active" class="bottom-nav__item">
+    <button class="bottom-nav__item" (click)="authModal.open('login')">
       <span class="bottom-nav__icon">🔑</span>
       <span class="bottom-nav__label">Connexion</span>
-    </a>
+    </button>
   }
 </nav>
 
@@ -221,4 +201,9 @@
       }
     </div>
   </div>
+}
+
+<!-- ── Modale connexion/inscription client ─────────────────────────────────── -->
+@if (authModal.isOpen()) {
+  <app-auth-modal />
 }

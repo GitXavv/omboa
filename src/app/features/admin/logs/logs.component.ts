@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { LogService } from '../../../core/services/log.service';
 import { Log } from '../../../core/models';
 import { DatePipe, LowerCasePipe } from '@angular/common';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 
 @Component({
   selector: 'app-logs',
@@ -17,6 +18,9 @@ export class LogsComponent implements OnInit {
   private readonly logSvc = inject(LogService);
   private readonly toast  = inject(ToastService);
   private readonly route  = inject(ActivatedRoute);
+  private readonly staffAuth = inject(StaffAuthService);
+
+  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly logs        = signal<Log[]>([]);
   readonly total       = signal(0);

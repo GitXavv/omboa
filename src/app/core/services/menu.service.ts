@@ -10,16 +10,12 @@ export class MenuService {
 
   constructor(private http: HttpClient) {}
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.base}/categories`);
+  getCategories(restaurantId: string): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.base}/categories?restaurantId=${restaurantId}`);
   }
 
-  getCategoriesAdmin(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.base}/categories?showAll=true`);
-  }
-
-  getCategory(id: string): Observable<Category> {
-    return this.http.get<Category>(`${this.base}/categories/${id}`);
+  getCategoriesAdmin(restaurantId: string): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.base}/categories?restaurantId=${restaurantId}&showAll=true`);
   }
 
   createCategory(data: Partial<Category>): Observable<Category> {
@@ -34,9 +30,9 @@ export class MenuService {
     return this.http.delete<void>(`${this.base}/categories/${id}`);
   }
 
-  getProducts(categoryId?: string): Observable<Product[]> {
-    const params = categoryId ? `?categoryId=${categoryId}` : '';
-    return this.http.get<Product[]>(`${this.base}/products${params}`);
+  getProducts(restaurantId: string, categoryId?: string): Observable<Product[]> {
+    const params = categoryId ? `&categoryId=${categoryId}` : '';
+    return this.http.get<Product[]>(`${this.base}/products?restaurantId=${restaurantId}${params}`);
   }
 
   createProduct(data: Partial<Product>): Observable<Product> {

@@ -86,7 +86,7 @@
           <div class="loyalty-promo__content">
             <span class="loyalty-promo__icon">🌟</span>
             <p>Créez un compte <strong>O'Mboa</strong> et cumulez des points fidélité à chaque visite !</p>
-            <a routerLink="/auth/register" class="btn btn--accent btn--sm">Créer un compte</a>
+            <button class="btn btn--accent btn--sm" (click)="authModal.open('register')">Créer un compte</button>
             <button class="loyalty-promo__close" (click)="dismissLoyaltyPromo()" aria-label="Fermer">✕</button>
           </div>
         </div>
@@ -446,12 +446,9 @@
             </div>
           }
 
-          <!-- Code de service affiché en secours sur la card quand status = paid -->
-          @if (trackedOrder()!.status === 'paid' && serviceCode()) {
+          @if (trackedOrder()!.status === 'paid') {
             <div class="tracking-svc-code">
-              <span class="tracking-svc-code__label">Votre code de service</span>
-              <span class="tracking-svc-code__value">{{ serviceCode() }}</span>
-              <span class="tracking-svc-code__hint">Dictez ce code au serveur·euse qui viendra avec votre commande.</span>
+              <span class="tracking-svc-code__hint">Votre commande est payée — le personnel arrive avec votre commande.</span>
             </div>
           }
 
@@ -513,170 +510,48 @@
   </div>
 }
 
-<!-- ── Popup cuisine → client ──────────────────────────────────────────────── -->
-@if (kitchenPopup()) {
-  <div class="kitchen-popup-overlay" (click)="kitchenPopup()!.type === 'cancel' && dismissKitchenPopup()">
+<!-- ── Popup annulation (réceptionniste → client) ──────────────────────────── -->
+@if (cancelReasonPopup()) {
+  <div class="kitchen-popup-overlay" (click)="dismissCancelReasonPopup()">
     <div class="kitchen-popup" (click)="$event.stopPropagation()">
-
-      @if (kitchenPopup()!.type === 'question') {
-        <div class="kitchen-popup__header kitchen-popup__header--question">
-          💬 Message de la cuisine
-        </div>
-        <div class="kitchen-popup__body">
-          <p class="kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
-          @if (!kitchenReplySent()) {
-            <textarea
-              class="kitchen-popup__reply-input"
-              rows="3"
-              placeholder="Votre réponse…"
-              [value]="kitchenReply()"
-              (input)="kitchenReply.set($any($event.target).value)"
-            ></textarea>
-            <button class="btn btn--primary btn--full" (click)="submitKitchenReply()" [disabled]="!kitchenReply().trim()">
-              Envoyer
-            </button>
-          } @else {
-            <p class="kitchen-popup__sent">✓ Réponse envoyée à la cuisine.</p>
-            <button class="btn btn--ghost btn--sm kitchen-popup__close-btn" (click)="dismissKitchenPopup()">
-              Fermer
-            </button>
-          }
-        </div>
-      } @else {
-        <div class="kitchen-popup__header kitchen-popup__header--cancel">
-          ✕ Commande annulée
-        </div>
-        <div class="kitchen-popup__body">
-          <p class="kitchen-popup__message">{{ kitchenPopup()!.message }}</p>
-          <button class="btn btn--primary btn--full" (click)="dismissKitchenPopup()">
-            Ok
-          </button>
-        </div>
-      }
-
+      <div class="kitchen-popup__header kitchen-popup__header--cancel">
+        ✕ Commande annulée
+      </div>
+      <div class="kitchen-popup__body">
+        <p class="kitchen-popup__message">{{ cancelReasonPopup() }}</p>
+        <button class="btn btn--primary btn--full" (click)="dismissCancelReasonPopup()">
+          Ok
+        </button>
+      </div>
     </div>
   </div>
 }
 
-<!-- ── Popup paiement en espèce ──────────────────────────────────────────── -->
-@if (cashPopupStep()) {
+<!-- ── Popup paiement en espèce : en attente de confirmation du personnel ──── -->
+@if (cashPopupOpen()) {
   <div class="cash-popup-overlay">
     <div class="cash-popup">
-
-      <!-- ── État : info (3 boutons) ── -->
-      @if (cashPopupStep() === 'info') {
-        <div class="cash-popup__header">
-          💵 Paiement en espèce
-        </div>
-        <div class="cash-popup__body">
-          <p class="cash-popup__text">
-            Votre commande a bien été reçue. Un·e serveur·euse va venir vers votre table
-            pour encaisser votre paiement. Il ou elle vous communiquera verbalement un
-            <strong>code à 5 caractères</strong> que vous devrez saisir pour confirmer le paiement.
-          </p>
-
-          @if (cashReminderSent()) {
-            <p class="cash-popup__reminder-sent">✓ Rappel envoyé à la cuisine.</p>
-          }
-          @if (serverIssueSent()) {
-            <p class="cash-popup__reminder-sent">✓ Signalement envoyé à l'administration.</p>
-          }
-        </div>
-        <div class="cash-popup__actions">
-          <button class="btn btn--primary btn--full" (click)="openCashCodeForm()">
-            Entrer le code de confirmation
-          </button>
-          <button
-            class="btn btn--outline btn--full"
-            [disabled]="cashRemindDisabled()"
-            (click)="sendServerReminder()"
-          >
-            @if (cashRemindDisabled() && cashCountdown() > 0) {
-              Aucun·e serveur·euse n'est venu·e ({{ cashCountdown() }}s)
-            } @else {
-              Aucun·e serveur·euse n'est venu·e à ma table
-            }
-          </button>
-          <button
-            class="btn btn--ghost btn--full"
-            [disabled]="cashChangeDisabled()"
-            (click)="changeCashPayment()"
-          >
-            @if (cashChangeDisabled() && cashCountdown() > 0) {
-              Changer de mode de paiement ({{ cashCountdown() }}s)
-            } @else {
-              Changer de mode de paiement
-            }
-          </button>
-          <button
-            class="btn btn--ghost btn--full"
-            [disabled]="serverIssueSent()"
-            (click)="reportServerIssue()"
-          >
-            @if (serverIssueSent()) { ✓ Signalé à l'administration } @else { Le serveur refuse de me donner le code }
-          </button>
-        </div>
-      }
-
-      <!-- ── État : saisie du code ── -->
-      @if (cashPopupStep() === 'code') {
-        <div class="cash-popup__header">
-          🔑 Code de confirmation
-        </div>
-        <div class="cash-popup__body">
-          <p class="cash-popup__text">
-            Saisissez le code à 5 caractères que le serveur vous a communiqué.
-          </p>
-          <input
-            type="text"
-            class="cash-popup__code-input"
-            placeholder="Ex : a3bkz"
-            maxlength="5"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="none"
-            spellcheck="false"
-            [value]="cashCodeInput()"
-            (input)="cashCodeInput.set($any($event.target).value)"
-            (keydown.enter)="submitCashCode()"
-          >
-          @if (cashCodeError()) {
-            <p class="cash-popup__error">{{ cashCodeError() }}</p>
-          }
-        </div>
-        <div class="cash-popup__actions">
-          <button
-            class="btn btn--primary btn--full"
-            [disabled]="cashCodeSubmitting() || cashCodeInput().trim().length !== 5"
-            (click)="submitCashCode()"
-          >
-            @if (cashCodeSubmitting()) { Vérification… } @else { Valider le code }
-          </button>
-          <button class="btn btn--ghost btn--full" (click)="backToCashInfo()">← Retour</button>
-        </div>
-      }
-
-    </div>
-  </div>
-}
-
-<!-- ── Popup code de service (NON-FERMABLE avant livraison) ───────────────── -->
-@if (serviceCode() && trackedOrder()?.status === 'paid') {
-  <div class="svc-popup-overlay">
-    <div class="svc-popup">
-      <div class="svc-popup__header">🍽️ Votre commande est payée !</div>
-      <div class="svc-popup__body">
-        <p class="svc-popup__text">
-          Voici votre code de service. Le·la ou les serveurs·euses qui viendront avec votre commande dans quelques instants vous demanderont de leur dicter ce code pour confirmer la remise de votre commande.
+      <div class="cash-popup__header">
+        💵 Paiement en espèce
+      </div>
+      <div class="cash-popup__body">
+        <p class="cash-popup__text">
+          Votre commande a bien été reçue. Un membre du personnel va venir vers votre table
+          pour encaisser votre paiement en espèces, puis confirmera lui-même la réception —
+          vous n'avez rien d'autre à faire.
         </p>
-        <div class="svc-popup__code">{{ serviceCode() }}</div>
-        <p class="svc-popup__hint">Ne le partagez pas</p>
+      </div>
+      <div class="cash-popup__actions">
         <button
-          class="btn btn--outline btn--full svc-popup__reminder-btn"
-          [disabled]="deliveryReminderSent()"
-          (click)="sendDeliveryReminder()"
+          class="btn btn--ghost btn--full"
+          [disabled]="cashChangeDisabled()"
+          (click)="changeCashPayment()"
         >
-          @if (deliveryReminderSent()) { ✓ Rappel envoyé à la cuisine } @else { Aucun·e serveur·euse n'est encore venu·e avec ma commande }
+          @if (cashChangeDisabled() && cashCountdown() > 0) {
+            Changer de mode de paiement ({{ cashCountdown() }}s)
+          } @else {
+            Changer de mode de paiement
+          }
         </button>
       </div>
     </div>

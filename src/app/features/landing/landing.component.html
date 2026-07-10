@@ -1,6 +1,6 @@
 <!-- ── Hero ────────────────────────────────────────────────────── -->
 <!-- Image hero : landing.png — salle du restaurant O'Mboa -->
-<section class="hero">
+<section class="hero" id="top">
   <div class="container hero__content">
     <span class="hero__tag">Restaurant O'Mboa · Douala</span>
     <h1 class="hero__title">
@@ -12,8 +12,8 @@
       attendre le serveur et cumulez des points à chaque visite. La restauration au Cameroun n'a jamais été aussi rapide et simple !
     </p>
     <div class="hero__actions">
-      <a routerLink="/menu" class="btn btn--accent btn--lg">Découvrir le menu</a>
-      <a routerLink="/auth/register" class="btn btn--outline btn--lg hero__btn-light">Créer mon compte</a>
+      <a [routerLink]="['/', restaurantSlug, 'menu']" class="btn btn--accent btn--lg">Découvrir le menu</a>
+      <a [routerLink]="['/', restaurantSlug, 'menu']" class="btn btn--outline btn--lg hero__btn-light">Créer mon compte</a>
     </div>
   </div>
 </section>
@@ -71,7 +71,7 @@
 </div>
 
 <!-- ── Notre histoire ─────────────────────────────────────────── -->
-<section class="section story">
+<section class="section story" id="story">
   <div class="container story__inner">
     <!-- Image attendue : story-img → 600×750px portrait 4:5 -->
     <div class="story__img-wrap">
@@ -85,13 +85,13 @@
         voulons que vous ressentiez en franchissant notre porte : la chaleur d'un
         repas partagé en famille, la générosité des saveurs d'Afrique centrale.
       </p>
-      <a routerLink="/menu" class="btn btn--secondary">Voir notre carte</a>
+      <a [routerLink]="['/', restaurantSlug, 'menu']" class="btn btn--secondary">Voir notre carte</a>
     </div>
   </div>
 </section>
 
 <!-- ── Notre sélection ────────────────────────────────────────── -->
-<section class="section specialties">
+<section class="section specialties" id="specialties">
   <div class="container">
     <div class="section-header">
       <span class="section-tag">Notre sélection</span>
@@ -131,14 +131,14 @@
     </div>
 
     <div class="text-center" style="margin-top:40px">
-      <a routerLink="/menu" class="btn btn--primary btn--lg">Voir tous les plats</a>
+      <a [routerLink]="['/', restaurantSlug, 'menu']" class="btn btn--primary btn--lg">Voir tous les plats</a>
     </div>
   </div>
 </section>
 
 <!-- ── Galerie ambiance ───────────────────────────────────────── -->
 <!-- Images attendues : galerie-main → 800×600px / galerie-small → 400×285px -->
-<section class="section galerie">
+<section class="section galerie" id="galerie">
   <div class="container">
     <div class="section-header">
       <span class="section-tag">Notre cadre</span>
@@ -162,7 +162,7 @@
 </section>
 
 <!-- ── Horaires & Localisation ────────────────────────────────── -->
-<section class="section info">
+<section class="section info" id="info">
   <div class="container">
     <div class="section-header">
       <span class="section-tag">Informations pratiques</span>

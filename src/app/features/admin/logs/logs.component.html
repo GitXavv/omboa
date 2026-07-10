@@ -2,7 +2,7 @@
 
   <div class="admin-header flex-between" style="flex-wrap:wrap;gap:12px">
     <div>
-      <a routerLink="/admin" class="btn btn--ghost btn--sm">← Tableau de bord</a>
+      <a [routerLink]="['/', slug(), 'admin']" class="btn btn--ghost btn--sm">← Tableau de bord</a>
       <h2>Logs d'activité</h2>
       <p class="text-muted">{{ total() }} événement{{ total() !== 1 ? 's' : '' }} enregistré{{ total() !== 1 ? 's' : '' }}</p>
       @if (entityId()) {
@@ -51,10 +51,10 @@
               @if (log.metadata['is_anonymous']) {
                 <span class="log-client--anonymous">Client anonyme</span>
               } @else {
-                {{ log.metadata['client'] ?? log.user?.full_name ?? '—' }}
+                {{ log.metadata['client'] ?? '—' }}
               }
             } @else {
-              {{ log.user?.full_name ?? '—' }}
+              —
             }
           </span>
         </div>

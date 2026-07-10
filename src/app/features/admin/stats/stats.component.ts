@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { StatsService } from '../../../core/services/stats.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { AdminStats } from '../../../core/models';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
@@ -19,6 +20,9 @@ const STATUS_FR: Record<string, string> = {
 })
 export class StatsComponent implements OnInit {
   private readonly statsSvc = inject(StatsService);
+  private readonly staffAuth = inject(StaffAuthService);
+
+  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly stats   = signal<AdminStats | null>(null);
   readonly loading = signal(true);

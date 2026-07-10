@@ -4,3 +4,10 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Landing (spacer géré par app-landing-header) et pages staff/super admin (pas de
+   header commun, chaque page gère son propre en-tête) n'ont pas besoin de ce padding. */
+.main-content--flush {
+  min-height: 100vh;
+  padding-top: 0;
+}

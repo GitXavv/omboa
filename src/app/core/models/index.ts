@@ -1,6 +1,30 @@
-export interface Profile {
+export interface Restaurant {
   id: string;
-  role: 'owner' | 'cook' | 'customer' | 'receptionist';
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  color_primary: string | null;
+  color_secondary: string | null;
+  is_active: boolean;
+  archived: boolean;
+  created_at: string;
+}
+
+// Rôle staff (JWT scheme "Staff" — clé secrète, pas de compte individuel)
+export type StaffRole = 'owner' | 'cook' | 'receptionist' | 'exit';
+
+export interface StaffSession {
+  role: StaffRole;
+  restaurantId: string;
+  restaurantSlug: string;
+  restaurantName: string;
+}
+
+// Compte client (Supabase Auth) — plus de rôle, toujours "customer" implicitement,
+// rattaché à un seul restaurant.
+export interface Customer {
+  id: string;
+  restaurant_id: string;
   full_name: string;
   phone: string;
   created_at: string;
@@ -8,6 +32,7 @@ export interface Profile {
 
 export interface Category {
   id: string;
+  restaurant_id: string;
   parent_id: string | null;
   name: string;
   description: string | null;
@@ -21,6 +46,7 @@ export interface Category {
 
 export interface Product {
   id: string;
+  restaurant_id: string;
   category_id: string;
   name: string;
   price: number;
@@ -28,14 +54,16 @@ export interface Product {
   is_available: boolean;
   display_order: number;
   cook_duration: number;
+  trend: boolean;
   created_at: string;
   category?: Category;
 }
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'paid' | 'released' | 'cancelled';
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'paid' | 'released' | 'cancelled';
 
 export interface Order {
   id: string;
+  restaurant_id: string;
   table_id: string;
   customer_id: string | null;
   status: OrderStatus;
@@ -45,7 +73,7 @@ export interface Order {
   created_at: string;
   updated_at: string;
   table?: TableRecord;
-  customer?: Profile;
+  customer?: Customer;
   order_items?: OrderItem[];
   payment?: Payment;
 }
@@ -74,13 +102,12 @@ export interface Payment {
   amount: number;
   discount_amount: number;
   status: PaymentStatus;
-  cash_confirmation_code: string | null;
-  cash_code_expires_at: string | null;
   created_at: string;
 }
 
 export interface TableRecord {
   id: string;
+  restaurant_id: string;
   number: string;
   is_active: boolean;
   created_at: string;
@@ -102,6 +129,7 @@ export interface LoyaltyTransaction {
 
 export interface Log {
   id: string;
+  restaurant_id: string | null;
   event_type: string;
   description: string;
   user_id: string | null;
@@ -109,7 +137,6 @@ export interface Log {
   entity_id: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
-  user?: Profile;
 }
 
 // Panier local (pas en base)
@@ -140,6 +167,13 @@ export interface AdminStats {
     total_quantity: number;
     order_count: number;
   }[];
+}
+
+export interface SuperAdminStats {
+  total_restaurants: number;
+  active_restaurants: number;
+  total_tables: number;
+  total_orders: number;
 }
 
 export interface RecentOrder {

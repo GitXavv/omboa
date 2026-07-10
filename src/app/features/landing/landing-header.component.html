@@ -1,0 +1,26 @@
+<div class="lh-bg"></div>
+<header class="lh-bar" [class.lh-bar--scrolled]="scrolled()">
+  <div class="container lh-inner">
+
+    <a href="#top" class="lh-logo" (click)="scrollTo($event, '#top')">
+      <span class="lh-logo__text">O'Mboa</span>
+    </a>
+
+    <nav class="lh-links" [class.lh-links--open]="mobileMenuOpen()">
+      @for (link of navLinks; track link.href) {
+        <a class="lh-links__item" [href]="link.href" (click)="scrollTo($event, link.href)">{{ link.label }}</a>
+      }
+    </nav>
+
+    <button
+      class="lh-toggle"
+      [class.lh-toggle--open]="mobileMenuOpen()"
+      (click)="toggleMobileMenu()"
+      aria-label="Ouvrir le menu"
+      [attr.aria-expanded]="mobileMenuOpen()"
+    >
+      <img src="icons/hamburger.svg" alt="" class="lh-toggle__icon">
+    </button>
+
+  </div>
+</header>

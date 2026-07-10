@@ -1,0 +1,118 @@
+<div class="sa-page">
+
+  <header class="sa-header">
+    <h1>Super admin</h1>
+    <div class="sa-header__actions">
+      <a routerLink="/osuper/logs" class="btn btn--ghost btn--sm">Logs</a>
+      <button class="btn btn--ghost btn--sm" (click)="auth.logout()">Déconnexion</button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-loader label="Chargement…" />
+  } @else {
+
+    @if (stats(); as s) {
+      <div class="sa-stats">
+        <div class="sa-stat">
+          <span class="sa-stat__value">{{ s.total_restaurants }}</span>
+          <span class="sa-stat__label">Restaurants</span>
+        </div>
+        <div class="sa-stat">
+          <span class="sa-stat__value">{{ s.active_restaurants }}</span>
+          <span class="sa-stat__label">Actifs</span>
+        </div>
+        <div class="sa-stat">
+          <span class="sa-stat__value">{{ s.total_tables }}</span>
+          <span class="sa-stat__label">Tables au total</span>
+        </div>
+        <div class="sa-stat">
+          <span class="sa-stat__value">{{ s.total_orders | number:'1.0-0' }}</span>
+          <span class="sa-stat__label">Commandes traitées</span>
+        </div>
+      </div>
+    }
+
+    <div class="sa-toolbar">
+      <input
+        type="search"
+        class="form-control sa-search"
+        placeholder="Rechercher un restaurant…"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      >
+      <button class="btn btn--primary" (click)="openCreateForm()">+ Nouveau restaurant</button>
+    </div>
+
+    <div class="sa-table">
+      <div class="sa-table__row sa-table__row--head">
+        <span>Nom</span>
+        <span>Slug</span>
+        <span>Statut</span>
+        <span>Créé le</span>
+        <span></span>
+      </div>
+      @for (r of filteredRestaurants(); track r.id) {
+        <div class="sa-table__row">
+          <span class="sa-table__name">{{ r.name }}</span>
+          <span class="sa-table__slug">/{{ r.slug }}</span>
+          <span>
+            @if (r.archived) {
+              <span class="status-badge status-badge--cancelled">Archivé</span>
+            } @else if (r.is_active) {
+              <span class="status-badge status-badge--paid">Actif</span>
+            } @else {
+              <span class="status-badge status-badge--pending">Inactif</span>
+            }
+          </span>
+          <span class="text-muted">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
+          <span class="sa-table__actions">
+            @if (!r.archived) {
+              <button class="btn btn--ghost btn--sm" (click)="toggleActive(r)">
+                {{ r.is_active ? 'Désactiver' : 'Activer' }}
+              </button>
+              <button class="btn btn--ghost btn--sm danger-btn" (click)="archive(r)">Archiver</button>
+            }
+          </span>
+        </div>
+      }
+      @if (!filteredRestaurants().length) {
+        <p class="text-muted" style="padding:32px;text-align:center">Aucun restaurant.</p>
+      }
+    </div>
+
+  }
+</div>
+
+<!-- ── Modale création restaurant ──────────────────────────────────────────── -->
+@if (showCreateForm()) {
+  <div class="sa-modal-overlay" (click)="closeCreateForm()">
+    <div class="sa-modal" (click)="$event.stopPropagation()">
+      <div class="sa-modal__header">
+        <span>Nouveau restaurant</span>
+        <button class="sa-modal__close" (click)="closeCreateForm()">✕</button>
+      </div>
+      <div class="sa-modal__body">
+        <div class="form-group">
+          <label>Nom</label>
+          <input class="form-control" [ngModel]="newRestaurant().name" (ngModelChange)="onNameChange($event)">
+        </div>
+        <div class="form-group">
+          <label>Slug (URL)</label>
+          <input class="form-control" [ngModel]="newRestaurant().slug" (ngModelChange)="newRestaurant.update(r => ({...r, slug: $event}))">
+        </div>
+        <div class="form-group">
+          <label>Clé admin initiale</label>
+          <input class="form-control" type="text" placeholder="Le futur owner pourra la changer ensuite"
+            [ngModel]="newRestaurant().owner_key" (ngModelChange)="newRestaurant.update(r => ({...r, owner_key: $event}))">
+        </div>
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--ghost" (click)="closeCreateForm()">Annuler</button>
+        <button class="btn btn--primary" [disabled]="creating()" (click)="submitCreate()">
+          @if (creating()) { Création… } @else { Créer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TableService } from '../../../core/services/table.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { TableStatus } from '../../../core/models';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
@@ -16,6 +17,9 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 export class TablesComponent implements OnInit {
   private readonly tableSvc = inject(TableService);
   private readonly toast    = inject(ToastService);
+  private readonly staffAuth = inject(StaffAuthService);
+
+  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly tables          = signal<TableStatus[]>([]);
   readonly loading         = signal(true);
@@ -27,7 +31,8 @@ export class TablesComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.tableSvc.getAll().subscribe({
+    const restaurantId = this.staffAuth.currentStaff()?.restaurantId ?? '';
+    this.tableSvc.getAll(restaurantId).subscribe({
       next: t => { this.tables.set(t); this.loading.set(false); }
     });
   }
@@ -79,6 +84,7 @@ export class TablesComponent implements OnInit {
 
   getQrUrl(id: string) {
     const base = window.location.origin;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(`${base}/table/${id}`)}`;
+    const slug = this.staffAuth.currentStaff()?.restaurantSlug ?? '';
+    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(`${base}/${slug}/table/${id}`)}`;
   }
 }

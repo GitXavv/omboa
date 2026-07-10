@@ -57,21 +57,7 @@ export class OrderService {
     return this.http.post<Payment>(`${environment.apiUrl}/payments`, payload);
   }
 
-  confirmCash(orderId: string, code: string): Observable<void> {
-    return this.http.post<void>(`${environment.apiUrl}/payments/confirm-cash`, { order_id: orderId, code });
-  }
-
   cancelCashPayment(orderId: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/payments/cash/${orderId}`);
-  }
-
-  generateCashCode(orderId: string): Observable<{ code: string; expires_at: string }> {
-    return this.http.post<{ code: string; expires_at: string }>(
-      `${environment.apiUrl}/payments/cash/generate-code/${orderId}`, {}
-    );
-  }
-
-  serve(id: string, code: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/${id}/serve`, { code });
   }
 }

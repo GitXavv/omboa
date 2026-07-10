@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Order, OrderStatus } from '../../../core/models';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -27,8 +27,10 @@ const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready'
 export class OrdersComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly rt       = inject(RealtimeService);
-  private readonly auth     = inject(AuthService);
+  private readonly auth     = inject(StaffAuthService);
   private readonly toast    = inject(ToastService);
+
+  readonly slug = computed(() => this.auth.currentStaff()?.restaurantSlug ?? '');
 
   readonly orders   = signal<Order[]>([]);
   readonly loading  = signal(true);
@@ -50,7 +52,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
-    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin'));
+    const restaurantId = this.auth.currentStaff()?.restaurantId;
+    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin', restaurantId));
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'order:new' || ev.type === 'order:status') {
         this.load();

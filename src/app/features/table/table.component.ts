@@ -9,6 +9,8 @@ import { OrderService } from '../../core/services/order.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { RealtimeService } from '../../core/services/realtime.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
+import { AuthModalService } from '../../core/services/auth-modal.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -20,9 +22,10 @@ const TERMINAL_STATUSES = ['cancelled', 'released'];
 
 const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
+  confirmed: 'Acceptée par le restaurant',
   preparing: 'En préparation',
   ready:     'Prête — finalisez votre paiement',
-  paid:      'Payée — en attente de livraison',
+  paid:      'Payée — en attente de service',
   served:    'Servie',
   released:  'Servie',
   cancelled: 'Annulée',
@@ -38,12 +41,14 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
 export class TableComponent implements OnInit, OnDestroy {
   readonly cart       = inject(CartService);
   readonly auth       = inject(AuthService);
+  readonly authModal  = inject(AuthModalService);
   private readonly menuSvc  = inject(MenuService);
   private readonly tableSvc = inject(TableService);
   private readonly orderSvc = inject(OrderService);
   private readonly toast    = inject(ToastService);
   private readonly rt       = inject(RealtimeService);
   private readonly route    = inject(ActivatedRoute);
+  private readonly restaurantSvc = inject(RestaurantService);
 
   readonly step             = signal<Step>('menu');
   readonly table            = signal<TableStatus | null>(null);
@@ -73,10 +78,8 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly trackedStatusLabels = STATUS_LABELS;
   readonly cancelling          = signal(false);
 
-  // Popup cuisine → client
-  readonly kitchenPopup     = signal<{ type: 'question' | 'cancel'; message: string } | null>(null);
-  readonly kitchenReply     = signal('');
-  readonly kitchenReplySent = signal(false);
+  // Popup cuisine/réceptionniste → client : raison d'une annulation
+  readonly cancelReasonPopup = signal<string | null>(null);
 
   // Paiement inline (affiché dans tracking quand status = ready)
   readonly payMethod      = signal<PaymentMethod>('cash');
@@ -104,24 +107,12 @@ export class TableComponent implements OnInit, OnDestroy {
     return estimatePrepMinutes(items.map(i => ({ duration: i.product_cook_duration ?? 15, quantity: i.quantity })));
   });
 
-  // Code de service (affiché après 'paid', utilisé pour confirmer la livraison)
-  readonly serviceCode  = signal<string | null>(null);
   readonly receiptPopup = signal(false);
-  private readonly SVC_KEY = () => `omboa_svc_${this.orderId()}`;
 
-  // Popup paiement en espèce
-  readonly cashPopupStep      = signal<'info' | 'code' | null>(null);
-  readonly cashCodeInput      = signal('');
-  readonly cashCodeError      = signal('');
-  readonly cashCodeSubmitting = signal(false);
-  readonly cashCountdown      = signal(0);
-  readonly cashRemindDisabled = signal(true);
+  // Popup paiement en espèce : en attente de confirmation du personnel, pas de code
+  readonly cashPopupOpen     = signal(false);
+  readonly cashCountdown     = signal(0);
   readonly cashChangeDisabled = signal(true);
-  readonly cashReminderSent   = signal(false);
-  readonly serverIssueSent    = signal(false);
-
-  // Rappel livraison (commande payée, personne n'est encore venue servir)
-  readonly deliveryReminderSent = signal(false);
 
   readonly cartQuantity = (productId: string) =>
     this.cart.items().find(i => i.product.id === productId)?.quantity ?? 0;
@@ -178,30 +169,22 @@ export class TableComponent implements OnInit, OnDestroy {
         if (ev.type === 'order:status' && ev.payload.orderId === this.orderId()) {
           const s = ev.payload.status as OrderStatus;
           this.trackedOrder.update(o => o ? { ...o, status: s } : null);
-          if (s === 'preparing') this.toast.info('Votre commande est en préparation 👨‍🍳');
-          if (s === 'ready')     this.toast.success('Votre commande est prête ! Choisissez votre mode de paiement ci-dessous. 💳');
+          if (s === 'confirmed')  this.toast.info('Votre commande a été acceptée par le restaurant 👍');
+          if (s === 'preparing')  this.toast.info('Votre commande est en préparation 👨‍🍳');
+          if (s === 'ready')      this.toast.success('Votre commande est prête ! Choisissez votre mode de paiement ci-dessous. 💳');
+          if (s === 'paid') {
+            clearInterval(this.cashCountdownInterval);
+            this.cashPopupOpen.set(false);
+            this.toast.success('Paiement confirmé !');
+          }
           if (s === 'served') {
-            const svcKey = this.SVC_KEY();
-            if (svcKey) localStorage.removeItem(svcKey);
             localStorage.removeItem(this.STORAGE_KEY);
-            this.serviceCode.set(null);
             this.receiptPopup.set(true);
           }
           if (TERMINAL_STATUSES.includes(s)) localStorage.removeItem(this.STORAGE_KEY);
         }
-        if (ev.type === 'order:paid' && this.orderId()) {
-          const code = ev.payload.serviceCode;
-          this.serviceCode.set(code);
-          const svcKey = this.SVC_KEY();
-          if (svcKey) localStorage.setItem(svcKey, code);
-        }
-        if (ev.type === 'kitchen:question') {
-          this.kitchenPopup.set({ type: 'question', message: ev.payload.question });
-          this.kitchenReply.set('');
-          this.kitchenReplySent.set(false);
-        }
         if (ev.type === 'kitchen:cancel') {
-          this.kitchenPopup.set({ type: 'cancel', message: ev.payload.reason });
+          this.cancelReasonPopup.set(ev.payload.reason);
         }
       })
     );
@@ -240,13 +223,8 @@ export class TableComponent implements OnInit, OnDestroy {
       this.trackedOrder.set(order);
       this.step.set('tracking');
       this.rt.invoke('JoinOrder', order.id).catch(() => {});
-      if (order.status === 'paid') {
-        const svc = localStorage.getItem(`omboa_svc_${order.id}`);
-        if (svc) this.serviceCode.set(svc);
-      }
       if (order.payment?.method === 'cash' && order.payment.status === 'pending') {
-        this.cashPopupStep.set('info');
-        this.cashReminderSent.set(false);
+        this.cashPopupOpen.set(true);
         this.startCashCountdown();
       }
       this.loading.set(false);
@@ -272,7 +250,8 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   private loadMenu() {
-    this.menuSvc.getCategories().subscribe({
+    const restaurantId = this.restaurantSvc.current()?.id ?? '';
+    this.menuSvc.getCategories(restaurantId).subscribe({
       next: cats => {
         this.categories.set(cats);
         if (cats.length) this.openIds.set(new Set([cats[0].id]));
@@ -338,20 +317,7 @@ export class TableComponent implements OnInit, OnDestroy {
     this.showLoyaltyPromo.set(false);
   }
 
-  dismissKitchenPopup() {
-    this.kitchenPopup.set(null);
-    this.kitchenReply.set('');
-    this.kitchenReplySent.set(false);
-  }
-
-  submitKitchenReply() {
-    const reply = this.kitchenReply().trim();
-    if (!reply || this.kitchenReplySent()) return;
-    const tableNumber = String(this.table()?.number ?? '');
-    const question = this.kitchenPopup()?.message ?? '';
-    this.rt.invoke('ReplyToKitchen', this.orderId()!, reply, tableNumber, question)
-      .then(() => this.kitchenReplySent.set(true));
-  }
+  dismissCancelReasonPopup() { this.cancelReasonPopup.set(null); }
 
   // ── Signalement "table occupée à tort" ────────────────────────────────────
   requestReportTableIssue() { this.reportingTableIssue.set(true); }
@@ -360,9 +326,10 @@ export class TableComponent implements OnInit, OnDestroy {
   confirmReportTableIssue() {
     this.reportingTableIssue.set(false);
     const tableId = this.route.snapshot.paramMap.get('tableId');
-    if (!tableId) return;
+    const restaurantId = this.restaurantSvc.current()?.id;
+    if (!tableId || !restaurantId) return;
     const tableNumber = this.table()?.number ?? '—';
-    this.rt.invoke('ReportTableIssue', tableId, tableNumber)
+    this.rt.invoke('ReportTableIssue', restaurantId, tableId, tableNumber)
       .then(() => { this.tableIssueReported.set(true); this.toast.success('Les responsables ont été alertés.'); })
       .catch(() => this.toast.error('Impossible d\'envoyer le signalement. Réessayez.'));
   }
@@ -414,7 +381,7 @@ export class TableComponent implements OnInit, OnDestroy {
         this.submitting.set(false);
         this.step.set('tracking');
         this.scrollToTop();
-        this.toast.success('Commande transmise à la cuisine !');
+        this.toast.success('Commande transmise à la réception !');
         if (order.code) this.orderCodePopup.set(true);
       },
       error: () => {
@@ -439,8 +406,7 @@ export class TableComponent implements OnInit, OnDestroy {
         this.trackedOrder.update(o => o ? { ...o, payment } : null);
         this.submitting.set(false);
         if (payment.method === 'cash' && payment.status === 'pending') {
-          this.cashPopupStep.set('info');
-          this.cashReminderSent.set(false);
+          this.cashPopupOpen.set(true);
           this.startCashCountdown();
         } else {
           this.toast.success('Paiement enregistré ! Votre commande arrive bientôt. 🎉');
@@ -482,50 +448,19 @@ export class TableComponent implements OnInit, OnDestroy {
     this.loadMenu();
   }
 
-  // ── Cash popup ───────────────────────────────────────────────────────────
+  // ── Cash popup : en attente de confirmation du personnel ──────────────────
   private startCashCountdown() {
     clearInterval(this.cashCountdownInterval);
     this.cashCountdown.set(30);
-    this.cashRemindDisabled.set(true);
     this.cashChangeDisabled.set(true);
     this.cashCountdownInterval = setInterval(() => {
       const c = this.cashCountdown() - 1;
       this.cashCountdown.set(c);
       if (c <= 0) {
         clearInterval(this.cashCountdownInterval);
-        this.cashRemindDisabled.set(false);
         this.cashChangeDisabled.set(false);
       }
     }, 1000);
-  }
-
-  sendServerReminder() {
-    if (this.cashRemindDisabled()) return;
-    const orderId     = this.orderId()!;
-    const tableNumber = String(this.table()?.number ?? '');
-    this.cashRemindDisabled.set(true);
-    this.rt.invoke('RemindServer', orderId, tableNumber)
-      .then(() => { this.cashReminderSent.set(true); this.startCashCountdown(); })
-      .catch(() => this.cashRemindDisabled.set(false));
-  }
-
-  reportServerIssue() {
-    if (this.serverIssueSent()) return;
-    const orderId     = this.orderId()!;
-    const tableNumber = String(this.table()?.number ?? '');
-    this.rt.invoke('ReportServerIssue', orderId, tableNumber)
-      .then(() => this.serverIssueSent.set(true))
-      .catch(() => {});
-  }
-
-  // ── Rappel livraison (popup code de service) ──────────────────────────────
-  sendDeliveryReminder() {
-    if (this.deliveryReminderSent()) return;
-    const orderId     = this.orderId()!;
-    const tableNumber = String(this.table()?.number ?? '');
-    this.rt.invoke('RemindDelivery', orderId, tableNumber)
-      .then(() => this.deliveryReminderSent.set(true))
-      .catch(() => {});
   }
 
   changeCashPayment() {
@@ -535,8 +470,7 @@ export class TableComponent implements OnInit, OnDestroy {
     this.orderSvc.cancelCashPayment(orderId).subscribe({
       next: () => {
         clearInterval(this.cashCountdownInterval);
-        this.cashPopupStep.set(null);
-        this.cashReminderSent.set(false);
+        this.cashPopupOpen.set(false);
         // Retire le paiement du trackedOrder → le formulaire de paiement réapparaît
         this.trackedOrder.update(o => o ? { ...o, payment: undefined } : null);
         this.payPhone.set('');
@@ -545,39 +479,10 @@ export class TableComponent implements OnInit, OnDestroy {
     });
   }
 
-  openCashCodeForm() {
-    this.cashCodeInput.set('');
-    this.cashCodeError.set('');
-    this.cashPopupStep.set('code');
-  }
-
-  backToCashInfo() { this.cashPopupStep.set('info'); }
-
   // ── Reçu ─────────────────────────────────────────────────────────────────
   printReceipt() { window.print(); }
   closeReceiptPopup() {
     this.receiptPopup.set(false);
     this.startNewOrder();
-  }
-
-  submitCashCode() {
-    const code    = this.cashCodeInput().trim();
-    const orderId = this.orderId()!;
-    if (code.length !== 5) { this.cashCodeError.set('Le code doit contenir exactement 5 caractères.'); return; }
-
-    this.cashCodeSubmitting.set(true);
-    this.cashCodeError.set('');
-    this.orderSvc.confirmCash(orderId, code).subscribe({
-      next: () => {
-        this.cashPopupStep.set(null);
-        this.cashCodeSubmitting.set(false);
-        clearInterval(this.cashCountdownInterval);
-        this.toast.success('Paiement confirmé !');
-      },
-      error: err => {
-        this.cashCodeError.set(err?.error?.message ?? 'Code incorrect.');
-        this.cashCodeSubmitting.set(false);
-      }
-    });
   }
 }

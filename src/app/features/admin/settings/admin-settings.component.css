@@ -1,0 +1,25 @@
+.settings-page { padding: 32px 24px 80px; display: flex; flex-direction: column; gap: 20px; max-width: 700px; }
+.settings-page h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-accent); }
+.settings-page code {
+  background: var(--color-bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875em;
+}
+
+.settings-list { display: flex; flex-direction: column; gap: 12px; }
+
+.settings-row {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.settings-row__info { display: flex; flex-direction: column; gap: 2px; }
+.settings-row__label { font-weight: 600; font-family: var(--font-display); }
+.settings-row__status { font-size: 0.8125rem; }
+
+.settings-row__edit { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 260px; }
+.settings-row__edit .form-control { flex: 1; }

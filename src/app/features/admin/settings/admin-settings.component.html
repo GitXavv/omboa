@@ -1,0 +1,45 @@
+<div class="settings-page container">
+  <h1>Clés d'accès staff</h1>
+  <p class="text-muted">
+    Ces clés permettent à ton équipe de se connecter via la page
+    <code>/{{ '{restaurant}' }}/ostaff</code>. Change-les régulièrement, surtout après le
+    départ d'un membre de l'équipe.
+  </p>
+
+  @if (loading()) {
+    <app-loader label="Chargement…" />
+  } @else {
+    <div class="settings-list">
+      @for (role of roles; track role) {
+        <div class="settings-row card">
+          <div class="settings-row__info">
+            <span class="settings-row__label">{{ labels[role] }}</span>
+            <span class="settings-row__status text-muted">
+              {{ isDefined(role) ? 'Clé définie' : 'Aucune clé définie — connexion impossible' }}
+            </span>
+          </div>
+
+          @if (editingRole() === role) {
+            <div class="settings-row__edit">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Nouvelle clé"
+                [ngModel]="newKey()"
+                (ngModelChange)="newKey.set($event)"
+              >
+              <button class="btn btn--ghost btn--sm" (click)="cancelEdit()">Annuler</button>
+              <button class="btn btn--primary btn--sm" [disabled]="saving() || !newKey().trim()" (click)="submitKey()">
+                @if (saving()) { … } @else { Enregistrer }
+              </button>
+            </div>
+          } @else {
+            <button class="btn btn--outline btn--sm" (click)="startEdit(role)">
+              {{ isDefined(role) ? 'Changer la clé' : 'Définir la clé' }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

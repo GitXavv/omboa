@@ -4,17 +4,12 @@ import { environment } from '../../../environments/environment';
 
 export type RealtimeEvent =
   | { type: 'order:new';           payload: { orderId: string; tableNumber: string } }
+  | { type: 'order:confirmed';     payload: { orderId: string; tableNumber: string } }
   | { type: 'order:status';        payload: { orderId: string; status: string } }
-  | { type: 'order:paid';          payload: { serviceCode: string } }
   | { type: 'table:status';        payload: { tableId: string; isOccupied: boolean } }
-  | { type: 'kitchen:question';    payload: { question: string } }
   | { type: 'kitchen:cancel';      payload: { reason: string } }
-  | { type: 'client:reply';        payload: { reply: string; tableNumber: string; orderId: string; question: string } }
-  | { type: 'server:reminder';     payload: { tableNumber: string; orderId: string } }
-  | { type: 'delivery:reminder';   payload: { tableNumber: string; orderId: string } }
-  | { type: 'server:issue';        payload: { tableNumber: string; orderId: string } }
   | { type: 'admin:table-issue';   payload: { tableId: string; tableNumber: string } }
-  | { type: 'payment:method';      payload: { orderId: string; method: string; cashCode: string | null } }
+  | { type: 'payment:method';      payload: { orderId: string; method: string } }
   | { type: 'payment:removed';     payload: { orderId: string } }
   | { type: 'connected' }
   | { type: 'disconnected' };
@@ -41,6 +36,10 @@ export class RealtimeService implements OnDestroy {
       this.events$.next({ type: 'order:new', payload: { orderId, tableNumber } })
     );
 
+    this.connection.on('OrderConfirmed', (orderId: string, tableNumber: string) =>
+      this.events$.next({ type: 'order:confirmed', payload: { orderId, tableNumber } })
+    );
+
     this.connection.on('OrderStatus', (orderId: string, status: string) =>
       this.events$.next({ type: 'order:status', payload: { orderId, status } })
     );
@@ -49,40 +48,16 @@ export class RealtimeService implements OnDestroy {
       this.events$.next({ type: 'table:status', payload: { tableId, isOccupied } })
     );
 
-    this.connection.on('KitchenQuestion', (question: string) =>
-      this.events$.next({ type: 'kitchen:question', payload: { question } })
-    );
-
     this.connection.on('KitchenCancel', (reason: string) =>
       this.events$.next({ type: 'kitchen:cancel', payload: { reason } })
-    );
-
-    this.connection.on('ClientReply', (reply: string, tableNumber: string, orderId: string, question: string) =>
-      this.events$.next({ type: 'client:reply', payload: { reply, tableNumber, orderId, question } })
-    );
-
-    this.connection.on('ServerReminder', (tableNumber: string, orderId: string) =>
-      this.events$.next({ type: 'server:reminder', payload: { tableNumber, orderId } })
-    );
-
-    this.connection.on('DeliveryReminder', (tableNumber: string, orderId: string) =>
-      this.events$.next({ type: 'delivery:reminder', payload: { tableNumber, orderId } })
-    );
-
-    this.connection.on('ServerIssue', (tableNumber: string, orderId: string) =>
-      this.events$.next({ type: 'server:issue', payload: { tableNumber, orderId } })
     );
 
     this.connection.on('TableIssue', (tableId: string, tableNumber: string) =>
       this.events$.next({ type: 'admin:table-issue', payload: { tableId, tableNumber } })
     );
 
-    this.connection.on('PaymentMethod', (orderId: string, method: string, cashCode: string | null) =>
-      this.events$.next({ type: 'payment:method', payload: { orderId, method, cashCode } })
-    );
-
-    this.connection.on('ServiceCode', (serviceCode: string) =>
-      this.events$.next({ type: 'order:paid', payload: { serviceCode } })
+    this.connection.on('PaymentMethod', (orderId: string, method: string) =>
+      this.events$.next({ type: 'payment:method', payload: { orderId, method } })
     );
 
     this.connection.on('PaymentRemoved', (orderId: string) =>
