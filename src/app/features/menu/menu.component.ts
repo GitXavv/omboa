@@ -2,7 +2,6 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
-import { CartService } from '../../core/services/cart.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
 import { Category, Product } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
@@ -16,10 +15,9 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
 })
 export class MenuComponent implements OnInit {
   private readonly menuSvc = inject(MenuService);
-  private readonly cart    = inject(CartService);
   private readonly route   = inject(ActivatedRoute);
   private readonly router  = inject(Router);
-  private readonly restaurantSvc = inject(RestaurantService);
+  readonly restaurantSvc = inject(RestaurantService);
 
   readonly categories      = signal<Category[]>([]);
   readonly openIds         = signal<Set<string>>(new Set());
@@ -80,9 +78,4 @@ export class MenuComponent implements OnInit {
 
   openProduct(p: Product)  { this.selectedProduct.set(p); document.body.style.overflow = 'hidden'; }
   closeProduct()           { this.selectedProduct.set(null); document.body.style.overflow = ''; }
-
-  addToCart(p: Product) {
-    this.cart.add(p);
-    this.closeProduct();
-  }
 }

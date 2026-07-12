@@ -3,6 +3,9 @@
   <div class="container">
     <span class="section-tag">Notre carte</span>
     <h1>Le menu O'Mboa</h1>
+    @if (restaurantSvc.current()?.address; as address) {
+      <p class="menu-header__address">📍 {{ address }}</p>
+    }
     <div class="menu-header__cta-bar">
       <span>📱 Vous êtes à table ? Scannez le QR code pour passer votre commande directement.</span>
     </div>
@@ -234,10 +237,9 @@
 
         @if (selectedProduct()!.is_available) {
           <div class="product-modal__actions">
-            <button class="btn btn--primary btn--full" (click)="addToCart(selectedProduct()!)">
-              🛒 Ajouter à la commande
+            <button class="btn btn--primary btn--full" disabled>
+              Les commandes ne se font qu'à table
             </button>
-            <p class="product-modal__note">Disponible uniquement pour les commandes à table.</p>
           </div>
         }
       </div>

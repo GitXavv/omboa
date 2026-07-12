@@ -7,6 +7,7 @@ export interface Restaurant {
   // la palette Omboa par défaut.
   color_primary: string;
   color_secondary: string;
+  address: string | null;
   is_active: boolean;
   archived: boolean;
   created_at: string;

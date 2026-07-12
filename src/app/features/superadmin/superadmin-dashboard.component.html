@@ -108,6 +108,11 @@
             [ngModel]="newRestaurant().owner_key" (ngModelChange)="newRestaurant.update(r => ({...r, owner_key: $event}))">
         </div>
         <div class="form-group">
+          <label>Adresse</label>
+          <input class="form-control" type="text" placeholder="Ex. 123 Avenue de la Paix, Douala"
+            [ngModel]="newRestaurant().address" (ngModelChange)="newRestaurant.update(r => ({...r, address: $event}))">
+        </div>
+        <div class="form-group">
           <label>Couleur principale</label>
           <app-color-picker
             [value]="newRestaurant().color_primary ?? ''"
@@ -149,6 +154,11 @@
           <label>Logo (URL)</label>
           <input class="form-control" type="text" placeholder="https://…"
             [ngModel]="editForm().logo_url" (ngModelChange)="editForm.update(f => ({...f, logo_url: $event}))">
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          <input class="form-control" type="text" placeholder="Ex. 123 Avenue de la Paix, Douala"
+            [ngModel]="editForm().address" (ngModelChange)="editForm.update(f => ({...f, address: $event}))">
         </div>
         <div class="form-group">
           <label>Couleur principale</label>

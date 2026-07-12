@@ -5,6 +5,8 @@
   @if (open()) {
     <div class="cpk__popover" (click)="$event.stopPropagation()">
 
+      <button type="button" class="cpk__close" (click)="close()" aria-label="Fermer">✕</button>
+
       <div
         #svEl
         class="cpk__sv"
@@ -29,6 +31,16 @@
           <div class="cpk__hue-cursor" [style.left.%]="hue() / 360 * 100"></div>
         </div>
       </div>
+
+      <label class="cpk__hex-field">
+        <span>Hex</span>
+        <input
+          type="text"
+          maxlength="7"
+          [value]="hex()"
+          (change)="onHexCommit($any($event.target).value)"
+        >
+      </label>
 
       <div class="cpk__rgb">
         <label class="cpk__rgb-field">

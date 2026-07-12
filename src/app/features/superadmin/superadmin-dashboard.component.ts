@@ -15,6 +15,7 @@ interface EditRestaurantForm {
   logo_url: string;
   color_primary: string;
   color_secondary: string;
+  address: string;
 }
 
 // Palette Omboa par défaut — mêmes valeurs que --color-primary/--color-secondary dans
@@ -47,7 +48,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Édition (nom/logo/couleurs) — jamais les clés d'accès, réservées à l'owner lui-même.
   readonly editingRestaurant = signal<Restaurant | null>(null);
-  readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY });
+  readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY, address: '' });
   readonly saving = signal(false);
 
   readonly filteredRestaurants = () => {
@@ -88,7 +89,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   private blankNewRestaurant(): CreateRestaurantPayload {
-    return { name: '', slug: '', owner_key: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY };
+    return { name: '', slug: '', owner_key: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY, address: '' };
   }
 
   closeCreateForm() { this.showCreateForm.set(false); }
@@ -135,7 +136,8 @@ export class SuperAdminDashboardComponent implements OnInit {
       name: r.name,
       logo_url: r.logo_url ?? '',
       color_primary: r.color_primary,
-      color_secondary: r.color_secondary
+      color_secondary: r.color_secondary,
+      address: r.address ?? ''
     });
   }
 
@@ -153,7 +155,8 @@ export class SuperAdminDashboardComponent implements OnInit {
       name: form.name,
       logo_url: form.logo_url || undefined,
       color_primary: form.color_primary,
-      color_secondary: form.color_secondary
+      color_secondary: form.color_secondary,
+      address: form.address || undefined
     }).subscribe({
       next: () => {
         this.toast.success(`${form.name} mis à jour.`);

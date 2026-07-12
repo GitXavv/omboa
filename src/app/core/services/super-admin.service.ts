@@ -11,6 +11,7 @@ export interface CreateRestaurantPayload {
   logo_url?: string;
   color_primary?: string;
   color_secondary?: string;
+  address?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,7 +28,7 @@ export class SuperAdminService {
     return this.http.post<Restaurant>(`${this.base}/restaurants`, payload);
   }
 
-  updateRestaurant(id: string, data: Partial<Pick<Restaurant, 'name' | 'logo_url' | 'color_primary' | 'color_secondary' | 'is_active' | 'archived'>>): Observable<void> {
+  updateRestaurant(id: string, data: Partial<Pick<Restaurant, 'name' | 'logo_url' | 'color_primary' | 'color_secondary' | 'address' | 'is_active' | 'archived'>>): Observable<void> {
     return this.http.put<void>(`${this.base}/restaurants/${id}`, data);
   }
 

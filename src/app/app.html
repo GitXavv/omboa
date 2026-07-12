@@ -5,5 +5,7 @@
 <main class="main-content" [class.main-content--flush]="headerMode() !== 'navbar'">
   <router-outlet />
 </main>
-<app-footer />
+@if (headerMode() === 'landing') {
+  <app-footer />
+}
 <app-toast />

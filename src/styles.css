@@ -18,11 +18,6 @@
   --color-secondary-light: #8A5540;
   --color-on-secondary:    #ffffff;
 
-  /* Fond du footer — volontairement figé, jamais personnalisé par restaurant : le footer
-     est partagé avec la landing page (rendu inconditionnel dans app.html), donc sa couleur
-     doit rester stable quel que soit le restaurant consulté. */
-  --color-footer-bg: #6B4030;
-
   /* Or chaud — accents & highlights. Personnalisable : suit --color-primary dès qu'un
      restaurant a des couleurs de marque (voir RestaurantThemeService), pour que TOUT ce
      qui est doré/marron par défaut change avec la couleur choisie, pas seulement les

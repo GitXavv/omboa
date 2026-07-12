@@ -1,12 +1,13 @@
-import { Component, ElementRef, HostListener, ViewChild, computed, effect, input, output, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Hsv, hexToHsv, hsvToHex, hsvToRgb } from '../../../core/utils/color';
+import { Hsv, hexToHsv, hexToRgb, hsvToHex, hsvToRgb } from '../../../core/utils/color';
+import { ColorPickerRegistryService } from '../../../core/services/color-picker-registry.service';
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+let nextId = 0;
 
 // Color picker complet (carré saturation/valeur + curseur de teinte + pipette + champs
-// RVB) — le même principe que Djelica, PAS une saisie hexadécimale manuelle ni une simple
-// palette de pastilles : l'utilisateur manipule visuellement teinte/saturation/valeur.
+// RVB + hex modifiable) — le même principe que Djelica.
 @Component({
   selector: 'app-color-picker',
   standalone: true,
@@ -18,7 +19,12 @@ export class ColorPickerComponent {
   readonly value = input<string>('#C87D60');
   readonly valueChange = output<string>();
 
-  readonly open = signal(false);
+  private readonly id = nextId++;
+  private readonly registry = inject(ColorPickerRegistryService);
+  // Un seul picker ouvert à la fois, tous instances confondues (ex. primaire/secondaire
+  // dans le même formulaire) — en ouvrir un ferme automatiquement les autres puisque
+  // `open` n'est vrai que pour l'instance dont l'id correspond à celui du registre.
+  readonly open = computed(() => this.registry.openId() === this.id);
 
   protected readonly hue = signal(0);
   protected readonly sat = signal(1);
@@ -55,15 +61,17 @@ export class ColorPickerComponent {
     });
   }
 
-  toggle() { this.open.update(v => !v); }
+  toggle() { this.registry.openId.set(this.open() ? null : this.id); }
+  close()  { if (this.open()) this.registry.openId.set(null); }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: MouseEvent) {
-    if (!(e.target as HTMLElement).closest('.cpk')) this.open.set(false);
+    if (!this.open()) return;
+    if (!(e.target as HTMLElement).closest('.cpk')) this.close();
   }
 
   @HostListener('document:keydown.escape')
-  onEscape() { this.open.set(false); }
+  onEscape() { this.close(); }
 
   onSvDown(e: PointerEvent) {
     this.svEl.nativeElement.setPointerCapture(e.pointerId);
@@ -88,6 +96,15 @@ export class ColorPickerComponent {
     const next = { ...this.rgb(), [channel]: n };
     const hex = `#${[next.r, next.g, next.b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
     this.setHsvFromHex(hex);
+    this.emit();
+  }
+
+  // Saisie manuelle de l'hex — validée à la confirmation (blur/Entrée), jamais à chaque
+  // frappe : le champ est en binding [value] à sens unique (pas ngModel), donc il ne se
+  // fait pas reformater sous les doigts de l'utilisateur pendant qu'il tape.
+  onHexCommit(raw: string) {
+    if (!hexToRgb(raw)) return; // valeur invalide — le [value]="hex()" restaure l'affichage précédent
+    this.setHsvFromHex(raw);
     this.emit();
   }
 
