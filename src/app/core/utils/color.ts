@@ -109,3 +109,12 @@ export function hexToHsv(hex: string): Hsv {
 export function hsvToHex(hsv: Hsv): string {
   return rgbToHex(hsvToRgb(hsv));
 }
+
+// Reprend uniquement la TEINTE de `hex` en lui imposant une saturation/valeur fixes —
+// sert à décliner les tons neutres du thème (texte discret, bordures, fonds de carte…)
+// dans la teinte du restaurant tout en gardant leur "poids" visuel d'origine (même
+// luminosité/contraste qu'avec la palette par défaut, jamais plus clair/saturé).
+export function retint(hex: string, s: number, v: number): string {
+  const { h } = hexToHsv(hex);
+  return hsvToHex({ h, s, v });
+}

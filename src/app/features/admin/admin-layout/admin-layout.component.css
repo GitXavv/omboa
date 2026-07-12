@@ -94,34 +94,6 @@
   border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-.adm-sidebar__user-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.adm-sidebar__user-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  text-transform: uppercase;
-}
-.adm-sidebar__user-name {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .adm-sidebar__logout {
   font-size: 0.8125rem;
@@ -196,12 +168,26 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
-  font-size: 1.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .adm-notif-fab:hover { border-color: var(--color-primary); }
+.adm-notif-fab__icon {
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-text-muted);
+  mask-image: url('/icons/bell.svg');
+  -webkit-mask-image: url('/icons/bell.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  transition: background-color var(--transition-fast);
+}
+.adm-notif-fab:hover .adm-notif-fab__icon { background-color: var(--color-primary); }
 .adm-notif-fab__badge {
   position: absolute;
   top: -4px;

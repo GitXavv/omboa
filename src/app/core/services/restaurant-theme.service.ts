@@ -2,14 +2,29 @@ import { Injectable, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { RestaurantService } from './restaurant.service';
-import { contrastForeground, hexToRgb, shade, toRgba } from '../utils/color';
+import { contrastForeground, hexToRgb, retint, shade, toRgba } from '../utils/color';
 
 const PRIMARY_VARS = [
   '--color-primary', '--color-primary-dark', '--color-primary-light',
   '--color-primary-faded', '--color-primary-rgb', '--color-on-primary',
-  '--color-accent', '--color-accent-light', '--color-accent-rgb'
+  '--color-accent', '--color-accent-light', '--color-accent-rgb',
+  '--color-text-muted', '--color-text-light', '--color-border',
+  '--color-bg', '--color-bg-card', '--color-bg-subtle', '--color-surface'
 ];
 const SECONDARY_VARS = ['--color-secondary', '--color-secondary-light', '--color-on-secondary'];
+
+// Saturation/valeur (HSV, fractions 0–1) d'origine de chaque ton neutre — mesurées sur
+// la palette Omboa par défaut, pour que le "poids" visuel (contraste, lisibilité) ne
+// change jamais, seule la teinte suit la couleur du restaurant.
+const NEUTRAL_SV: Record<string, [number, number]> = {
+  '--color-text-muted': [0.40, 0.72],
+  '--color-text-light': [0.53, 0.48],
+  '--color-border':     [0.72, 0.24],
+  '--color-bg':         [0.71, 0.09],
+  '--color-bg-card':    [0.74, 0.14],
+  '--color-bg-subtle':  [0.72, 0.17],
+  '--color-surface':    [0.62, 0.17]
+};
 
 // Applique les couleurs de marque du restaurant courant (choisies par le super admin,
 // jamais par l'owner) par-dessus la palette omboa par défaut — UNIQUEMENT sur les routes
@@ -59,6 +74,13 @@ export class RestaurantThemeService {
         root.setProperty('--color-accent', 'var(--color-primary)');
         root.setProperty('--color-accent-light', 'var(--color-primary-light)');
         root.setProperty('--color-accent-rgb', 'var(--color-primary-rgb)');
+        // Tons neutres (texte discret, bordures, fonds de carte) — reteintés dans la
+        // même teinte que la couleur de marque, sans changer leur contraste/lisibilité.
+        // Sans ça, la plupart des libellés, bordures et fonds de section restaient
+        // visuellement "marron" malgré un bouton/prix bien coloré.
+        for (const [varName, [s, v]] of Object.entries(NEUTRAL_SV)) {
+          root.setProperty(varName, retint(p, s, v));
+        }
       } else {
         PRIMARY_VARS.forEach(v => root.removeProperty(v));
       }

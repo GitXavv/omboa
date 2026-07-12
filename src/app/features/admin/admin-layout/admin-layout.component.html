@@ -63,10 +63,6 @@
     </nav>
 
     <div class="adm-sidebar__user">
-      <div class="adm-sidebar__user-card">
-        <span class="adm-sidebar__user-avatar">{{ restaurantName().charAt(0) }}</span>
-        <span class="adm-sidebar__user-name">{{ restaurantName() }}</span>
-      </div>
       <button class="adm-sidebar__logout" (click)="logout()">Déconnexion</button>
     </div>
   </aside>
@@ -93,7 +89,7 @@
       </div>
     }
     <button class="adm-notif-fab" (click)="toggleNotifHistory()" aria-label="Historique des signalements">
-      🔔
+      <span class="adm-notif-fab__icon"></span>
       @if (tableNotifications().length) {
         <span class="adm-notif-fab__badge">{{ tableNotifications().length }}</span>
       }
