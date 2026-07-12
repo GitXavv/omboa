@@ -1,0 +1,127 @@
+.cpk { position: relative; display: inline-flex; align-items: center; gap: 10px; }
+
+.cpk__swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cpk__hex {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cpk__popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 300;
+  width: 240px;
+  padding: 14px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Carré saturation / valeur ─────────────────────────────────────────────── */
+.cpk__sv {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: var(--radius-md);
+  touch-action: none;
+  cursor: crosshair;
+  background:
+    linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, transparent),
+    hsl(var(--hue) 100% 50%);
+}
+.cpk__sv-cursor {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── Pipette + curseur de teinte ───────────────────────────────────────────── */
+.cpk__row { display: flex; align-items: center; gap: 10px; }
+
+.cpk__eyedropper {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.cpk__eyedropper:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.cpk__eyedropper svg { width: 16px; height: 16px; }
+
+.cpk__hue {
+  position: relative;
+  flex: 1;
+  height: 14px;
+  border-radius: 7px;
+  touch-action: none;
+  cursor: pointer;
+  background: linear-gradient(to right,
+    hsl(0 100% 50%), hsl(60 100% 50%), hsl(120 100% 50%),
+    hsl(180 100% 50%), hsl(240 100% 50%), hsl(300 100% 50%), hsl(360 100% 50%));
+}
+.cpk__hue-cursor {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ── Champs RVB ────────────────────────────────────────────────────────────── */
+.cpk__rgb { display: flex; gap: 8px; }
+.cpk__rgb-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.cpk__rgb-field input {
+  width: 100%;
+  text-align: center;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  -moz-appearance: textfield;
+}
+.cpk__rgb-field input::-webkit-outer-spin-button,
+.cpk__rgb-field input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

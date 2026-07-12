@@ -1,0 +1,50 @@
+<div class="cpk">
+  <button type="button" class="cpk__swatch" [style.background]="hex()" (click)="toggle()" [attr.aria-label]="hex()"></button>
+  <span class="cpk__hex">{{ hex().toUpperCase() }}</span>
+
+  @if (open()) {
+    <div class="cpk__popover" (click)="$event.stopPropagation()">
+
+      <div
+        #svEl
+        class="cpk__sv"
+        [style.--hue]="hue()"
+        (pointerdown)="onSvDown($event)"
+        (pointermove)="onSvMove($event)"
+      >
+        <div class="cpk__sv-cursor" [style.left.%]="sat() * 100" [style.top.%]="(1 - val()) * 100"></div>
+      </div>
+
+      <div class="cpk__row">
+        @if (eyedropperSupported) {
+          <button type="button" class="cpk__eyedropper" (click)="pickFromScreen()" aria-label="Pipette">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 22 1-1h3l9-9" />
+              <path d="M3 21v-3l9-9" />
+              <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" />
+            </svg>
+          </button>
+        }
+        <div #hueEl class="cpk__hue" (pointerdown)="onHueDown($event)" (pointermove)="onHueMove($event)">
+          <div class="cpk__hue-cursor" [style.left.%]="hue() / 360 * 100"></div>
+        </div>
+      </div>
+
+      <div class="cpk__rgb">
+        <label class="cpk__rgb-field">
+          <input type="number" min="0" max="255" [ngModel]="rgb().r" (ngModelChange)="setChannel('r', $event)">
+          <span>R</span>
+        </label>
+        <label class="cpk__rgb-field">
+          <input type="number" min="0" max="255" [ngModel]="rgb().g" (ngModelChange)="setChannel('g', $event)">
+          <span>G</span>
+        </label>
+        <label class="cpk__rgb-field">
+          <input type="number" min="0" max="255" [ngModel]="rgb().b" (ngModelChange)="setChannel('b', $event)">
+          <span>B</span>
+        </label>
+      </div>
+
+    </div>
+  }
+</div>

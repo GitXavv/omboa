@@ -41,8 +41,8 @@
   white-space: nowrap;
 }
 .mc-status--pending   { background: var(--color-warning-bg);  color: var(--color-warning); }
-.mc-status--preparing { background: rgba(200,125,96,0.15);    color: var(--color-primary); }
-.mc-status--ready     { background: rgba(209,173,103,0.15);   color: var(--color-accent); }
+.mc-status--preparing { background: rgba(var(--color-primary-rgb),0.15);    color: var(--color-primary); }
+.mc-status--ready     { background: rgba(var(--color-accent-rgb),0.15);   color: var(--color-accent); }
 .mc-status--served,
 .mc-status--paid      { background: var(--color-success-bg);  color: var(--color-success); }
 .mc-status--cancelled { background: var(--color-error-bg);    color: var(--color-error); }
@@ -178,7 +178,7 @@
   font-size: 1.0625rem;
   font-weight: 700;
 }
-.mc-kitchen-popup__header--question { color: var(--color-accent); border-bottom: 2px solid rgba(209,173,103,0.25); }
+.mc-kitchen-popup__header--question { color: var(--color-accent); border-bottom: 2px solid rgba(var(--color-accent-rgb),0.25); }
 .mc-kitchen-popup__header--cancel   { color: var(--color-error);  border-bottom: 2px solid rgba(239,83,80,0.25); }
 
 .mc-kitchen-popup__body {
@@ -245,7 +245,7 @@
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 .payment-method-option input[type="radio"] { width: 16px; height: 16px; accent-color: var(--color-primary); }
-.payment-method-option.selected { border-color: var(--color-primary); background: rgba(200,125,96,0.07); }
+.payment-method-option.selected { border-color: var(--color-primary); background: rgba(var(--color-primary-rgb),0.07); }
 .payment-method-option__icon { font-size: 1.25rem; }
 
 /* ── Popup paiement en espèce (ma-commande) ─────────────────────────────── */
@@ -282,7 +282,7 @@
   font-size: 1.0625rem;
   font-weight: 700;
   color: var(--color-accent);
-  border-bottom: 2px solid rgba(209,173,103,0.2);
+  border-bottom: 2px solid rgba(var(--color-accent-rgb),0.2);
 }
 .mc-cash-popup__body {
   padding: 16px 20px;

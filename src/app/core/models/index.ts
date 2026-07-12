@@ -3,8 +3,10 @@ export interface Restaurant {
   name: string;
   slug: string;
   logo_url: string | null;
-  color_primary: string | null;
-  color_secondary: string | null;
+  // Jamais NULL en base (migration_restaurant_default_colors.sql) — toujours au moins
+  // la palette Omboa par défaut.
+  color_primary: string;
+  color_secondary: string;
   is_active: boolean;
   archived: boolean;
   created_at: string;

@@ -40,7 +40,7 @@
 }
 .log-row:last-child { border-bottom: none; }
 .log-row:nth-child(even):not(.log-row--head) { background: var(--color-bg-subtle); }
-.log-row:hover:not(.log-row--head) { background: rgba(200,125,96,0.06); }
+.log-row:hover:not(.log-row--head) { background: rgba(var(--color-primary-rgb),0.06); }
 
 @media (max-width: 768px) {
   .log-row { grid-template-columns: 1fr 1fr; }
@@ -66,7 +66,7 @@
   letter-spacing: 0.04em;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  background: rgba(200,125,96,0.12);
+  background: rgba(var(--color-primary-rgb),0.12);
   color: var(--color-primary);
   width: fit-content;
 }
@@ -75,7 +75,7 @@
 .log-type--order_created,
 .log-type--order_status_changed  { background: rgba(66,165,245,0.12); color: var(--color-info); }
 .log-type--payment_completed     { background: rgba(76,175,80,0.12); color: var(--color-success); }
-.log-type--user_registered       { background: rgba(209,173,103,0.12); color: var(--color-accent); }
+.log-type--user_registered       { background: rgba(var(--color-accent-rgb),0.12); color: var(--color-accent); }
 .log-type--product_deleted,
 .log-type--category_deleted,
 .log-type--table_deleted         { background: rgba(239,83,80,0.12); color: var(--color-error); }

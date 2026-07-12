@@ -1,5 +1,8 @@
 .footer {
-  background: var(--color-secondary);
+  /* Volontairement figé (--color-footer-bg), pas --color-secondary : le footer est
+     partagé avec la landing page (toujours affiché, voir app.html) et ne doit donc
+     jamais changer selon le restaurant consulté. */
+  background: var(--color-footer-bg);
   color: rgba(255,255,255,.85);
   margin-top: auto;
 }

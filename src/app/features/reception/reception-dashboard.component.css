@@ -45,7 +45,7 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 }
-.reception-tab.active { color: var(--color-accent); border-color: rgba(209,173,103,0.4); background: rgba(209,173,103,0.1); }
+.reception-tab.active { color: var(--color-accent); border-color: rgba(var(--color-accent-rgb),0.4); background: rgba(var(--color-accent-rgb),0.1); }
 
 .reception-tab__badge {
   min-width: 18px;
@@ -60,7 +60,7 @@
   align-items: center;
   justify-content: center;
 }
-.reception-tab__badge--ready { background: var(--color-accent); color: #2a1a00; }
+.reception-tab__badge--ready { background: var(--color-accent); color: var(--color-on-primary); }
 
 /* ── Board ────────────────────────────────────────────────────────────────── */
 .reception-board {

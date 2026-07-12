@@ -57,7 +57,7 @@
   transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 .navbar__search-input::placeholder { color: var(--color-text-light); }
-.navbar__search-input:focus { outline: none; border-color: var(--color-primary); background: rgba(200,125,96,0.05); box-shadow: 0 0 0 2px var(--color-primary-faded); }
+.navbar__search-input:focus { outline: none; border-color: var(--color-primary); background: rgba(var(--color-primary-rgb),0.05); box-shadow: 0 0 0 2px var(--color-primary-faded); }
 .navbar__search-input::-webkit-search-cancel-button { display: none; }
 
 /* ── Actions desktop ─────────────────────────────────────────────────────── */
@@ -81,7 +81,7 @@
   color: var(--color-text);
 }
 .navbar__cart-btn:hover,
-.navbar__cart-btn.active { background: rgba(200,125,96,0.15); border-color: var(--color-primary); }
+.navbar__cart-btn.active { background: rgba(var(--color-primary-rgb),0.15); border-color: var(--color-primary); }
 
 .navbar__cart-badge {
   position: absolute;
@@ -214,7 +214,7 @@
   transition: all var(--transition-fast);
 }
 .navbar__user-trigger:hover,
-.navbar__user-trigger.active { border-color: var(--color-primary); background: rgba(200,125,96,0.08); }
+.navbar__user-trigger.active { border-color: var(--color-primary); background: rgba(var(--color-primary-rgb),0.08); }
 
 .navbar__user-avatar {
   width: 28px;
@@ -293,7 +293,7 @@
   text-decoration: none;
 }
 .navbar__commande-btn:hover,
-.navbar__commande-btn.active { background: rgba(200,125,96,0.15); border-color: var(--color-primary); }
+.navbar__commande-btn.active { background: rgba(var(--color-primary-rgb),0.15); border-color: var(--color-primary); }
 
 .navbar__commande-hdr-icon {
   width: 20px;

@@ -8,13 +8,13 @@ import { SuperAdminAuthService } from '../../core/services/super-admin-auth.serv
 import { ToastService } from '../../core/services/toast.service';
 import { Restaurant, SuperAdminStats } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
-import { ColorPalettePickerComponent } from '../../shared/components/color-palette-picker/color-palette-picker.component';
+import { ColorPickerComponent } from '../../shared/components/color-picker/color-picker.component';
 
 interface EditRestaurantForm {
   name: string;
   logo_url: string;
-  color_primary: string | null;
-  color_secondary: string | null;
+  color_primary: string;
+  color_secondary: string;
 }
 
 // Palette Omboa par défaut — mêmes valeurs que --color-primary/--color-secondary dans
@@ -27,7 +27,7 @@ const DEFAULT_COLOR_SECONDARY = '#6B4030';
 @Component({
   selector: 'app-superadmin-dashboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, LoaderComponent, ColorPalettePickerComponent],
+  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, LoaderComponent, ColorPickerComponent],
   templateUrl: './superadmin-dashboard.component.html',
   styleUrl: './superadmin-dashboard.component.css'
 })
@@ -47,7 +47,7 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   // Édition (nom/logo/couleurs) — jamais les clés d'accès, réservées à l'owner lui-même.
   readonly editingRestaurant = signal<Restaurant | null>(null);
-  readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: null, color_secondary: null });
+  readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY });
   readonly saving = signal(false);
 
   readonly filteredRestaurants = () => {
@@ -152,8 +152,8 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.superAdminSvc.updateRestaurant(r.id, {
       name: form.name,
       logo_url: form.logo_url || undefined,
-      color_primary: form.color_primary ?? undefined,
-      color_secondary: form.color_secondary ?? undefined
+      color_primary: form.color_primary,
+      color_secondary: form.color_secondary
     }).subscribe({
       next: () => {
         this.toast.success(`${form.name} mis à jour.`);

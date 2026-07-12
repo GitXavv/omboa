@@ -9,7 +9,8 @@
   --color-primary:       #C87D60;
   --color-primary-dark:  #A5603E;
   --color-primary-light: #DE9B7C;
-  --color-primary-faded: rgba(200, 125, 96, 0.12);
+  --color-primary-rgb:   200, 125, 96;
+  --color-primary-faded: rgba(var(--color-primary-rgb), 0.12);
   --color-on-primary:    #ffffff;
 
   /* Marron chaud moyen — boutons & surfaces secondaires (personnalisable par restaurant) */
@@ -17,9 +18,18 @@
   --color-secondary-light: #8A5540;
   --color-on-secondary:    #ffffff;
 
-  /* Or chaud — accents & highlights */
+  /* Fond du footer — volontairement figé, jamais personnalisé par restaurant : le footer
+     est partagé avec la landing page (rendu inconditionnel dans app.html), donc sa couleur
+     doit rester stable quel que soit le restaurant consulté. */
+  --color-footer-bg: #6B4030;
+
+  /* Or chaud — accents & highlights. Personnalisable : suit --color-primary dès qu'un
+     restaurant a des couleurs de marque (voir RestaurantThemeService), pour que TOUT ce
+     qui est doré/marron par défaut change avec la couleur choisie, pas seulement les
+     boutons et les prix. */
   --color-accent:       #D1AD67;
   --color-accent-light: #E3C98A;
+  --color-accent-rgb:   209, 173, 103;
 
   /* Beige sable */
   --color-sand:         #D6B89E;

@@ -109,15 +109,15 @@
         </div>
         <div class="form-group">
           <label>Couleur principale</label>
-          <app-color-palette-picker
-            [value]="newRestaurant().color_primary ?? null"
+          <app-color-picker
+            [value]="newRestaurant().color_primary ?? ''"
             (valueChange)="newRestaurant.update(r => ({...r, color_primary: $event}))"
           />
         </div>
         <div class="form-group">
           <label>Couleur secondaire</label>
-          <app-color-palette-picker
-            [value]="newRestaurant().color_secondary ?? null"
+          <app-color-picker
+            [value]="newRestaurant().color_secondary ?? ''"
             (valueChange)="newRestaurant.update(r => ({...r, color_secondary: $event}))"
           />
         </div>
@@ -152,14 +152,14 @@
         </div>
         <div class="form-group">
           <label>Couleur principale</label>
-          <app-color-palette-picker
+          <app-color-picker
             [value]="editForm().color_primary"
             (valueChange)="editForm.update(f => ({...f, color_primary: $event}))"
           />
         </div>
         <div class="form-group">
           <label>Couleur secondaire</label>
-          <app-color-palette-picker
+          <app-color-picker
             [value]="editForm().color_secondary"
             (valueChange)="editForm.update(f => ({...f, color_secondary: $event}))"
           />

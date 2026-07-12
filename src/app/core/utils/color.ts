@@ -67,3 +67,45 @@ export function toRgba(hex: string, alpha: number): string {
   if (!rgb) return hex;
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
 }
+
+export interface Hsv { h: number; s: number; v: number; }
+
+// Conversions HSV ↔ RGB — servent au color picker complet (carré saturation/valeur +
+// curseur de teinte), où l'utilisateur manipule teinte/saturation/valeur plutôt que
+// des composantes RVB directement.
+export function rgbToHsv({ r, g, b }: Rgb): Hsv {
+  const rn = r / 255, gn = g / 255, bn = b / 255;
+  const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+  const delta = max - min;
+  let h = 0;
+  if (delta !== 0) {
+    if (max === rn) h = 60 * (((gn - bn) / delta) % 6);
+    else if (max === gn) h = 60 * ((bn - rn) / delta + 2);
+    else h = 60 * ((rn - gn) / delta + 4);
+  }
+  if (h < 0) h += 360;
+  const s = max === 0 ? 0 : delta / max;
+  return { h, s, v: max };
+}
+
+export function hsvToRgb({ h, s, v }: Hsv): Rgb {
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
+  let [r, g, b] = [0, 0, 0];
+  if (h < 60)       [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else              [r, g, b] = [c, 0, x];
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+
+export function hexToHsv(hex: string): Hsv {
+  return rgbToHsv(hexToRgb(hex) ?? { r: 0, g: 0, b: 0 });
+}
+
+export function hsvToHex(hsv: Hsv): string {
+  return rgbToHex(hsvToRgb(hsv));
+}
