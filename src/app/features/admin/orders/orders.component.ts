@@ -1,10 +1,8 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
-import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Order, OrderStatus } from '../../../core/models';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -20,17 +18,14 @@ const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready'
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [RouterLink, FormsModule, DecimalPipe, DatePipe, LoaderComponent],
+  imports: [FormsModule, DecimalPipe, DatePipe, LoaderComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
 export class OrdersComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly rt       = inject(RealtimeService);
-  private readonly auth     = inject(StaffAuthService);
   private readonly toast    = inject(ToastService);
-
-  readonly slug = computed(() => this.auth.currentStaff()?.restaurantSlug ?? '');
 
   readonly orders   = signal<Order[]>([]);
   readonly loading  = signal(true);
@@ -50,10 +45,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
       .filter(o => !q || (o.table?.number ?? '').toLowerCase().includes(q));
   });
 
+  // La connexion SignalR au groupe admin est ouverte par AdminLayoutComponent (qui
+  // enveloppe cette page) — ici on ne fait que se rebrancher sur le flux déjà actif.
   ngOnInit() {
     this.load();
-    const restaurantId = this.auth.currentStaff()?.restaurantId;
-    this.rt.connect(this.auth.getToken() ?? undefined).then(() => this.rt.invoke('JoinAdmin', restaurantId));
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'order:new' || ev.type === 'order:status') {
         this.load();
@@ -62,7 +57,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() { this.sub?.unsubscribe(); this.rt.disconnect(); }
+  ngOnDestroy() { this.sub?.unsubscribe(); }
 
   private load() {
     this.orderSvc.getAll().subscribe({

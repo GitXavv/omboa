@@ -2,7 +2,6 @@
 
   <div class="admin-header flex-between">
     <div>
-      <a [routerLink]="['/', slug(), 'admin']" class="btn btn--ghost btn--sm">← Tableau de bord</a>
       <h2>Statistiques</h2>
       @if (refreshedAt()) {
         <p class="text-muted" style="font-size:.825rem">Actualisé à {{ refreshedAt() | date:'HH:mm:ss' }}</p>

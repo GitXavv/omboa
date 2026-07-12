@@ -17,4 +17,8 @@ export class RestaurantService {
       tap(r => this.current.set(r))
     );
   }
+
+  // Appelé par App en quittant tout contexte /:restaurantSlug/* (landing, /osuper) —
+  // sans ça, le dernier restaurant visité resterait actif (et son thème avec).
+  clear() { this.current.set(null); }
 }

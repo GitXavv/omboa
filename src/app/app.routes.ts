@@ -61,6 +61,7 @@ export const routes: Routes = [
         path: 'admin',
         canActivate: [roleGuard],
         data: { roles: ['owner'] },
+        loadComponent: () => import('./features/admin/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
         children: [
           { path: '',       loadComponent: () => import('./features/admin/dashboard/dashboard.component').then(m => m.DashboardComponent) },
           { path: 'orders', loadComponent: () => import('./features/admin/orders/orders.component').then(m => m.OrdersComponent) },

@@ -1,0 +1,141 @@
+<div class="adm-shell">
+
+  <!-- ── Barre mobile (burger) ─────────────────────────────────────────────── -->
+  <div class="adm-mobile-bar">
+    <button class="adm-mobile-bar__burger" (click)="toggleMobile()" aria-label="Ouvrir le menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="adm-mobile-bar__name">{{ restaurantName() }}</span>
+  </div>
+
+  @if (mobileOpen()) {
+    <div class="adm-overlay" (click)="closeMobile()"></div>
+  }
+
+  <!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+  <aside class="adm-sidebar" [class.adm-sidebar--open]="mobileOpen()">
+    <div class="adm-sidebar__brand">
+      <span class="adm-sidebar__brand-tag">Admin PANEL</span>
+      <span class="adm-sidebar__brand-name">{{ restaurantName() }}</span>
+    </div>
+
+    <nav class="adm-sidebar__nav">
+      <a [routerLink]="['/', slug(), 'admin']" routerLinkActive="adm-nav__row--active" [routerLinkActiveOptions]="{ exact: true }" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--dashboard"></span>
+        <span class="adm-nav__label">Dashboard</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'menu']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--menu"></span>
+        <span class="adm-nav__label">Menu</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'orders']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--orders"></span>
+        <span class="adm-nav__label">Commandes</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'tables']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--tables"></span>
+        <span class="adm-nav__label">Tables & QR</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'stats']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--stats"></span>
+        <span class="adm-nav__label">Statistiques</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'logs']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--logs"></span>
+        <span class="adm-nav__label">Historique</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'kitchen']" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--kitchen"></span>
+        <span class="adm-nav__label">Cuisine</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'reception']" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--reception"></span>
+        <span class="adm-nav__label">Réception</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'exit']" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--exit"></span>
+        <span class="adm-nav__label">Sortie</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'settings']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--staff"></span>
+        <span class="adm-nav__label">Staff</span>
+      </a>
+    </nav>
+
+    <div class="adm-sidebar__user">
+      <div class="adm-sidebar__user-card">
+        <span class="adm-sidebar__user-avatar">{{ restaurantName().charAt(0) }}</span>
+        <span class="adm-sidebar__user-name">{{ restaurantName() }}</span>
+      </div>
+      <button class="adm-sidebar__logout" (click)="logout()">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- ── Contenu ───────────────────────────────────────────────────────────── -->
+  <main class="adm-content">
+    <router-outlet />
+  </main>
+
+  <!-- ── Cloche de notification flottante ──────────────────────────────────── -->
+  <div class="adm-notif-wrap">
+    @if (notifHistoryOpen()) {
+      <div class="adm-notif-panel">
+        <p class="adm-notif-panel__title">Signalements de table</p>
+        @if (!tableNotifications().length) {
+          <p class="text-muted" style="font-size:.8125rem;padding:12px 0">Aucun signalement pour le moment.</p>
+        }
+        @for (n of tableNotifications(); track n.id) {
+          <button class="adm-notif-row" (click)="reopenNotification(n)">
+            <span>Table {{ n.tableNumber }}</span>
+            <span class="text-muted">{{ n.timestamp | date:'dd/MM HH:mm' }}</span>
+          </button>
+        }
+      </div>
+    }
+    <button class="adm-notif-fab" (click)="toggleNotifHistory()" aria-label="Historique des signalements">
+      🔔
+      @if (tableNotifications().length) {
+        <span class="adm-notif-fab__badge">{{ tableNotifications().length }}</span>
+      }
+    </button>
+  </div>
+
+</div>
+
+<!-- ── Popup interruptif : table signalée occupée à tort ────────────────────── -->
+@if (tableIssuePopup()) {
+  <div class="admin-alert-overlay" (click)="dismissTableIssuePopup()">
+    <div class="admin-alert" (click)="$event.stopPropagation()">
+      <div class="admin-alert__header">⚠️ Table {{ tableIssuePopup()!.tableNumber }}</div>
+      <div class="admin-alert__body">
+        <p>Un client signale que la table <strong>{{ tableIssuePopup()!.tableNumber }}</strong> est
+        marquée occupée alors qu'il n'y a personne d'autre.</p>
+        <p class="text-muted" style="font-size:.875rem">Vérifications recommandées avant toute action.</p>
+      </div>
+      <div class="admin-alert__footer admin-alert__footer--stack">
+        <a [routerLink]="['/', slug(), 'admin', 'tables']" class="btn btn--outline btn--full" (click)="dismissTableIssuePopup()">Voir l'état de la table</a>
+        <a [routerLink]="['/', slug(), 'admin', 'logs']" [queryParams]="{ entity_id: tableIssuePopup()!.tableId }" class="btn btn--outline btn--full" (click)="dismissTableIssuePopup()">Voir les logs</a>
+        <button class="btn btn--primary btn--full" (click)="requestDisableTable()">Désactiver la table</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Sous-confirmation désactivation de table ─────────────────────────────── -->
+@if (confirmingDisable()) {
+  <div class="admin-alert-overlay" (click)="cancelDisableTable()">
+    <div class="admin-alert" (click)="$event.stopPropagation()">
+      <div class="admin-alert__header">Désactiver la table {{ tableIssuePopup()?.tableNumber }} ?</div>
+      <div class="admin-alert__body">
+        <p>La table ne sera plus scannable tant qu'elle ne sera pas réactivée. Les commandes en
+        cours ne sont pas affectées — la cuisine verra juste un repère "table désactivée".</p>
+      </div>
+      <div class="admin-alert__footer" style="display:flex;gap:10px">
+        <button class="btn btn--ghost btn--full" [disabled]="disablingTable()" (click)="cancelDisableTable()">Annuler</button>
+        <button class="btn btn--primary btn--full" [disabled]="disablingTable()" (click)="confirmDisableTable()">
+          @if (disablingTable()) { Désactivation… } @else { Désactiver }
+        </button>
+      </div>
+    </div>
+  </div>
+}

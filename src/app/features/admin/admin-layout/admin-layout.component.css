@@ -1,0 +1,309 @@
+/* ── Structure générale (sidebar Djelica + contenu) ───────────────────────── */
+.adm-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────────────── */
+.adm-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-card);
+  border-right: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.adm-sidebar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.adm-sidebar__brand-tag {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-primary);
+}
+.adm-sidebar__brand-name {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 2px;
+  flex: 1;
+}
+
+.adm-nav__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+.adm-nav__row:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+.adm-nav__row--active {
+  color: var(--color-primary);
+  background: var(--color-primary-faded);
+}
+
+.adm-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.adm-nav__icon--dashboard { mask-image: url('/icons/nav-dashboard.svg'); -webkit-mask-image: url('/icons/nav-dashboard.svg'); }
+.adm-nav__icon--menu      { mask-image: url('/icons/nav-menu.svg');      -webkit-mask-image: url('/icons/nav-menu.svg'); }
+.adm-nav__icon--orders    { mask-image: url('/icons/nav-orders.svg');    -webkit-mask-image: url('/icons/nav-orders.svg'); }
+.adm-nav__icon--tables    { mask-image: url('/icons/nav-tables.svg');    -webkit-mask-image: url('/icons/nav-tables.svg'); }
+.adm-nav__icon--stats     { mask-image: url('/icons/nav-stats.svg');     -webkit-mask-image: url('/icons/nav-stats.svg'); }
+.adm-nav__icon--logs      { mask-image: url('/icons/nav-logs.svg');      -webkit-mask-image: url('/icons/nav-logs.svg'); }
+.adm-nav__icon--kitchen   { mask-image: url('/icons/nav-kitchen.svg');   -webkit-mask-image: url('/icons/nav-kitchen.svg'); }
+.adm-nav__icon--reception { mask-image: url('/icons/nav-reception.svg'); -webkit-mask-image: url('/icons/nav-reception.svg'); }
+.adm-nav__icon--exit      { mask-image: url('/icons/nav-exit.svg');      -webkit-mask-image: url('/icons/nav-exit.svg'); }
+.adm-nav__icon--staff     { mask-image: url('/icons/nav-staff.svg');    -webkit-mask-image: url('/icons/nav-staff.svg'); }
+
+.adm-sidebar__user {
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.adm-sidebar__user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adm-sidebar__user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.adm-sidebar__user-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-sidebar__logout {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: left;
+  padding: 0;
+}
+.adm-sidebar__logout:hover { color: var(--color-error); }
+
+/* ── Contenu ───────────────────────────────────────────────────────────────── */
+.adm-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Barre mobile (burger) ─────────────────────────────────────────────────── */
+.adm-mobile-bar {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.adm-mobile-bar__burger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 24px;
+  padding: 4px;
+}
+.adm-mobile-bar__burger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 1px;
+}
+.adm-mobile-bar__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-overlay {
+  display: none;
+}
+
+/* ── Cloche de notification flottante ─────────────────────────────────────── */
+.adm-notif-wrap {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.adm-notif-fab {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.adm-notif-fab:hover { border-color: var(--color-primary); }
+.adm-notif-fab__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+.adm-notif-panel {
+  width: 300px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+}
+.adm-notif-panel__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 8px;
+}
+.adm-notif-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  text-align: left;
+}
+.adm-notif-row:hover { background: var(--color-bg-subtle); }
+
+/* ── Responsive : sidebar → tiroir ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .adm-mobile-bar { display: flex; }
+
+  .adm-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 500;
+    transform: translateX(-100%);
+    transition: transform var(--transition-fast);
+    box-shadow: var(--shadow-lg);
+  }
+  .adm-sidebar--open { transform: translateX(0); }
+
+  .adm-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 450;
+  }
+
+  .adm-notif-wrap { right: 16px; bottom: 16px; }
+}
+
+/* ── Popup interruptif (signalement serveur) ──────────────────────────────── */
+.admin-alert-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.admin-alert {
+  background: var(--color-bg-card);
+  border: 1.5px solid var(--color-error);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+.admin-alert__header {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-error);
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+.admin-alert__body { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+.admin-alert__body p { margin: 0; color: var(--color-text); line-height: 1.6; }
+.admin-alert__footer { padding: 14px 22px 20px; }
+.admin-alert__footer--stack { display: flex; flex-direction: column; gap: 8px; }

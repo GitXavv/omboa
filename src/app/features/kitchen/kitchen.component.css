@@ -86,7 +86,7 @@
   border-radius: 9px;
   padding: 0 5px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 0.7rem;
   font-weight: 700;
   display: flex;
@@ -235,7 +235,7 @@
 }
 .order-card__btn--advance {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
 }
 .order-card__btn--advance:hover { filter: brightness(1.15); }
 
@@ -251,7 +251,7 @@
 
 .order-card__btn--no  { background: rgba(255,255,255,0.07); color: rgba(240,232,220,0.6); flex: 1; }
 .order-card__btn--no:hover { background: rgba(255,255,255,0.12); }
-.order-card__btn--yes { background: var(--color-primary); color: #fff; flex: 2; }
+.order-card__btn--yes { background: var(--color-primary); color: var(--color-on-primary); flex: 2; }
 .order-card__btn--yes:hover { filter: brightness(1.15); }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */

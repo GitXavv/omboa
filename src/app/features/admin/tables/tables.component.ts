@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableService } from '../../../core/services/table.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -10,7 +9,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
 @Component({
   selector: 'app-tables',
   standalone: true,
-  imports: [RouterLink, FormsModule, LoaderComponent],
+  imports: [FormsModule, LoaderComponent],
   templateUrl: './tables.component.html',
   styleUrl: './tables.component.css'
 })
@@ -18,8 +17,6 @@ export class TablesComponent implements OnInit {
   private readonly tableSvc = inject(TableService);
   private readonly toast    = inject(ToastService);
   private readonly staffAuth = inject(StaffAuthService);
-
-  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly tables          = signal<TableStatus[]>([]);
   readonly loading         = signal(true);

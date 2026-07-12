@@ -17,7 +17,7 @@
   transition: all var(--transition-fast);
 }
 .log-filter-btn:hover { background: var(--color-bg-subtle); color: var(--color-text); }
-.log-filter-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.log-filter-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
 
 /* ── Log table ──────────────────────────────────────────────────────────────── */
 .logs-list {

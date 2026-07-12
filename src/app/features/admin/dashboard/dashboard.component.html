@@ -1,30 +1,6 @@
 <div class="admin-page container">
 
-  <div class="dash-title-row">
-    <h1 class="dash-title">Tableau de bord</h1>
-    <div class="dash-notif-wrap">
-      <button class="dash-notif-btn" (click)="toggleNotifHistory()" aria-label="Historique des signalements">
-        🔔
-        @if (tableNotifications().length) {
-          <span class="dash-notif-badge">{{ tableNotifications().length }}</span>
-        }
-      </button>
-      @if (notifHistoryOpen()) {
-        <div class="dash-notif-panel">
-          <p class="dash-notif-panel__title">Signalements de table</p>
-          @if (!tableNotifications().length) {
-            <p class="text-muted" style="font-size:.8125rem;padding:12px 0">Aucun signalement pour le moment.</p>
-          }
-          @for (n of tableNotifications(); track n.id) {
-            <button class="dash-notif-row" (click)="reopenNotification(n)">
-              <span>Table {{ n.tableNumber }}</span>
-              <span class="text-muted">{{ n.timestamp | date:'dd/MM HH:mm' }}</span>
-            </button>
-          }
-        </div>
-      }
-    </div>
-  </div>
+  <h1 class="dash-title">Tableau de bord</h1>
 
   @if (loading()) {
     <app-loader />
@@ -53,153 +29,25 @@
       </div>
     </div>
 
-    <!-- Corps principal -->
-    <div class="dash-body">
-
-      <!-- Navigation -->
-      <nav class="dash-nav">
-        <p class="dash-nav__hd">Sections</p>
-
-        <a [routerLink]="['/', slug(), 'admin', 'orders']" class="dash-nav__row">
-          <span class="dash-nav__idx">I</span>
-          <span class="dash-nav__icon dash-nav__icon--orders"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Commandes</span>
-            <span class="dash-nav__desc">Historique filtrable</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'admin', 'menu']" class="dash-nav__row">
-          <span class="dash-nav__idx">II</span>
-          <span class="dash-nav__icon dash-nav__icon--menu"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Menu & catégories</span>
-            <span class="dash-nav__desc">Ajouter, modifier les plats</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'admin', 'tables']" class="dash-nav__row">
-          <span class="dash-nav__idx">III</span>
-          <span class="dash-nav__icon dash-nav__icon--tables"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Tables & QR</span>
-            <span class="dash-nav__desc">Gestion des tables</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'admin', 'stats']" class="dash-nav__row">
-          <span class="dash-nav__idx">IV</span>
-          <span class="dash-nav__icon dash-nav__icon--stats"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Statistiques</span>
-            <span class="dash-nav__desc">Chiffres & tendances</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'admin', 'logs']" class="dash-nav__row">
-          <span class="dash-nav__idx">V</span>
-          <span class="dash-nav__icon dash-nav__icon--settings"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Logs d'activité</span>
-            <span class="dash-nav__desc">Audit complet</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'admin', 'settings']" class="dash-nav__row">
-          <span class="dash-nav__idx">VI</span>
-          <span class="dash-nav__icon dash-nav__icon--settings"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Clés d'accès staff</span>
-            <span class="dash-nav__desc">Admin, cuisine, réception, sortie</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'reception']" class="dash-nav__row">
-          <span class="dash-nav__idx">VII</span>
-          <span class="dash-nav__icon dash-nav__icon--kitchen"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Réception</span>
-            <span class="dash-nav__desc">Accepter, encaisser, servir</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-
-        <a [routerLink]="['/', slug(), 'exit']" class="dash-nav__row">
-          <span class="dash-nav__idx">VIII</span>
-          <span class="dash-nav__icon dash-nav__icon--tables"></span>
-          <span class="dash-nav__info">
-            <span class="dash-nav__name">Sortie</span>
-            <span class="dash-nav__desc">Code de commande & libération</span>
-          </span>
-          <span class="dash-nav__go">→</span>
-        </a>
-      </nav>
-
-      <!-- Commandes récentes -->
-      <div class="dash-orders">
-        <div class="dash-orders__hd">
-          <p class="dash-orders__title">Commandes récentes</p>
-          <a [routerLink]="['/', slug(), 'admin', 'orders']" class="btn btn--ghost btn--sm">Tout voir →</a>
-        </div>
-
-        @if (!recentOrders().length) {
-          <p class="text-muted" style="padding:48px 0;text-align:center">Aucune commande pour le moment.</p>
-        }
-        @for (o of recentOrders(); track o.id) {
-          <div class="dash-order-row">
-            <span class="dash-order-row__table">Table {{ o.table?.number ?? '—' }}</span>
-            <span class="dash-order-row__time">{{ o.created_at | date:'HH:mm' }}</span>
-            <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] }}</span>
-            <span class="dash-order-row__amt">{{ o.total_amount | number:'1.0-0' }}<span class="dash-order-row__curr"> F</span></span>
-          </div>
-        }
+    <!-- Commandes récentes -->
+    <div class="dash-orders">
+      <div class="dash-orders__hd">
+        <p class="dash-orders__title">Commandes récentes</p>
+        <a [routerLink]="['/', slug(), 'admin', 'orders']" class="btn btn--ghost btn--sm">Tout voir →</a>
       </div>
 
+      @if (!recentOrders().length) {
+        <p class="text-muted" style="padding:48px 0;text-align:center">Aucune commande pour le moment.</p>
+      }
+      @for (o of recentOrders(); track o.id) {
+        <div class="dash-order-row">
+          <span class="dash-order-row__table">Table {{ o.table?.number ?? '—' }}</span>
+          <span class="dash-order-row__time">{{ o.created_at | date:'HH:mm' }}</span>
+          <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] }}</span>
+          <span class="dash-order-row__amt">{{ o.total_amount | number:'1.0-0' }}<span class="dash-order-row__curr"> F</span></span>
+        </div>
+      }
     </div>
 
   }
 </div>
-
-<!-- ── Popup interruptif : table signalée occupée à tort ────────────────────── -->
-@if (tableIssuePopup()) {
-  <div class="admin-alert-overlay" (click)="dismissTableIssuePopup()">
-    <div class="admin-alert" (click)="$event.stopPropagation()">
-      <div class="admin-alert__header">⚠️ Table {{ tableIssuePopup()!.tableNumber }}</div>
-      <div class="admin-alert__body">
-        <p>Un client signale que la table <strong>{{ tableIssuePopup()!.tableNumber }}</strong> est
-        marquée occupée alors qu'il n'y a personne d'autre.</p>
-        <p class="text-muted" style="font-size:.875rem">Vérifications recommandées avant toute action.</p>
-      </div>
-      <div class="admin-alert__footer admin-alert__footer--stack">
-        <a [routerLink]="['/', slug(), 'admin', 'tables']" class="btn btn--outline btn--full" (click)="dismissTableIssuePopup()">Voir l'état de la table</a>
-        <a [routerLink]="['/', slug(), 'admin', 'logs']" [queryParams]="{ entity_id: tableIssuePopup()!.tableId }" class="btn btn--outline btn--full" (click)="dismissTableIssuePopup()">Voir les logs</a>
-        <button class="btn btn--primary btn--full" (click)="requestDisableTable()">Désactiver la table</button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- ── Sous-confirmation désactivation de table ─────────────────────────────── -->
-@if (confirmingDisable()) {
-  <div class="admin-alert-overlay" (click)="cancelDisableTable()">
-    <div class="admin-alert" (click)="$event.stopPropagation()">
-      <div class="admin-alert__header">Désactiver la table {{ tableIssuePopup()?.tableNumber }} ?</div>
-      <div class="admin-alert__body">
-        <p>La table ne sera plus scannable tant qu'elle ne sera pas réactivée. Les commandes en
-        cours ne sont pas affectées — la cuisine verra juste un repère "table désactivée".</p>
-      </div>
-      <div class="admin-alert__footer" style="display:flex;gap:10px">
-        <button class="btn btn--ghost btn--full" [disabled]="disablingTable()" (click)="cancelDisableTable()">Annuler</button>
-        <button class="btn btn--primary btn--full" [disabled]="disablingTable()" (click)="confirmDisableTable()">
-          @if (disablingTable()) { Désactivation… } @else { Désactiver }
-        </button>
-      </div>
-    </div>
-  </div>
-}

@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { MenuService } from '../../../core/services/menu.service';
@@ -16,7 +15,7 @@ type ConfirmAction = { title: string; message: string; onConfirm: () => void };
 @Component({
   selector: 'app-menu-management',
   standalone: true,
-  imports: [RouterLink, FormsModule, DecimalPipe, LoaderComponent],
+  imports: [FormsModule, DecimalPipe, LoaderComponent],
   templateUrl: './menu-management.component.html',
   styleUrl: './menu-management.component.css'
 })
@@ -25,8 +24,6 @@ export class MenuManagementComponent implements OnInit {
   private readonly toast     = inject(ToastService);
   private readonly imgUpload = inject(ImageUploadService);
   private readonly staffAuth = inject(StaffAuthService);
-
-  readonly slug = computed(() => this.staffAuth.currentStaff()?.restaurantSlug ?? '');
 
   readonly categories  = signal<Category[]>([]);
   readonly loading     = signal(true);

@@ -8,11 +8,26 @@ import { SuperAdminAuthService } from '../../core/services/super-admin-auth.serv
 import { ToastService } from '../../core/services/toast.service';
 import { Restaurant, SuperAdminStats } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
+import { ColorPalettePickerComponent } from '../../shared/components/color-palette-picker/color-palette-picker.component';
+
+interface EditRestaurantForm {
+  name: string;
+  logo_url: string;
+  color_primary: string | null;
+  color_secondary: string | null;
+}
+
+// Palette Omboa par défaut — mêmes valeurs que --color-primary/--color-secondary dans
+// styles.css et que la constante équivalente côté API (SuperAdminController). color_primary/
+// color_secondary ne sont jamais NULL en base : un nouveau restaurant part toujours avec
+// ces couleurs pré-sélectionnées, modifiables via la palette avant validation.
+const DEFAULT_COLOR_PRIMARY = '#C87D60';
+const DEFAULT_COLOR_SECONDARY = '#6B4030';
 
 @Component({
   selector: 'app-superadmin-dashboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, LoaderComponent],
+  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, LoaderComponent, ColorPalettePickerComponent],
   templateUrl: './superadmin-dashboard.component.html',
   styleUrl: './superadmin-dashboard.component.css'
 })
@@ -27,8 +42,13 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly search        = signal('');
 
   readonly showCreateForm = signal(false);
-  readonly newRestaurant  = signal<CreateRestaurantPayload>({ name: '', slug: '', owner_key: '' });
+  readonly newRestaurant  = signal<CreateRestaurantPayload>(this.blankNewRestaurant());
   readonly creating       = signal(false);
+
+  // Édition (nom/logo/couleurs) — jamais les clés d'accès, réservées à l'owner lui-même.
+  readonly editingRestaurant = signal<Restaurant | null>(null);
+  readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: null, color_secondary: null });
+  readonly saving = signal(false);
 
   readonly filteredRestaurants = () => {
     const q = this.search().toLowerCase().trim();
@@ -63,8 +83,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   openCreateForm() {
-    this.newRestaurant.set({ name: '', slug: '', owner_key: '' });
+    this.newRestaurant.set(this.blankNewRestaurant());
     this.showCreateForm.set(true);
+  }
+
+  private blankNewRestaurant(): CreateRestaurantPayload {
+    return { name: '', slug: '', owner_key: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY };
   }
 
   closeCreateForm() { this.showCreateForm.set(false); }
@@ -101,6 +125,46 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.superAdminSvc.updateRestaurant(r.id, { archived: true }).subscribe({
       next: () => { this.toast.success(`${r.name} archivé.`); this.load(); },
       error: () => this.toast.error('Impossible d\'archiver ce restaurant.')
+    });
+  }
+
+  // ── Édition (nom, logo, couleurs de marque) ───────────────────────────────
+  openEditForm(r: Restaurant) {
+    this.editingRestaurant.set(r);
+    this.editForm.set({
+      name: r.name,
+      logo_url: r.logo_url ?? '',
+      color_primary: r.color_primary,
+      color_secondary: r.color_secondary
+    });
+  }
+
+  closeEditForm() { this.editingRestaurant.set(null); }
+
+  submitEdit() {
+    const r = this.editingRestaurant();
+    const form = this.editForm();
+    if (!r || !form.name.trim()) {
+      this.toast.error('Le nom est requis.');
+      return;
+    }
+    this.saving.set(true);
+    this.superAdminSvc.updateRestaurant(r.id, {
+      name: form.name,
+      logo_url: form.logo_url || undefined,
+      color_primary: form.color_primary ?? undefined,
+      color_secondary: form.color_secondary ?? undefined
+    }).subscribe({
+      next: () => {
+        this.toast.success(`${form.name} mis à jour.`);
+        this.saving.set(false);
+        this.editingRestaurant.set(null);
+        this.load();
+      },
+      error: () => {
+        this.toast.error('Impossible de mettre à jour ce restaurant.');
+        this.saving.set(false);
+      }
     });
   }
 }

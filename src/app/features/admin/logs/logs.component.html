@@ -2,7 +2,6 @@
 
   <div class="admin-header flex-between" style="flex-wrap:wrap;gap:12px">
     <div>
-      <a [routerLink]="['/', slug(), 'admin']" class="btn btn--ghost btn--sm">← Tableau de bord</a>
       <h2>Logs d'activité</h2>
       <p class="text-muted">{{ total() }} événement{{ total() !== 1 ? 's' : '' }} enregistré{{ total() !== 1 ? 's' : '' }}</p>
       @if (entityId()) {
@@ -34,7 +33,7 @@
       <div class="log-row log-row--head">
         <span>Type</span>
         <span>Description</span>
-        <span>Horodatage</span>
+        <span>Date et heure</span>
         <span>Utilisateur</span>
       </div>
 

@@ -3,15 +3,19 @@
 
 /* Variables */
 :root {
-  /* Terracotta — couleur d'action principale */
+  /* Terracotta — couleur d'action principale (personnalisable par restaurant, voir
+     RestaurantThemeService — --color-on-primary est le texte à utiliser par-dessus,
+     recalculé automatiquement pour rester lisible quelle que soit la teinte choisie) */
   --color-primary:       #C87D60;
   --color-primary-dark:  #A5603E;
   --color-primary-light: #DE9B7C;
   --color-primary-faded: rgba(200, 125, 96, 0.12);
+  --color-on-primary:    #ffffff;
 
-  /* Marron chaud moyen — boutons & surfaces secondaires */
+  /* Marron chaud moyen — boutons & surfaces secondaires (personnalisable par restaurant) */
   --color-secondary:       #6B4030;
   --color-secondary-light: #8A5540;
+  --color-on-secondary:    #ffffff;
 
   /* Or chaud — accents & highlights */
   --color-accent:       #D1AD67;
@@ -112,11 +116,11 @@ p  { line-height: 1.7; }
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn--primary { background: var(--color-primary); color: #fff; }
+.btn--primary { background: var(--color-primary); color: var(--color-on-primary); }
 .btn--primary:hover:not(:disabled) { background: var(--color-primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .btn--primary:active:not(:disabled) { transform: translateY(0); }
 
-.btn--secondary { background: var(--color-secondary); color: #fff; }
+.btn--secondary { background: var(--color-secondary); color: var(--color-on-secondary); }
 .btn--secondary:hover:not(:disabled) { background: var(--color-secondary-light); transform: translateY(-1px); }
 
 .btn--outline { border-color: var(--color-primary); color: var(--color-primary); background: transparent; }
@@ -254,7 +258,7 @@ p  { line-height: 1.7; }
   gap: 12px;
   padding: 14px 18px;
   background: var(--color-secondary);
-  color: #fff;
+  color: var(--color-on-secondary);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   font-size: 0.9375rem;

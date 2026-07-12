@@ -92,7 +92,7 @@
   border-radius: 9px;
   padding: 0 4px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 0.65rem;
   font-weight: 700;
   display: flex;
@@ -221,7 +221,7 @@
   height: 28px;
   border-radius: 50%;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 0.875rem;
   font-weight: 700;
   display: flex;
@@ -355,7 +355,7 @@
   border-radius: 8px;
   padding: 0 4px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-size: 0.6rem;
   font-weight: 700;
   display: flex;

@@ -13,7 +13,7 @@
 /* ── Bandeau table ────────────────────────────────────────────────────────── */
 .table-banner {
   background: var(--color-secondary);
-  color: #fff;
+  color: var(--color-on-secondary);
   padding: 10px 0;
   position: sticky;
   top: var(--navbar-h);
@@ -71,7 +71,7 @@
   background: transparent;
 }
 .commandes-badge--active {
-  color: #fff;
+  color: var(--color-on-primary);
   background: var(--color-primary);
 }
 
@@ -260,7 +260,7 @@
 .menu-product-row__qty-badge {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-on-primary);
   background: var(--color-primary);
   border-radius: var(--radius-full);
   min-width: 22px;

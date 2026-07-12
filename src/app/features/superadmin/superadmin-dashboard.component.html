@@ -67,6 +67,7 @@
           </span>
           <span class="text-muted">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
           <span class="sa-table__actions">
+            <button class="btn btn--ghost btn--sm" (click)="openEditForm(r)">Modifier</button>
             @if (!r.archived) {
               <button class="btn btn--ghost btn--sm" (click)="toggleActive(r)">
                 {{ r.is_active ? 'Désactiver' : 'Activer' }}
@@ -106,11 +107,68 @@
           <input class="form-control" type="text" placeholder="Le futur owner pourra la changer ensuite"
             [ngModel]="newRestaurant().owner_key" (ngModelChange)="newRestaurant.update(r => ({...r, owner_key: $event}))">
         </div>
+        <div class="form-group">
+          <label>Couleur principale</label>
+          <app-color-palette-picker
+            [value]="newRestaurant().color_primary ?? null"
+            (valueChange)="newRestaurant.update(r => ({...r, color_primary: $event}))"
+          />
+        </div>
+        <div class="form-group">
+          <label>Couleur secondaire</label>
+          <app-color-palette-picker
+            [value]="newRestaurant().color_secondary ?? null"
+            (valueChange)="newRestaurant.update(r => ({...r, color_secondary: $event}))"
+          />
+        </div>
       </div>
       <div class="sa-modal__footer">
         <button class="btn btn--ghost" (click)="closeCreateForm()">Annuler</button>
         <button class="btn btn--primary" [disabled]="creating()" (click)="submitCreate()">
           @if (creating()) { Création… } @else { Créer }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modale édition restaurant (nom, logo, couleurs — super admin uniquement) ── -->
+@if (editingRestaurant(); as r) {
+  <div class="sa-modal-overlay" (click)="closeEditForm()">
+    <div class="sa-modal" (click)="$event.stopPropagation()">
+      <div class="sa-modal__header">
+        <span>Modifier « {{ r.name }} »</span>
+        <button class="sa-modal__close" (click)="closeEditForm()">✕</button>
+      </div>
+      <div class="sa-modal__body">
+        <div class="form-group">
+          <label>Nom</label>
+          <input class="form-control" [ngModel]="editForm().name" (ngModelChange)="editForm.update(f => ({...f, name: $event}))">
+        </div>
+        <div class="form-group">
+          <label>Logo (URL)</label>
+          <input class="form-control" type="text" placeholder="https://…"
+            [ngModel]="editForm().logo_url" (ngModelChange)="editForm.update(f => ({...f, logo_url: $event}))">
+        </div>
+        <div class="form-group">
+          <label>Couleur principale</label>
+          <app-color-palette-picker
+            [value]="editForm().color_primary"
+            (valueChange)="editForm.update(f => ({...f, color_primary: $event}))"
+          />
+        </div>
+        <div class="form-group">
+          <label>Couleur secondaire</label>
+          <app-color-palette-picker
+            [value]="editForm().color_secondary"
+            (valueChange)="editForm.update(f => ({...f, color_secondary: $event}))"
+          />
+        </div>
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--ghost" (click)="closeEditForm()">Annuler</button>
+        <button class="btn btn--primary" [disabled]="saving()" (click)="submitEdit()">
+          @if (saving()) { Enregistrement… } @else { Enregistrer }
         </button>
       </div>
     </div>
