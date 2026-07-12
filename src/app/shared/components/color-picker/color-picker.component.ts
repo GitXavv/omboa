@@ -35,12 +35,21 @@ export class ColorPickerComponent {
   @ViewChild('svEl') private svEl!: ElementRef<HTMLDivElement>;
   @ViewChild('hueEl') private hueEl!: ElementRef<HTMLDivElement>;
 
+  // Dernière valeur émise par NOUS-MÊME (pas un signal : ne doit jamais être une
+  // dépendance réactive de l'effect ci-dessous, sinon on obtient une boucle où l'effect
+  // se redéclenche à cause de son propre emit() et écrase la couleur qu'on vient de
+  // choisir en la comparant à this.hex() — la sélection semble alors "ne pas prendre"
+  // ou revenir en arrière juste après un drag dans le carré/la teinte).
+  private lastEmitted: string | null = null;
+
   constructor() {
     // Se resynchronise si le parent change la valeur de l'extérieur (ex. ouverture de
-    // la modale d'édition d'un autre restaurant) — jamais si ça vient de nous-même.
+    // la modale d'édition d'un autre restaurant) — jamais si ça vient de nous-même : on
+    // compare à lastEmitted, jamais à this.hex() (qui, lui, dépend de hue/sat/val et
+    // recréerait la boucle décrite ci-dessus).
     effect(() => {
       const incoming = this.value();
-      if (incoming && incoming.toLowerCase() !== this.hex().toLowerCase()) {
+      if (incoming && incoming.toLowerCase() !== this.lastEmitted?.toLowerCase()) {
         this.setHsvFromHex(incoming);
       }
     });
@@ -114,5 +123,9 @@ export class ColorPickerComponent {
     this.val.set(v);
   }
 
-  private emit() { this.valueChange.emit(this.hex()); }
+  private emit() {
+    const h = this.hex();
+    this.lastEmitted = h;
+    this.valueChange.emit(h);
+  }
 }
