@@ -1,4 +1,6 @@
-import { Injectable, effect, inject } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { RestaurantService } from './restaurant.service';
 import { contrastForeground, hexToRgb, shade, toRgba } from '../utils/color';
 
@@ -10,12 +12,14 @@ const PRIMARY_VARS = [
 const SECONDARY_VARS = ['--color-secondary', '--color-secondary-light', '--color-on-secondary'];
 
 // Applique les couleurs de marque du restaurant courant (choisies par le super admin,
-// jamais par l'owner) par-dessus la palette omboa par défaut, dès qu'un restaurant est
-// résolu (RestaurantService.current()) — couvre aussi bien les pages client que staff,
-// puisque les deux vivent sous /:restaurantSlug/*. Reste sans effet sur la landing et
-// le super admin (RestaurantService.current() y est explicitement remis à null par App),
-// ni sur le footer (--color-footer-bg est un token à part, jamais réécrit ici — le footer
-// est partagé avec la landing et doit rester visuellement stable).
+// jamais par l'owner) par-dessus la palette omboa par défaut — UNIQUEMENT sur les routes
+// /:restaurantSlug/*. La landing page et /osuper ne doivent JAMAIS être teintées : ce
+// service vérifie donc lui-même la route courante (inRestaurantContext, dérivé des
+// événements Router ici, pas d'une valeur poussée par un autre composant) en plus de
+// RestaurantService.current() — même si ce dernier reste par erreur non-nul en quittant
+// un restaurant (App.clear() a aussi son propre filet de sécurité), la vérification de
+// route ci-dessous suffit à elle seule à empêcher toute fuite de couleur vers la landing
+// ou le super admin.
 //
 // --color-accent suit désormais --color-primary (alias via var(), pas de recalcul) : sans
 // ça, la personnalisation ne touchait que les boutons/prix alors que la plupart des textes
@@ -24,10 +28,19 @@ const SECONDARY_VARS = ['--color-secondary', '--color-secondary-light', '--color
 @Injectable({ providedIn: 'root' })
 export class RestaurantThemeService {
   private readonly restaurantSvc = inject(RestaurantService);
+  private readonly router = inject(Router);
+
+  // Défaut à false tant qu'aucun NavigationEnd n'a encore été observé — évite tout flash
+  // de couleur personnalisée avant que la première navigation n'ait confirmé la route.
+  private readonly inRestaurantContext = signal(this.isRestaurantRoute(this.router.url));
 
   constructor() {
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd)
+    ).subscribe(e => this.inRestaurantContext.set(this.isRestaurantRoute(e.urlAfterRedirects)));
+
     effect(() => {
-      const restaurant = this.restaurantSvc.current();
+      const restaurant = this.inRestaurantContext() ? this.restaurantSvc.current() : null;
       const root = document.documentElement.style;
 
       if (restaurant?.color_primary) {
@@ -59,5 +72,12 @@ export class RestaurantThemeService {
         SECONDARY_VARS.forEach(v => root.removeProperty(v));
       }
     });
+  }
+
+  // Vrai uniquement pour /:restaurantSlug/* — jamais pour '/' (landing) ni '/osuper*'.
+  private isRestaurantRoute(url: string): boolean {
+    const path = url.split('?')[0];
+    const segments = path.split('/').filter(Boolean);
+    return segments.length > 0 && segments[0] !== 'osuper';
   }
 }
