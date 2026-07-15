@@ -38,9 +38,12 @@ export class App {
     });
   }
 
-  // Landing globale : header dédié (2095_level). Pages client restaurant-scopées
-  // (menu/table/ma-commande/account) : navbar partagé. Tout le reste (staff, /ostaff,
-  // /osuper) : ces pages gèrent leur propre en-tête, pas de header commun ici.
+  // Landing globale + pages "En savoir plus" (fidelite, liée depuis la landing — même
+  // header/footer, aucun contexte restaurant) : header dédié (2095_level). Pages client
+  // restaurant-scopées (menu/table/ma-commande/account) : navbar partagé. Tout le reste
+  // (staff, /ostaff, /osuper) : ces pages gèrent leur propre en-tête.
+  private static readonly STATIC_LANDING_PAGES = ['fidelite'];
+
   private computeHeaderMode(url: string): HeaderMode {
     const path = url.split('?')[0];
     if (path === '/' || path === '') return 'landing';
@@ -48,6 +51,7 @@ export class App {
     const segments = path.split('/').filter(Boolean);
     const [slug, section] = segments;
     if (slug === 'osuper') return 'none';
+    if (App.STATIC_LANDING_PAGES.includes(slug)) return 'landing';
     if (section && ['menu', 'table', 'ma-commande', 'account'].includes(section)) return 'navbar';
     return 'none';
   }
@@ -55,6 +59,6 @@ export class App {
   private isOutsideRestaurantContext(url: string): boolean {
     const path = url.split('?')[0];
     const segments = path.split('/').filter(Boolean);
-    return segments.length === 0 || segments[0] === 'osuper';
+    return segments.length === 0 || segments[0] === 'osuper' || App.STATIC_LANDING_PAGES.includes(segments[0]);
   }
 }

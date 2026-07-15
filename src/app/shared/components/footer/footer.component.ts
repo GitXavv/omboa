@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-// Le footer est global (rendu sur toutes les pages, y compris hors contexte
-// restaurant) — pointe vers l'unique restaurant existant en attendant une vraie UX
-// de découverte multi-restaurant (même limitation que la landing page).
-const DEFAULT_RESTAURANT_SLUG = 'o-mboa-test';
-
+// Footer global (landing + pages "En savoir plus" uniquement, voir app.ts) — sur le
+// modèle du footer DSCweb (C:\Users\Xavv\Documents\GitHub\DSCweb) : logo + rangée de
+// réseaux sociaux, rien d'autre. Le logo n'est volontairement PAS recoloré en CSS
+// (contrairement à DSCweb qui applique un filter sur le sien) — on affiche nos vraies
+// couleurs de logo.
 @Component({
   selector: 'app-footer',
   standalone: true,
@@ -15,5 +15,4 @@ const DEFAULT_RESTAURANT_SLUG = 'o-mboa-test';
 })
 export class FooterComponent {
   readonly year = new Date().getFullYear();
-  readonly restaurantSlug = DEFAULT_RESTAURANT_SLUG;
 }

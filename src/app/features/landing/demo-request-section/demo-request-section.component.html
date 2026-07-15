@@ -1,0 +1,75 @@
+<section class="section demo-request" id="demo">
+  <div class="container">
+
+    @if (!submitted()) {
+      <div class="demo-request__header">
+        <span class="section-tag">Nous contacter</span>
+        <h2>Prêt à digitaliser<br>votre restaurant ?</h2>
+        <p>
+          Rejoignez les restaurants qui font déjà confiance à Omboa pour moderniser leur
+          service. Laissez-nous vos informations, notre équipe vous contacte sous 24 heures
+          pour mettre en place votre restaurant.
+        </p>
+      </div>
+
+      <div class="demo-request__form card">
+        <div class="form-group">
+          <label>Email</label>
+          <input class="form-control" type="email"
+            [ngModel]="form().email" (ngModelChange)="updateField('email', $event)">
+        </div>
+
+        <div class="form-group">
+          <label>Nom du restaurant</label>
+          <input class="form-control"
+            [ngModel]="form().name" (ngModelChange)="updateField('name', $event)">
+        </div>
+
+        <div class="form-group">
+          <label>Logo</label>
+          <label class="img-upload-area" [class.has-preview]="logoPreview()">
+            @if (logoPreview()) {
+              <img [src]="logoPreview()!" class="img-upload-preview" alt="Aperçu du logo">
+              <span class="img-upload-change">Changer l'image</span>
+            } @else {
+              <div class="img-upload-cta">
+                <span class="img-upload-icon">🖼️</span>
+                <span class="img-upload-text">Cliquer pour importer votre logo</span>
+              </div>
+            }
+            <input type="file" accept="image/*" style="display:none" (change)="onLogoFileChange($event)">
+          </label>
+          <p class="form-hint">Format carré et transparent recommandé pour un meilleur affichage - JPEG, PNG ou WebP - max 5 Mo</p>
+        </div>
+
+        <div class="form-group">
+          <label>Adresse du restaurant</label>
+          <input class="form-control"
+            [ngModel]="form().address" (ngModelChange)="updateField('address', $event)">
+        </div>
+
+        <div class="demo-request__colors">
+          <div class="form-group">
+            <label>Couleur principale</label>
+            <app-color-picker [value]="form().color_primary" (valueChange)="updateField('color_primary', $event)" />
+          </div>
+          <div class="form-group">
+            <label>Couleur secondaire</label>
+            <app-color-picker [value]="form().color_secondary" (valueChange)="updateField('color_secondary', $event)" />
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--lg btn--full" [disabled]="submitting()" (click)="submit()">
+          @if (submitting()) { Envoi… } @else { Réserver ma démo gratuite }
+        </button>
+      </div>
+    } @else {
+      <div class="demo-request__success">
+        <span class="demo-request__success-icon">✅</span>
+        <h2>Demande reçue !</h2>
+        <p>Notre équipe vous contactera à <strong>{{ form().email }}</strong> dans les prochaines 24 heures.</p>
+      </div>
+    }
+
+  </div>
+</section>

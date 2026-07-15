@@ -11,6 +11,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent)
   },
 
+  // ── Pages "En savoir plus" (liées depuis la landing) ─────────
+  {
+    path: 'fidelite',
+    loadComponent: () => import('./features/fidelite/fidelite.component').then(m => m.FideliteComponent)
+  },
+
   // ── Super admin (page cachée /osuper) ────────────────────────
   {
     path: 'osuper',
@@ -25,6 +31,11 @@ export const routes: Routes = [
     path: 'osuper/logs',
     canActivate: [superAdminGuard],
     loadComponent: () => import('./features/superadmin/superadmin-logs.component').then(m => m.SuperAdminLogsComponent)
+  },
+  {
+    path: 'osuper/applications',
+    canActivate: [superAdminGuard],
+    loadComponent: () => import('./features/superadmin/superadmin-applications.component').then(m => m.SuperAdminApplicationsComponent)
   },
 
   // ── Tout le reste vit sous /:restaurantSlug/* ────────────────

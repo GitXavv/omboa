@@ -9,6 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { Restaurant, SuperAdminStats } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { ColorPickerComponent } from '../../shared/components/color-picker/color-picker.component';
+import { slugify } from '../../core/utils/slug';
 
 interface EditRestaurantForm {
   name: string;
@@ -73,14 +74,8 @@ export class SuperAdminDashboardComponent implements OnInit {
     });
   }
 
-  slugify(name: string) {
-    const stripped = name.toLowerCase().trim().normalize('NFD')
-      .split('').filter(ch => (ch.codePointAt(0) ?? 0) < 0x0300 || (ch.codePointAt(0) ?? 0) > 0x036f).join('');
-    return stripped.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  }
-
   onNameChange(name: string) {
-    this.newRestaurant.update(r => ({ ...r, name, slug: this.slugify(name) }));
+    this.newRestaurant.update(r => ({ ...r, name, slug: slugify(name) }));
   }
 
   openCreateForm() {

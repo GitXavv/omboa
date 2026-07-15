@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Restaurant, SuperAdminStats, Log } from '../models';
+import { DemoRequest } from './demo-request.service';
 import { environment } from '../../../environments/environment';
 
 export interface CreateRestaurantPayload {
@@ -38,5 +39,9 @@ export class SuperAdminService {
 
   getLogs(page = 1): Observable<{ data: Log[]; total: number; page: number; limit: number }> {
     return this.http.get<{ data: Log[]; total: number; page: number; limit: number }>(`${this.base}/logs?page=${page}`);
+  }
+
+  getDemoRequests(): Observable<DemoRequest[]> {
+    return this.http.get<DemoRequest[]>(`${this.base}/demo-requests`);
   }
 }

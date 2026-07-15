@@ -18,7 +18,17 @@
 .sa-stat__label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
 
 .sa-toolbar { display: flex; gap: 12px; align-items: center; }
-.sa-search { flex: 1; }
+.sa-search {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast);
+}
+.sa-search::placeholder { color: var(--color-text-light); }
+.sa-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); }
 
 .sa-table {
   background: var(--color-bg-card);

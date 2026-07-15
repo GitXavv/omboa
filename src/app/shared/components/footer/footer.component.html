@@ -1,30 +1,27 @@
 <footer class="footer">
   <div class="container footer__inner">
-    <div class="footer__brand">
-      <span class="footer__logo">O'Mboa</span>
-      <p>Un goût de chez nous, servi avec passion.</p>
-    </div>
+    <a routerLink="/" fragment="top" class="footer__brand-link" aria-label="Accueil O'Mboa">
+      <img src="icons/main/omboa-main-logo.png" alt="Omboa" class="footer__logo">
+    </a>
 
-    <div class="footer__links">
-      <h5>Navigation</h5>
-      <ul>
-        <li><a routerLink="/">Accueil</a></li>
-        <li><a [routerLink]="['/', restaurantSlug, 'menu']">Notre menu</a></li>
-      </ul>
-    </div>
-
-    <div class="footer__contact">
-      <h5>Nous trouver</h5>
-      <address>
-        <p>123 Avenue de la Paix</p>
-        <p>Douala, Cameroun</p>
-        <p><a href="tel:+237600000000">+237 600 000 000</a></p>
-      </address>
-      <div class="footer__hours">
-        <p>Lun – Sam : 11h – 23h</p>
-        <p>Dimanche : 12h – 22h</p>
-      </div>
-    </div>
+    <nav class="footer__socials" aria-label="Nos réseaux sociaux">
+      <a class="footer__social-link" href="https://www.linkedin.com/in/xavier-olama-43126b3b8" target="_blank" rel="noopener noreferrer">
+        <img src="icons/socials/linkedin.png" alt="LinkedIn" class="footer__social-icon">
+        <span>O'Mboa</span>
+      </a>
+      <a class="footer__social-link" href="https://www.instagram.com/igxavv?utm_source=qr&igsh=enM2Z2R1dm1hd2hr" target="_blank" rel="noopener noreferrer">
+        <img src="icons/socials/instagram.png" alt="Instagram" class="footer__social-icon">
+        <span>O'Mboa</span>
+      </a>
+      <a class="footer__social-link" href="https://wa.me/237693011469?text=Bonjour%20!%20Je%20viens%20du%20site%20O'Mboa." target="_blank" rel="noopener noreferrer">
+        <img src="icons/socials/whatsapp.png" alt="WhatsApp" class="footer__social-icon">
+        <span>O'Mboa</span>
+      </a>
+      <a class="footer__social-link" href="https://www.youtube.com/@youxavv" target="_blank" rel="noopener noreferrer">
+        <img src="icons/socials/youtube.png" alt="YouTube" class="footer__social-icon">
+        <span>O'Mboa</span>
+      </a>
+    </nav>
   </div>
 
   <div class="footer__bottom">

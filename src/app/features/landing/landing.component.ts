@@ -1,73 +1,63 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
-import { forkJoin, switchMap } from 'rxjs';
-import { MenuService } from '../../core/services/menu.service';
-import { RestaurantService } from '../../core/services/restaurant.service';
-import { Product } from '../../core/models';
+import { DemoRequestSectionComponent } from './demo-request-section/demo-request-section.component';
 
-interface SelectionItem {
-  product: Product;
-  categoryName: string;
+interface Feature {
+  icon: string;
+  title: string;
+  desc: string;
+  learnMoreLink?: string;
 }
 
-// La landing page est globale (pas de contexte restaurant dans l'URL). En attendant une
-// vraie UX de découverte multi-restaurant, elle met en avant le seul restaurant existant.
-const DEFAULT_RESTAURANT_SLUG = 'o-mboa-test';
+interface Faq {
+  question: string;
+  answer: string;
+}
 
+// Landing plateforme — s'adresse aux restaurateurs qui envisagent Omboa, pas aux clients
+// d'un restaurant en particulier (voir l'ancienne version pour le contenu vitrine
+// "O'Mboa restaurant" qui vivait ici avant ; ce contenu-là appartient désormais à la page
+// menu de chaque restaurant, pas à la landing globale).
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DemoRequestSectionComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css'
 })
-export class LandingComponent implements OnInit {
-  readonly restaurantSlug = DEFAULT_RESTAURANT_SLUG;
-
-  readonly fallbackSelection = [
-    { name: 'Ndolé aux crevettes', desc: 'Notre incontournable, mijoté lentement avec des crevettes fumées et de la poudre de noisettes.', price: 3500 },
-    { name: 'Poulet DG', desc: 'Poulet braisé, banane plantain dorée, légumes sautés. Un classique de la cuisine camerounaise.', price: 4200 },
-    { name: 'Poisson braisé', desc: `Poisson du jour mariné aux épices maison, grillé à la braise et servi avec de l'attiéké.`, price: 3800 },
-  ];
-
-  selection = signal<SelectionItem[] | null>(null);
-
+export class LandingComponent {
   readonly steps = [
-    { icon: '📱', title: 'Scannez le QR code', desc: 'Chaque table dispose de son QR code. Scannez-le pour accéder directement à notre carte du jour.' },
-    { icon: '🍽', title: 'Composez votre repas', desc: 'Parcourez le menu, ajoutez vos plats au panier et ajustez les quantités à votre guise.' },
-    { icon: '✅', title: 'Validez & savourez', desc: `Soumettez votre commande. Nos cuisiniers s'en occupent. Vous serez servi directement à votre table.` },
+    { icon: '📱', title: 'Le client scanne le QR code', desc: 'Chaque table a son propre QR code. Aucune application à installer, le menu s\'ouvre directement dans le navigateur.' },
+    { icon: '🍽', title: 'Il compose sa commande', desc: 'Le client parcourt le menu, ajoute ses plats et valide — depuis son téléphone, sans attendre le serveur.' },
+    { icon: '⚡', title: 'Cuisine et réception reçoivent en temps réel', desc: 'La commande apparaît instantanément sur les tableaux de bord. Zéro ressaisie, zéro oubli.' },
+    { icon: '✅', title: 'Vous gardez le contrôle', desc: 'Suivi des commandes, des tables et des statistiques depuis une seule interface — vous voyez tout, en direct.' },
   ];
 
-  constructor(private menuService: MenuService, private restaurantSvc: RestaurantService) {}
+  readonly features: Feature[] = [
+    { icon: '📱', title: 'Commande à table par QR code', desc: 'Pas d\'application à télécharger, ni pour vous ni pour vos clients. Le client scanne, commande, c\'est fait.' },
+    { icon: '⚡', title: 'Cuisine, réception et sortie synchronisées', desc: 'Chaque rôle a son tableau de bord, mis à jour en temps réel. Plus de commandes perdues entre la salle et la cuisine.' },
+    { icon: '🎨', title: 'Personnalisation visuelle par restaurant', desc: 'Logo, adresse, couleurs de marque appliquées automatiquement sur votre interface en thème sombre — pas un thème générique.' },
+    { icon: '🏆', title: 'Programme de fidélité automatique', desc: 'Vos clients cumulent des points à chaque commande, sans que vous ayez à gérer quoi que ce soit — plus de détails dans la section dédiée ci-dessous.' },
+  ];
 
-  ngOnInit() {
-    this.restaurantSvc.getBySlug(DEFAULT_RESTAURANT_SLUG).pipe(
-      switchMap(restaurant => forkJoin({
-        categories: this.menuService.getCategories(restaurant.id),
-        products: this.menuService.getProducts(restaurant.id)
-      }))
-    ).subscribe({
-      next: ({ categories, products }) => {
-        const byCategory = new Map<string, Product[]>();
-        for (const p of products.filter(p => p.is_available)) {
-          const list = byCategory.get(p.category_id) ?? [];
-          list.push(p);
-          byCategory.set(p.category_id, list);
-        }
+  readonly faqs: Faq[] = [
+    { question: 'Est-ce que Omboa est payant ?', answer: 'Contactez-nous via le formulaire de démo pour connaître les conditions actuelles — elles dépendent de la taille de votre restaurant et sont discutées directement avec vous.' },
+    { question: 'Faut-il une application à installer ?', answer: 'Non. Ni vos clients, ni votre équipe n\'ont besoin d\'installer quoi que ce soit. Tout se passe dans le navigateur, sur téléphone comme sur ordinateur.' },
+    { question: 'Puis-je garder mon menu, mes prix et mes photos actuels ?', answer: 'Oui, c\'est vous (ou notre équipe à la mise en place) qui renseignez votre menu complet — catégories, plats, prix, photos — rien n\'est imposé.' },
+    { question: 'Qui s\'occupe des tables et des QR codes ?', answer: 'Une fois votre restaurant créé, vous générez et gérez vos tables directement depuis votre interface d\'administration — chaque table a son QR code dédié.' },
+    { question: 'Puis-je personnaliser les couleurs de mon interface ?', answer: 'Oui — chaque restaurant a ses propres couleurs de marque, appliquées automatiquement partout dans son interface.' },
+    { question: 'Y a-t-il un programme de fidélité ?', answer: 'Oui, il est intégré et automatique : vos clients cumulent des points à chaque commande, sans configuration de votre part.' },
+  ];
 
-        const eligible = categories.filter(c => c.is_active && byCategory.has(c.id));
-        const shuffled = eligible.sort(() => Math.random() - 0.5).slice(0, 3);
+  readonly openFaqs = signal<Set<number>>(new Set());
 
-        const result: SelectionItem[] = shuffled.map(cat => {
-          const prods = byCategory.get(cat.id)!;
-          const product = prods[Math.floor(Math.random() * prods.length)];
-          return { product, categoryName: cat.name };
-        });
-
-        if (result.length > 0) this.selection.set(result);
-      },
-      error: () => { /* fallback static data used */ }
+  toggleFaq(i: number) {
+    this.openFaqs.update(s => {
+      const next = new Set(s);
+      if (next.has(i)) next.delete(i); else next.add(i);
+      return next;
     });
   }
+
+  isFaqOpen(i: number) { return this.openFaqs().has(i); }
 }

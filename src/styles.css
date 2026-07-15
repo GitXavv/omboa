@@ -156,6 +156,7 @@ p  { line-height: 1.7; }
 .form-group .form-control::placeholder { color: var(--color-text-light); }
 .form-group .form-control:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); }
 .form-group .form-control.is-invalid { border-color: var(--color-error); }
+.form-group .form-control:disabled { opacity: 0.55; cursor: not-allowed; }
 .form-group .field-error { font-size: 0.8125rem; color: var(--color-error); }
 
 /* Cards */

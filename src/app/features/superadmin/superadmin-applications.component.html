@@ -1,0 +1,64 @@
+<div class="sa-page">
+  <header class="sa-header">
+    <h1>Applications</h1>
+    <a routerLink="/osuper/dashboard" class="btn btn--ghost btn--sm">← Retour</a>
+  </header>
+
+  @if (loading()) {
+    <app-loader label="Chargement…" />
+  } @else {
+    <div class="app-list">
+      @for (r of requests(); track r.id) {
+        <div class="app-card" [class.app-card--open]="isOpen(r.id)">
+          <button class="app-card__row" (click)="toggle(r.id)">
+            @if (r.logo_url) {
+              <img [src]="r.logo_url" [alt]="r.name" class="app-card__logo">
+            } @else {
+              <div class="app-card__logo app-card__logo--empty"></div>
+            }
+            <div class="app-card__info">
+              <span class="app-card__name">{{ r.name }}</span>
+              <span class="text-muted">{{ r.email }}</span>
+            </div>
+            <span class="app-card__date text-muted">{{ r.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="app-card__chevron">{{ isOpen(r.id) ? '▲' : '▼' }}</span>
+          </button>
+
+          @if (isOpen(r.id)) {
+            <div class="app-card__details">
+              <div class="app-card__detail-row">
+                <span class="text-muted">Tag</span>
+                <span>{{ r.tag }}</span>
+              </div>
+              <div class="app-card__detail-row">
+                <span class="text-muted">Adresse</span>
+                <span>{{ r.address || '—' }}</span>
+              </div>
+              <div class="app-card__detail-row">
+                <span class="text-muted">Couleur principale</span>
+                <span class="app-card__swatch-label">
+                  <span class="app-card__swatch" [style.background]="r.color_primary"></span>
+                  {{ r.color_primary }}
+                </span>
+              </div>
+              <div class="app-card__detail-row">
+                <span class="text-muted">Couleur secondaire</span>
+                <span class="app-card__swatch-label">
+                  <span class="app-card__swatch" [style.background]="r.color_secondary"></span>
+                  {{ r.color_secondary }}
+                </span>
+              </div>
+              <div class="app-card__detail-row">
+                <span class="text-muted">Soumis le</span>
+                <span>{{ r.created_at | date:'dd/MM/yyyy à HH:mm' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @if (!requests().length) {
+        <p class="text-muted" style="padding:32px;text-align:center">Aucune application pour le moment.</p>
+      }
+    </div>
+  }
+</div>

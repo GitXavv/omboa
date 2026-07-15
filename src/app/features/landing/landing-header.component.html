@@ -3,7 +3,7 @@
   <div class="container lh-inner">
 
     <a href="#top" class="lh-logo" (click)="scrollTo($event, '#top')">
-      <span class="lh-logo__text">O'Mboa</span>
+      <img src="icons/main/omboa-main-logo.png" alt="Omboa" class="lh-logo__img">
     </a>
 
     <nav class="lh-links" [class.lh-links--open]="mobileMenuOpen()">
@@ -11,6 +11,8 @@
         <a class="lh-links__item" [href]="link.href" (click)="scrollTo($event, link.href)">{{ link.label }}</a>
       }
     </nav>
+
+    <a href="#demo" class="btn btn--primary btn--sm lh-demo-btn" (click)="scrollTo($event, '#demo')">Réserver une démo</a>
 
     <button
       class="lh-toggle"

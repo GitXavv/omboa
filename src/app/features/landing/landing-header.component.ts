@@ -16,12 +16,10 @@ export class LandingHeaderComponent {
   readonly mobileMenuOpen = signal(false);
 
   private readonly links = [
-    { href: '#top', label: 'Accueil' },
     { href: '#how-it-works', label: 'Comment ça marche' },
-    { href: '#story', label: 'Notre histoire' },
-    { href: '#specialties', label: 'Notre sélection' },
-    { href: '#galerie', label: 'Notre cadre' },
-    { href: '#info', label: 'Infos pratiques' },
+    { href: '#features', label: 'Fonctionnalités' },
+    { href: '#fidelite', label: 'Fidélité' },
+    { href: '#faq', label: 'FAQ' },
   ];
   readonly navLinks = this.links;
 

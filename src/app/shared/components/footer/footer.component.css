@@ -1,53 +1,58 @@
+/* ── Structure reprise du footer DSCweb (logo + réseaux sociaux, rien d'autre) ────── */
 .footer {
-  background: var(--color-secondary);
-  color: rgba(255,255,255,.85);
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border);
   margin-top: auto;
 }
+
 .footer__inner {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.footer__brand-link { display: block; flex-shrink: 0; }
+.footer__logo { width: 90px; height: auto; display: block; }
+
+.footer__socials {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 48px;
-  padding-top: 56px;
-  padding-bottom: 56px;
+  grid-template-columns: repeat(2, max-content);
+  justify-content: end;
+  gap: 12px 48px;
 }
-@media (max-width: 768px) { .footer__inner { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 480px) { .footer__inner { grid-template-columns: 1fr; gap: 32px; } }
 
-.footer__logo {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
+.footer__social-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-primary);
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--color-accent);
-  display: block;
-  margin-bottom: 10px;
+  transition: opacity var(--transition-fast);
 }
-.footer__brand p { font-size: 0.9375rem; opacity: .75; line-height: 1.6; max-width: 240px; }
+.footer__social-link:hover { opacity: 0.7; text-decoration: underline; }
 
-.footer h5 {
-  font-family: var(--font-body);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  margin-bottom: 16px;
+.footer__social-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
-.footer__links ul   { display: flex; flex-direction: column; gap: 10px; }
-.footer__links ul a { font-size: 0.9375rem; opacity: .8; transition: opacity var(--transition-fast); }
-.footer__links ul a:hover { opacity: 1; }
-
-.footer__contact address, .footer__hours {
-  font-style: normal;
-  font-size: 0.9375rem;
-  opacity: .8;
-  line-height: 1.8;
-}
-.footer__contact address a:hover,
-.footer__hours a:hover { opacity: 1; color: var(--color-accent); }
-
-.footer__hours { margin-top: 12px; }
-
-.footer__bottom { border-top: 1px solid rgba(255,255,255,.1); }
+/* ── Copyright ─────────────────────────────────────────────────────────────── */
+.footer__bottom { border-top: 1px solid var(--color-border); }
 .footer__bottom .container { padding-top: 20px; padding-bottom: 20px; }
-.footer__bottom .container p { font-size: 0.8125rem; opacity: .55; text-align: center; }
+.footer__bottom .container p { font-size: 0.8125rem; color: var(--color-text-muted); text-align: center; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .footer__inner { flex-direction: column; align-items: center; gap: 20px; padding: 32px 24px; }
+  .footer__logo { width: 72px; }
+  .footer__socials { width: 100%; grid-template-columns: max-content; justify-content: center; }
+}

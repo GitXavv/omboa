@@ -1,0 +1,74 @@
+.sa-page { padding: 32px 24px 80px; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.sa-header { display: flex; align-items: center; justify-content: space-between; }
+.sa-header h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-accent); }
+
+.app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.app-card--open { border-color: var(--color-primary); }
+
+.app-card__row {
+  display: grid;
+  grid-template-columns: 48px 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 0.875rem;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.app-card__row:hover { background: var(--color-bg-subtle); }
+
+.app-card__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.app-card__logo--empty { background: var(--color-bg-subtle); border: 1px solid var(--color-border); }
+
+.app-card__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.app-card__name { font-weight: 600; }
+
+.app-card__date { white-space: nowrap; font-size: 0.8125rem; flex-shrink: 0; }
+.app-card__chevron { font-size: 0.7rem; color: var(--color-text-muted); flex-shrink: 0; }
+
+/* ── Détails dépliés ───────────────────────────────────────────────────────── */
+.app-card__details {
+  padding: 4px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+  padding-top: 14px;
+}
+.app-card__detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+.app-card__swatch-label { display: flex; align-items: center; gap: 8px; }
+.app-card__swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--color-border); }
+
+@media (max-width: 640px) {
+  .app-card__row { grid-template-columns: 40px 1fr; gap: 8px 12px; }
+  .app-card__date, .app-card__chevron { grid-column: 2; justify-self: start; }
+}
