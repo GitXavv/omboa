@@ -15,6 +15,8 @@ export interface DemoRequestPayload {
 
 export interface DemoRequest extends DemoRequestPayload {
   id: string;
+  archived: boolean;
+  archived_at: string | null;
   created_at: string;
 }
 

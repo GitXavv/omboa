@@ -41,7 +41,11 @@ export class SuperAdminService {
     return this.http.get<{ data: Log[]; total: number; page: number; limit: number }>(`${this.base}/logs?page=${page}`);
   }
 
-  getDemoRequests(): Observable<DemoRequest[]> {
-    return this.http.get<DemoRequest[]>(`${this.base}/demo-requests`);
+  getDemoRequests(archived = false): Observable<DemoRequest[]> {
+    return this.http.get<DemoRequest[]>(`${this.base}/demo-requests?archived=${archived}`);
+  }
+
+  archiveDemoRequest(id: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/demo-requests/${id}/archive`, {});
   }
 }

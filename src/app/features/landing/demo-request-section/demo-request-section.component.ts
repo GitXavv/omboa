@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { DemoRequestService } from '../../../core/services/demo-request.service';
 import { ImageUploadService } from '../../../core/services/image-upload.service';
@@ -87,8 +88,11 @@ export class DemoRequestSectionComponent {
       }));
 
       this.submitted.set(true);
-    } catch {
-      this.toast.error('Une erreur est survenue. Réessayez ou contactez-nous directement.');
+    } catch (err) {
+      const message = err instanceof HttpErrorResponse && err.status === 409
+        ? err.error?.message
+        : null;
+      this.toast.error(message ?? 'Une erreur est survenue. Réessayez ou contactez-nous directement.');
     } finally {
       this.submitting.set(false);
     }

@@ -2,6 +2,19 @@
 .sa-header { display: flex; align-items: center; justify-content: space-between; }
 .sa-header h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-accent); }
 
+/* ── Onglets ───────────────────────────────────────────────────────────────── */
+.app-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--color-border); }
+.app-tabs__item {
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.app-tabs__item:hover { color: var(--color-text); }
+.app-tabs__item--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
 .app-list {
   display: flex;
   flex-direction: column;
@@ -68,7 +81,61 @@
 .app-card__swatch-label { display: flex; align-items: center; gap: 8px; }
 .app-card__swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--color-border); }
 
+.app-card__detail-actions { display: flex; justify-content: flex-end; padding-top: 4px; }
+
+.danger-btn { color: var(--color-error) !important; }
+.danger-btn:hover { background: var(--color-error-bg) !important; }
+
 @media (max-width: 640px) {
   .app-card__row { grid-template-columns: 40px 1fr; gap: 8px 12px; }
   .app-card__date, .app-card__chevron { grid-column: 2; justify-self: start; }
 }
+
+/* ── Vue archivée (infos réduites) ────────────────────────────────────────── */
+.app-card--archived { cursor: default; }
+.app-card__archived-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  font-size: 0.875rem;
+}
+.app-card__archived-dates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .app-card__archived-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .app-card__archived-dates { align-items: flex-start; }
+}
+
+/* ── Confirmation d'archivage ──────────────────────────────────────────────── */
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.app-modal {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+}
+.app-modal__body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+.app-modal__body p { margin: 0; color: var(--color-text); line-height: 1.6; }
+.app-modal__footer { display: flex; gap: 10px; justify-content: flex-end; padding: 0 22px 22px; }
