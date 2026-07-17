@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ReceptionService } from '../../core/services/reception.service';
 import { RealtimeService } from '../../core/services/realtime.service';
@@ -19,7 +20,7 @@ const METHOD_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-reception-dashboard',
   standalone: true,
-  imports: [LoaderComponent],
+  imports: [LoaderComponent, DecimalPipe],
   templateUrl: './reception-dashboard.component.html',
   styleUrl: './reception-dashboard.component.css'
 })
@@ -32,10 +33,15 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
 
   readonly orders    = signal<Order[]>([]);
   readonly loading    = signal(true);
-  readonly connected  = signal(false);
   readonly tab        = signal<Tab>('pending');
   readonly acceptingId = signal<string | null>(null);
   readonly methodLabels = METHOD_LABELS;
+
+  // Même formule que LoyaltyService.CalculateDiscount côté API — seule la réception (et
+  // l'admin, en lecture seule) voit ce détail, jamais la cuisine ni la sortie.
+  discountPercent(points: number): number {
+    return Math.min(points / 100 * 5, 30);
+  }
 
   // Dialogue d'annulation avec raison
   readonly cancelOrderId   = signal<string | null>(null);
@@ -65,10 +71,8 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
 
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'connected') {
-        this.connected.set(true);
         this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).then(() => this.load()).catch(() => {});
       }
-      if (ev.type === 'disconnected') this.connected.set(false);
 
       if (ev.type === 'order:new') {
         this.load();
@@ -100,15 +104,21 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.rt.connect(this.auth.getToken() ?? undefined)
-      .then(() => this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId))
-      .then(() => this.connected.set(true))
-      .catch(() => this.connected.set(false));
+    // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
+    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") — on ne
+    // doit pas ouvrir/fermer notre propre connexion, ça couperait celle du layout.
+    if (this.auth.isOwner()) {
+      this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).catch(() => {});
+    } else {
+      this.rt.connect(this.auth.getToken() ?? undefined)
+        .then(() => this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId))
+        .catch(() => {});
+    }
   }
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
-    this.rt.disconnect();
+    if (!this.auth.isOwner()) this.rt.disconnect();
   }
 
   private load() {

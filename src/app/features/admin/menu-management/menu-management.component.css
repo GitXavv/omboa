@@ -83,7 +83,33 @@
 .product-row__price   { color: var(--color-primary); font-weight: 600; font-size: .875rem; }
 .product-row__avail   { font-size: .775rem; font-weight: 600; color: var(--color-error); white-space: nowrap; }
 .product-row__avail.available { color: var(--color-success); }
-.product-row__actions { display: flex; gap: 4px; justify-content: flex-end; }
+.product-row__actions { display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+
+/* ── Toggle disponibilité (façon Djelica) ─────────────────────────────────── */
+.availability-toggle { display: inline-flex; cursor: pointer; flex-shrink: 0; }
+.availability-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.availability-toggle__track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition: background var(--transition-fast);
+}
+.availability-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+.availability-toggle input:checked + .availability-toggle__track { background: var(--color-primary); }
+.availability-toggle input:checked + .availability-toggle__track .availability-toggle__thumb { transform: translateX(18px); }
+.availability-toggle input:focus-visible + .availability-toggle__track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 
 .no-products { color: var(--color-text-muted); font-size: .8125rem; padding: 10px 0; }
 

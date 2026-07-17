@@ -324,7 +324,9 @@
   display: none;
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 1100;
+  /* Au-dessus de .auth-modal-overlay (z-index 4000) — la barre du bas doit rester
+     visible/accessible même quand la modale connexion/inscription est ouverte. */
+  z-index: 4100;
   height: var(--bottom-nav-h);
   background: rgba(24, 14, 7, 0.98);
   border-top: 1px solid var(--color-border);

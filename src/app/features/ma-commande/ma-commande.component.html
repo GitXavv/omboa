@@ -234,14 +234,14 @@
         <div class="receipt__section">
           <div class="receipt__section-title">Récapitulatif</div>
           <div class="receipt__summary">
-            @if (order()!.payment?.discount_amount && order()!.payment!.discount_amount! > 0) {
+            @if (orderDiscount() > 0) {
               <div class="receipt__summary-row">
                 <span>Sous-total</span>
-                <span>{{ (orderTotal() + order()!.payment!.discount_amount!) | number:'1.0-0' }} FCFA</span>
+                <span>{{ orderItemsTotal() | number:'1.0-0' }} FCFA</span>
               </div>
               <div class="receipt__summary-row receipt__summary-row--discount">
                 <span>Réduction (points)</span>
-                <span>−{{ order()!.payment!.discount_amount! | number:'1.0-0' }} FCFA</span>
+                <span>−{{ orderDiscount() | number:'1.0-0' }} FCFA</span>
               </div>
             }
             <div class="receipt__summary-row receipt__summary-row--total">

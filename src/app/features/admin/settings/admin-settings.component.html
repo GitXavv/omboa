@@ -34,7 +34,7 @@
               </button>
             </div>
           } @else {
-            <button class="btn btn--outline btn--sm" (click)="startEdit(role)">
+            <button class="btn btn--outline btn--sm" (click)="requestEdit(role)">
               {{ isDefined(role) ? 'Changer la clé' : 'Définir la clé' }}
             </button>
           }
@@ -43,3 +43,30 @@
     </div>
   }
 </div>
+
+<!-- ── Re-authentification admin avant de révéler le champ de changement ────── -->
+@if (pendingRole(); as role) {
+  <div class="reauth-overlay" (click)="cancelReauth()">
+    <div class="reauth-modal" (click)="$event.stopPropagation()">
+      <h3>Confirmez votre identité</h3>
+      <p class="text-muted">Entrez la clé admin de ce restaurant pour modifier la clé « {{ labels[role] }} ».</p>
+
+      <input
+        type="password"
+        class="form-control"
+        placeholder="Clé admin"
+        [ngModel]="reauthKey()"
+        (ngModelChange)="reauthKey.set($event)"
+        (keydown.enter)="confirmReauth()"
+      >
+      @if (reauthError()) { <p class="reauth-error">{{ reauthError() }}</p> }
+
+      <div class="reauth-actions">
+        <button class="btn btn--ghost" [disabled]="verifying()" (click)="cancelReauth()">Annuler</button>
+        <button class="btn btn--primary" [disabled]="verifying() || !reauthKey().trim()" (click)="confirmReauth()">
+          @if (verifying()) { Vérification… } @else { Confirmer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

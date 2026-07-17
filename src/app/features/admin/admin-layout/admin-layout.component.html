@@ -44,15 +44,19 @@
         <span class="adm-nav__icon adm-nav__icon--logs"></span>
         <span class="adm-nav__label">Historique</span>
       </a>
-      <a [routerLink]="['/', slug(), 'kitchen']" class="adm-nav__row">
+      <a [routerLink]="['/', slug(), 'admin', 'customers']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
+        <span class="adm-nav__icon adm-nav__icon--customers"></span>
+        <span class="adm-nav__label">Clients avec compte</span>
+      </a>
+      <a [routerLink]="['/', slug(), 'admin', 'kitchen']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--kitchen"></span>
         <span class="adm-nav__label">Cuisine</span>
       </a>
-      <a [routerLink]="['/', slug(), 'reception']" class="adm-nav__row">
+      <a [routerLink]="['/', slug(), 'admin', 'reception']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--reception"></span>
         <span class="adm-nav__label">Réception</span>
       </a>
-      <a [routerLink]="['/', slug(), 'exit']" class="adm-nav__row">
+      <a [routerLink]="['/', slug(), 'admin', 'exit']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--exit"></span>
         <span class="adm-nav__label">Sortie</span>
       </a>

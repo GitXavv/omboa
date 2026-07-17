@@ -369,7 +369,108 @@
 @media (max-width: 480px) { .cart-item__subtotal { display: none; } }
 
 .cart-total          { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
-.cart-total__amount  { font-size: 1.125rem; color: var(--color-primary); }
+.cart-total__amount  { font-size: 1.125rem; color: var(--color-primary); transition: color var(--transition-fast); }
+.cart-total__amount--discounted { color: var(--color-success); }
+.cart-total__discount-note { margin: -8px 0 0; font-size: 0.8125rem; color: var(--color-text-muted); }
+
+/* ── Bouton réduction fidélité (discret, sous le bouton principal) ──────────── */
+.cart-loyalty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cart-loyalty-btn:hover:not(:disabled) { color: var(--color-primary); }
+.cart-loyalty-btn:disabled { opacity: 0.5; cursor: not-allowed; text-decoration: none; }
+.cart-loyalty-btn--active { color: var(--color-success); font-weight: 600; }
+.cart-loyalty-btn__check { font-weight: 700; }
+.cart-loyalty-hint { margin: -8px 0 0; font-size: 0.75rem; color: var(--color-text-light); text-align: center; }
+
+/* ── Pop-up réduction fidélité ────────────────────────────────────────────── */
+.loyalty-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.loyalty-popup {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 24px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.loyalty-popup h3 { font-size: 1.0625rem; margin: 0; }
+.loyalty-popup__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+.loyalty-popup__close:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+
+.loyalty-popup__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+.loyalty-popup__row strong { color: var(--color-text); }
+.loyalty-popup__row--final {
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  font-size: 1rem;
+}
+.loyalty-popup__row--final strong { color: var(--color-success); }
+
+.loyalty-popup__stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.loyalty-popup__stepper { display: flex; align-items: center; gap: 10px; }
+.loyalty-popup__stepper button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.loyalty-popup__stepper button:disabled { opacity: 0.4; cursor: not-allowed; }
+.loyalty-popup__stepper button:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+.loyalty-popup__stepper span { min-width: 44px; text-align: center; font-weight: 600; }
+.loyalty-popup__percent { font-weight: 700; color: var(--color-primary); min-width: 40px; text-align: right; }
 
 /* ── Durée de préparation estimée ─────────────────────────────────────────── */
 .cart-prep-estimate {

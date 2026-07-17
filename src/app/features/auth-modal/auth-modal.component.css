@@ -175,6 +175,18 @@
 
 /* ── Responsive ──────────────────────────── */
 @media (max-width: 740px) {
+  /* align-items:center sur un conteneur scrollable rend le haut du contenu
+     inatteignable au scroll dès qu'il dépasse la hauteur de l'écran (bug classique
+     flexbox) — sur mobile, les deux panneaux empilés dépassent presque toujours. */
+  .auth-modal-overlay {
+    align-items: flex-start;
+    padding-top: 20px;
+    /* La barre de navigation mobile reste visible par-dessus la modale (z-index
+       supérieur) — on réserve donc sa hauteur ici pour ne pas qu'elle cache le bas
+       du formulaire. */
+    padding-bottom: calc(var(--bottom-nav-h) + 20px);
+  }
+
   .auth-modal { padding: 32px 16px; }
 
   .auth-panels { grid-template-columns: 1fr; }

@@ -80,7 +80,15 @@ export const routes: Routes = [
           { path: 'tables', loadComponent: () => import('./features/admin/tables/tables.component').then(m => m.TablesComponent) },
           { path: 'logs',   loadComponent: () => import('./features/admin/logs/logs.component').then(m => m.LogsComponent) },
           { path: 'stats',  loadComponent: () => import('./features/admin/stats/stats.component').then(m => m.StatsComponent) },
-          { path: 'settings', loadComponent: () => import('./features/admin/settings/admin-settings.component').then(m => m.AdminSettingsComponent) }
+          { path: 'customers', loadComponent: () => import('./features/admin/customers/customers.component').then(m => m.CustomersComponent) },
+          { path: 'settings', loadComponent: () => import('./features/admin/settings/admin-settings.component').then(m => m.AdminSettingsComponent) },
+
+          // Vues admin en lecture seule (sidebar toujours visible) — mêmes composants
+          // que les routes staff top-level ci-dessous ; chaque composant se met lui-même
+          // en lecture seule via auth.isOwner() (aucune action possible pour l'owner).
+          { path: 'kitchen',   loadComponent: () => import('./features/kitchen/kitchen.component').then(m => m.KitchenComponent) },
+          { path: 'reception', loadComponent: () => import('./features/reception/reception-dashboard.component').then(m => m.ReceptionDashboardComponent) },
+          { path: 'exit',      loadComponent: () => import('./features/exit/dashboard/exit-dashboard.component').then(m => m.ExitDashboardComponent) }
         ]
       },
 
@@ -88,7 +96,7 @@ export const routes: Routes = [
       {
         path: 'kitchen',
         canActivate: [roleGuard],
-        data: { roles: ['cook', 'owner'] },
+        data: { roles: ['cook'] },
         loadComponent: () => import('./features/kitchen/kitchen.component').then(m => m.KitchenComponent)
       },
 
@@ -96,7 +104,7 @@ export const routes: Routes = [
       {
         path: 'reception',
         canActivate: [roleGuard],
-        data: { roles: ['receptionist', 'owner'] },
+        data: { roles: ['receptionist'] },
         loadComponent: () => import('./features/reception/reception-dashboard.component').then(m => m.ReceptionDashboardComponent)
       },
 
@@ -104,7 +112,7 @@ export const routes: Routes = [
       {
         path: 'exit',
         canActivate: [roleGuard],
-        data: { roles: ['exit', 'owner'] },
+        data: { roles: ['exit'] },
         loadComponent: () => import('./features/exit/dashboard/exit-dashboard.component').then(m => m.ExitDashboardComponent)
       },
       {

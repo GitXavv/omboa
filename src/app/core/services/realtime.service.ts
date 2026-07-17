@@ -11,6 +11,7 @@ export type RealtimeEvent =
   | { type: 'admin:table-issue';   payload: { tableId: string; tableNumber: string } }
   | { type: 'payment:method';      payload: { orderId: string; method: string } }
   | { type: 'payment:removed';     payload: { orderId: string } }
+  | { type: 'product:availability'; payload: { productId: string; isAvailable: boolean } }
   | { type: 'connected' }
   | { type: 'disconnected' };
 
@@ -62,6 +63,10 @@ export class RealtimeService implements OnDestroy {
 
     this.connection.on('PaymentRemoved', (orderId: string) =>
       this.events$.next({ type: 'payment:removed', payload: { orderId } })
+    );
+
+    this.connection.on('ProductAvailability', (productId: string, isAvailable: boolean) =>
+      this.events$.next({ type: 'product:availability', payload: { productId, isAvailable } })
     );
 
     this.connection.onclose(() => this.events$.next({ type: 'disconnected' }));

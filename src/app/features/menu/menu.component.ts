@@ -1,8 +1,10 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MenuService } from '../../core/services/menu.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
+import { RealtimeService } from '../../core/services/realtime.service';
 import { Category, Product } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
@@ -13,10 +15,11 @@ import { LoaderComponent } from '../../shared/components/loader/loader.component
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent implements OnInit, OnDestroy {
   private readonly menuSvc = inject(MenuService);
   private readonly route   = inject(ActivatedRoute);
   private readonly router  = inject(Router);
+  private readonly rt      = inject(RealtimeService);
   readonly restaurantSvc = inject(RestaurantService);
 
   readonly categories      = signal<Category[]>([]);
@@ -48,16 +51,35 @@ export class MenuComponent implements OnInit {
     this.allProducts().filter(p => p.trend && p.is_available)
   );
 
+  private sub?: Subscription;
+
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
       this.searchQuery.set(params.get('q') ?? '');
     });
 
+    this.loadMenu();
+
+    const restaurantId = this.restaurantSvc.current()?.id;
+    this.rt.connect().then(() => {
+      if (restaurantId) this.rt.invoke('JoinMenu', restaurantId).catch(() => {});
+    });
+    this.sub = this.rt.events$.subscribe(ev => {
+      if (ev.type === 'product:availability') this.loadMenu(false);
+    });
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+    this.rt.disconnect();
+  }
+
+  private loadMenu(resetView = true) {
     const restaurantId = this.restaurantSvc.current()?.id ?? '';
     this.menuSvc.getCategories(restaurantId).subscribe({
       next: cats => {
         this.categories.set(cats);
-        if (cats.length) this.openIds.set(new Set([cats[0].id]));
+        if (resetView && cats.length) this.openIds.set(new Set([cats[0].id]));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

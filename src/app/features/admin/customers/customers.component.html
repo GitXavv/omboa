@@ -1,0 +1,33 @@
+<div class="admin-page container">
+
+  <div class="admin-header">
+    <h2>Clients avec compte</h2>
+    <p class="text-muted">{{ customers().length }} client{{ customers().length !== 1 ? 's' : '' }} inscrit{{ customers().length !== 1 ? 's' : '' }}</p>
+  </div>
+
+  @if (loading()) { <app-loader /> }
+  @else {
+    <div class="customers-list">
+      <div class="cust-row cust-row--head">
+        <span>Nom</span>
+        <span>Téléphone</span>
+        <span>Inscrit le</span>
+        <span>Points gagnés</span>
+        <span>Points dépensés</span>
+      </div>
+
+      @if (!customers().length) {
+        <p class="text-muted text-center" style="padding:40px">Aucun client inscrit pour le moment.</p>
+      }
+      @for (c of customers(); track c.id) {
+        <div class="cust-row">
+          <span class="cust-row__name">{{ c.full_name }}</span>
+          <span class="cust-row__phone">{{ c.phone }}</span>
+          <span class="cust-row__date">{{ c.created_at | date:'dd/MM/yyyy' }}</span>
+          <span class="cust-row__earned">{{ c.points_earned | number:'1.0-0' }}</span>
+          <span class="cust-row__spent">{{ c.points_spent | number:'1.0-0' }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

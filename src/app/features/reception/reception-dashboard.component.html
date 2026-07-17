@@ -3,10 +3,6 @@
   <header class="reception-header">
     <div class="reception-header__left">
       <h1>Réception</h1>
-      <div class="reception-status" [class.reception-status--on]="connected()">
-        <span class="reception-status__dot"></span>
-        {{ connected() ? 'En ligne' : 'Hors ligne' }}
-      </div>
     </div>
   </header>
 
@@ -39,6 +35,10 @@
             }
           </div>
 
+          @if (o.customer) {
+            <div class="order-card__customer">👤 {{ o.customer.full_name }}</div>
+          }
+
           @if (o.notes) {
             <div class="order-card__order-note">📝 {{ o.notes }}</div>
           }
@@ -59,6 +59,15 @@
               <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '—' }}</li>
             }
           </ul>
+
+          @if (o.total_amount != null) {
+            <div class="order-card__total">
+              <span>{{ o.total_amount | number:'1.0-0' }} FCFA</span>
+              @if (o.loyalty_points_spent > 0) {
+                <span class="order-card__discount-tag">−{{ discountPercent(o.loyalty_points_spent) }}% fidélité</span>
+              }
+            </div>
+          }
 
           @if (!auth.isOwner()) {
             <div class="order-card__actions">

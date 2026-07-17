@@ -30,8 +30,8 @@ export class StaffLoginComponent {
       next: session => {
         this.router.navigate([this.staffAuth.redirectPathForRole(session.role, session.restaurant_slug)]);
       },
-      error: () => {
-        this.error.set('Clé incorrecte.');
+      error: err => {
+        this.error.set(err?.error?.message ?? 'Clé incorrecte.');
         this.loading.set(false);
       }
     });

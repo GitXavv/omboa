@@ -293,13 +293,74 @@
         <div class="cart-total card">
           <div class="flex-between">
             <span>Total</span>
-            <strong class="cart-total__amount">{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+            <strong class="cart-total__amount" [class.cart-total__amount--discounted]="pointsToSpend() > 0">
+              {{ cartFinalTotal() | number:'1.0-0' }} FCFA
+            </strong>
           </div>
+          @if (pointsToSpend() > 0) {
+            <p class="cart-total__discount-note">
+              Prix initial {{ cart.total() | number:'1.0-0' }} FCFA − {{ appliedDiscountPercent() }}% avec vos points fidélité
+            </p>
+          }
+
           <button class="btn btn--primary btn--full btn--lg" [disabled]="submitting()" (click)="requestSubmitOrder()">
             @if (submitting()) { Envoi en cours… } @else { Passer la commande }
           </button>
+
+          <button class="cart-loyalty-btn" [class.cart-loyalty-btn--active]="pointsToSpend() > 0"
+            [disabled]="!auth.isLoggedIn()" (click)="openLoyaltyPopup()">
+            @if (pointsToSpend() > 0) { <span class="cart-loyalty-btn__check">✓</span> }
+            Appliquer une réduction avec pts de fidélité
+          </button>
+          @if (!auth.isLoggedIn()) {
+            <p class="cart-loyalty-hint">Seuls les clients avec compte peuvent utiliser cette fonction</p>
+          }
         </div>
       }
+    </div>
+  }
+
+  <!-- ── Pop-up réduction fidélité ─────────────────────────────────────────── -->
+  @if (loyaltyPopupOpen()) {
+    <div class="loyalty-popup-overlay" (click)="closeLoyaltyPopup()">
+      <div class="loyalty-popup" (click)="$event.stopPropagation()">
+        <button class="loyalty-popup__close" (click)="closeLoyaltyPopup()" aria-label="Fermer">✕</button>
+        <h3>Réduction fidélité</h3>
+
+        @if (loyaltyBalanceLoading()) {
+          <app-loader label="Chargement de vos points…" />
+        } @else {
+          <div class="loyalty-popup__row">
+            <span>Vos points fidélité</span>
+            <strong>{{ loyaltyBalance() }} pts</strong>
+          </div>
+          <div class="loyalty-popup__row">
+            <span>Prix de base</span>
+            <strong>{{ cart.total() | number:'1.0-0' }} FCFA</strong>
+          </div>
+
+          <div class="loyalty-popup__stepper-row">
+            <span>Points à dépenser</span>
+            <div class="loyalty-popup__stepper">
+              <button type="button" (click)="stepPointsBy(-100)" [disabled]="draftPointsToSpend() <= 0">−</button>
+              <span>{{ draftPointsToSpend() }}</span>
+              <button type="button" (click)="stepPointsBy(100)" [disabled]="draftPointsToSpend() >= maxSpendablePoints()">+</button>
+            </div>
+            <span class="loyalty-popup__percent">{{ draftDiscountPercent() }}%</span>
+          </div>
+
+          <div class="loyalty-popup__row loyalty-popup__row--final">
+            <span>Prix final</span>
+            <strong>{{ draftFinalPrice() | number:'1.0-0' }} FCFA</strong>
+          </div>
+          <div class="loyalty-popup__row">
+            <span>Points restants</span>
+            <strong>{{ draftRemainingPoints() }} pts</strong>
+          </div>
+
+          <button class="btn btn--primary btn--full" (click)="applyLoyaltyDiscount()">Appliquer la réduction</button>
+        }
+      </div>
     </div>
   }
 
@@ -422,15 +483,6 @@
                   <input type="tel" class="form-control" placeholder="ex: 6XX XXX XXX"
                     [value]="payPhone()"
                     (input)="payPhone.set($any($event.target).value)">
-                </div>
-              }
-
-              @if (auth.isLoggedIn() && loyaltyBalance() > 0) {
-                <div class="loyalty-toggle" style="margin-top:12px">
-                  <label class="flex-between" style="cursor:pointer;gap:12px">
-                    <span>Utiliser mes points ({{ loyaltyBalance() }} pts)</span>
-                    <input type="checkbox" [checked]="usePoints()" (change)="usePoints.update(v=>!v)">
-                  </label>
                 </div>
               }
 
@@ -620,14 +672,14 @@
         <div class="receipt__section">
           <div class="receipt__section-title">Récapitulatif</div>
           <div class="receipt__summary">
-            @if (trackedOrder()!.payment?.discount_amount && trackedOrder()!.payment!.discount_amount! > 0) {
+            @if (trackingDiscount() > 0) {
               <div class="receipt__summary-row">
                 <span>Sous-total</span>
-                <span>{{ (trackingTotal() + trackedOrder()!.payment!.discount_amount!) | number:'1.0-0' }} FCFA</span>
+                <span>{{ trackingItemsTotal() | number:'1.0-0' }} FCFA</span>
               </div>
               <div class="receipt__summary-row receipt__summary-row--discount">
                 <span>Réduction (points)</span>
-                <span>−{{ trackedOrder()!.payment!.discount_amount! | number:'1.0-0' }} FCFA</span>
+                <span>−{{ trackingDiscount() | number:'1.0-0' }} FCFA</span>
               </div>
             }
             <div class="receipt__summary-row receipt__summary-row--total">

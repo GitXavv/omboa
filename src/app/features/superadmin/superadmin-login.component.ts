@@ -25,8 +25,8 @@ export class SuperAdminLoginComponent {
 
     this.auth.loginWithKey(this.key().trim()).subscribe({
       next: () => this.router.navigate(['/osuper/dashboard']),
-      error: () => {
-        this.error.set('Clé incorrecte.');
+      error: err => {
+        this.error.set(err?.error?.message ?? 'Clé incorrecte.');
         this.loading.set(false);
       }
     });

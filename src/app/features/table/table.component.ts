@@ -11,6 +11,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
 import { AuthModalService } from '../../core/services/auth-modal.service';
+import { LoyaltyService } from '../../core/services/loyalty.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -47,6 +48,7 @@ export class TableComponent implements OnInit, OnDestroy {
   private readonly orderSvc = inject(OrderService);
   private readonly toast    = inject(ToastService);
   private readonly rt       = inject(RealtimeService);
+  private readonly loyaltySvc = inject(LoyaltyService);
   private readonly route    = inject(ActivatedRoute);
   private readonly restaurantSvc = inject(RestaurantService);
 
@@ -73,6 +75,52 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly confirmingSubmit = signal(false);
   private cartPulseTimer?: ReturnType<typeof setTimeout>;
 
+  // ── Réduction fidélité (choisie à la commande, jamais au paiement) ────────
+  readonly loyaltyPopupOpen      = signal(false);
+  readonly loyaltyBalanceLoading = signal(false);
+  readonly loyaltyBalance        = signal(0);
+  // Points réellement appliqués à la commande en cours de composition
+  readonly pointsToSpend      = signal(0);
+  // Valeur en cours d'ajustement dans la pop-up — ne remplace pointsToSpend qu'au clic
+  // sur "Appliquer la réduction", pour permettre d'annuler sans y toucher.
+  readonly draftPointsToSpend = signal(0);
+
+  private loyaltyDiscountPercent(points: number): number {
+    return Math.min(points / 100 * 5, 30);
+  }
+  readonly maxSpendablePoints = computed(() => Math.min(this.loyaltyBalance(), 600));
+  readonly draftDiscountPercent = computed(() => this.loyaltyDiscountPercent(this.draftPointsToSpend()));
+  readonly draftDiscountAmount  = computed(() => Math.round(this.cart.total() * this.draftDiscountPercent() / 100));
+  readonly draftFinalPrice      = computed(() => this.cart.total() - this.draftDiscountAmount());
+  readonly draftRemainingPoints = computed(() => this.loyaltyBalance() - this.draftPointsToSpend());
+
+  readonly appliedDiscountPercent = computed(() => this.loyaltyDiscountPercent(this.pointsToSpend()));
+  readonly appliedDiscountAmount  = computed(() => Math.round(this.cart.total() * this.appliedDiscountPercent() / 100));
+  readonly cartFinalTotal         = computed(() => this.cart.total() - this.appliedDiscountAmount());
+
+  openLoyaltyPopup() {
+    if (!this.auth.isLoggedIn()) return;
+    this.draftPointsToSpend.set(this.pointsToSpend());
+    this.loyaltyPopupOpen.set(true);
+    this.loyaltyBalanceLoading.set(true);
+    this.loyaltySvc.getBalance().subscribe({
+      next: r => { this.loyaltyBalance.set(r.balance); this.loyaltyBalanceLoading.set(false); },
+      error: () => this.loyaltyBalanceLoading.set(false)
+    });
+  }
+
+  closeLoyaltyPopup() { this.loyaltyPopupOpen.set(false); }
+
+  stepPointsBy(delta: number) {
+    const next = this.draftPointsToSpend() + delta;
+    this.draftPointsToSpend.set(Math.max(0, Math.min(next, this.maxSpendablePoints())));
+  }
+
+  applyLoyaltyDiscount() {
+    this.pointsToSpend.set(this.draftPointsToSpend());
+    this.loyaltyPopupOpen.set(false);
+  }
+
   // Suivi de commande en cours
   readonly trackedOrder        = signal<Order | null>(null);
   readonly trackedStatusLabels = STATUS_LABELS;
@@ -84,9 +132,6 @@ export class TableComponent implements OnInit, OnDestroy {
   // Paiement inline (affiché dans tracking quand status = ready)
   readonly payMethod      = signal<PaymentMethod>('cash');
   readonly payPhone       = signal('');
-  readonly usePoints      = signal(false);
-  readonly pointsToUse    = signal(0);
-  readonly loyaltyBalance = signal(0);
 
   // Total calculé depuis les items (total_amount non encore défini avant paiement)
   readonly trackingTotal = computed(() => {
@@ -95,6 +140,13 @@ export class TableComponent implements OnInit, OnDestroy {
     if (o.total_amount != null) return o.total_amount;
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
+
+  // Sous-total avant réduction fidélité — toujours la somme des articles, indépendamment
+  // de total_amount (qui inclut déjà la réduction dès la création de la commande).
+  readonly trackingItemsTotal = computed(() =>
+    (this.trackedOrder()?.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0)
+  );
+  readonly trackingDiscount = computed(() => Math.max(0, this.trackingItemsTotal() - this.trackingTotal()));
 
   // Durée de préparation estimée — panier pas encore validé
   readonly cartPrepMinutes = computed(() =>
@@ -163,9 +215,23 @@ export class TableComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.rt.connect(this.auth.getToken() ?? undefined);
+    this.rt.connect(this.auth.getToken() ?? undefined).then(() => {
+      const restaurantId = this.restaurantSvc.current()?.id;
+      if (restaurantId) this.rt.invoke('JoinMenu', restaurantId).catch(() => {});
+    });
     this.subs.add(
       this.rt.events$.subscribe(ev => {
+        if (ev.type === 'product:availability') {
+          const inCart = this.cart.items().some(i => i.product.id === ev.payload.productId);
+          if (!ev.payload.isAvailable && inCart) {
+            this.cart.clear();
+            this.toast.error(
+              "Un ou plusieurs produits que vous aviez ajouté à votre commande n'est plus disponible. " +
+              'Veuillez reconstituer votre commande s\'il vous plaît. Désolé pour le dérangement.'
+            );
+          }
+          if (this.step() !== 'tracking') this.loadMenu(false);
+        }
         if (ev.type === 'order:status' && ev.payload.orderId === this.orderId()) {
           const s = ev.payload.status as OrderStatus;
           this.trackedOrder.update(o => o ? { ...o, status: s } : null);
@@ -249,12 +315,12 @@ export class TableComponent implements OnInit, OnDestroy {
     this.loadMenu();
   }
 
-  private loadMenu() {
+  private loadMenu(resetView = true) {
     const restaurantId = this.restaurantSvc.current()?.id ?? '';
     this.menuSvc.getCategories(restaurantId).subscribe({
       next: cats => {
         this.categories.set(cats);
-        if (cats.length) this.openIds.set(new Set([cats[0].id]));
+        if (resetView && cats.length) this.openIds.set(new Set([cats[0].id]));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -366,7 +432,8 @@ export class TableComponent implements OnInit, OnDestroy {
         quantity:   i.quantity,
         unit_price: i.product.price,
         notes:      i.notes || undefined
-      }))
+      })),
+      points_to_spend: this.pointsToSpend() > 0 ? this.pointsToSpend() : undefined
     };
 
     this.orderSvc.create(payload).subscribe({
@@ -378,6 +445,7 @@ export class TableComponent implements OnInit, OnDestroy {
         this.rt.invoke('JoinOrder', order.id).catch(() => {});
         this.cart.clear();
         this.orderNotes.set('');
+        this.pointsToSpend.set(0);
         this.submitting.set(false);
         this.step.set('tracking');
         this.scrollToTop();
@@ -399,8 +467,7 @@ export class TableComponent implements OnInit, OnDestroy {
     this.orderSvc.pay({
       order_id:        orderId,
       method:          this.payMethod(),
-      phone_number:    this.payPhone() || undefined,
-      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
+      phone_number:    this.payPhone() || undefined
     }).subscribe({
       next: payment => {
         this.trackedOrder.update(o => o ? { ...o, payment } : null);

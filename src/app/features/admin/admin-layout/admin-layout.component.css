@@ -84,6 +84,7 @@
 .adm-nav__icon--tables    { mask-image: url('/icons/nav-tables.svg');    -webkit-mask-image: url('/icons/nav-tables.svg'); }
 .adm-nav__icon--stats     { mask-image: url('/icons/nav-stats.svg');     -webkit-mask-image: url('/icons/nav-stats.svg'); }
 .adm-nav__icon--logs      { mask-image: url('/icons/nav-logs.svg');      -webkit-mask-image: url('/icons/nav-logs.svg'); }
+.adm-nav__icon--customers { mask-image: url('/icons/nav-customers.svg'); -webkit-mask-image: url('/icons/nav-customers.svg'); }
 .adm-nav__icon--kitchen   { mask-image: url('/icons/nav-kitchen.svg');   -webkit-mask-image: url('/icons/nav-kitchen.svg'); }
 .adm-nav__icon--reception { mask-image: url('/icons/nav-reception.svg'); -webkit-mask-image: url('/icons/nav-reception.svg'); }
 .adm-nav__icon--exit      { mask-image: url('/icons/nav-exit.svg');      -webkit-mask-image: url('/icons/nav-exit.svg'); }

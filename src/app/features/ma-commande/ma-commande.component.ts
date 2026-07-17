@@ -53,16 +53,19 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   readonly payMethod      = signal<PaymentMethod>('cash');
   readonly payPhone       = signal('');
   readonly submitting     = signal(false);
-  readonly usePoints      = signal(false);
-  readonly pointsToUse    = signal(0);
-  readonly loyaltyBalance = signal(0);
-
   readonly orderTotal = computed(() => {
     const o = this.order();
     if (!o) return 0;
     if (o.total_amount != null) return o.total_amount;
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
+
+  // Sous-total avant réduction fidélité — toujours la somme des articles, indépendamment
+  // de total_amount (qui inclut déjà la réduction dès la création de la commande).
+  readonly orderItemsTotal = computed(() =>
+    (this.order()?.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0)
+  );
+  readonly orderDiscount = computed(() => Math.max(0, this.orderItemsTotal() - this.orderTotal()));
 
   readonly orderPrepMinutes = computed(() => {
     const items = this.order()?.order_items ?? [];
@@ -206,8 +209,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     this.orderSvc.pay({
       order_id:        orderId,
       method:          this.payMethod(),
-      phone_number:    this.payPhone() || undefined,
-      points_to_spend: this.usePoints() ? this.pointsToUse() : undefined
+      phone_number:    this.payPhone() || undefined
     }).subscribe({
       next: payment => {
         this.order.update(o => o ? { ...o, payment } : null);

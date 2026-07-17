@@ -1,5 +1,5 @@
 .reception-page {
-  min-height: calc(100vh - var(--navbar-h));
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 28px 24px 80px;
@@ -11,23 +11,6 @@
 .reception-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .reception-header h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-accent); }
 .reception-header__left { display: flex; align-items: center; gap: 16px; }
-
-.reception-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-}
-.reception-status--on { color: var(--color-success); border-color: rgba(76,175,80,0.3); }
-.reception-status__dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-.reception-status--on .reception-status__dot { animation: reception-pulse 1.8s ease-in-out infinite; }
-@keyframes reception-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* ── Onglets ──────────────────────────────────────────────────────────────── */
 .reception-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -86,6 +69,7 @@
 .order-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .order-card__table { font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; color: var(--color-text); }
 .order-card__table-disabled { font-size: 0.75rem; font-weight: 700; color: var(--color-error); background: var(--color-error-bg); border-radius: var(--radius-sm); padding: 3px 8px; }
+.order-card__customer { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-muted); }
 
 .order-card__order-note {
   font-size: 0.8125rem;
@@ -121,6 +105,25 @@
 .order-card__qty { font-weight: 700; color: var(--color-accent); min-width: 28px; flex-shrink: 0; }
 
 .order-card__waiting { font-size: 0.8125rem; color: var(--color-text-muted); flex: 1; }
+
+/* ── Total (avec réduction fidélité visible seulement ici) ──────────────────── */
+.order-card__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-primary);
+}
+.order-card__discount-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-radius: var(--radius-full);
+  padding: 3px 9px;
+}
 
 /* ── Actions ─────────────────────────────────────────────────────────────── */
 .order-card__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }

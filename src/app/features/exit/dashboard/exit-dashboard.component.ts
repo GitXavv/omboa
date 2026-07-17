@@ -30,7 +30,6 @@ export class ExitDashboardComponent implements OnInit, OnDestroy {
   readonly tables       = signal<TableStatus[]>([]);
   readonly recentOrders = signal<RecentOrder[]>([]);
   readonly loading      = signal(true);
-  readonly connected    = signal(false);
   readonly statusFr     = STATUS_FR;
 
   readonly occupiedCount = computed(() => this.tables().filter(t => t.is_occupied).length);
@@ -50,22 +49,26 @@ export class ExitDashboardComponent implements OnInit, OnDestroy {
 
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'connected') {
-        this.connected.set(true);
         this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).then(() => this.load()).catch(() => {});
       }
-      if (ev.type === 'disconnected') this.connected.set(false);
       if (ev.type === 'table:status' || ev.type === 'order:status') this.load();
     });
 
-    this.rt.connect(this.auth.getToken() ?? undefined)
-      .then(() => this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId))
-      .then(() => this.connected.set(true))
-      .catch(() => this.connected.set(false));
+    // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
+    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") — on ne
+    // doit pas ouvrir/fermer notre propre connexion, ça couperait celle du layout.
+    if (this.auth.isOwner()) {
+      this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).catch(() => {});
+    } else {
+      this.rt.connect(this.auth.getToken() ?? undefined)
+        .then(() => this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId))
+        .catch(() => {});
+    }
   }
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
-    this.rt.disconnect();
+    if (!this.auth.isOwner()) this.rt.disconnect();
   }
 
   private load() {

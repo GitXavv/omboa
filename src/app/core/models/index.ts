@@ -33,6 +33,17 @@ export interface Customer {
   created_at: string;
 }
 
+// Ligne de la page admin "Clients avec compte" — lecture seule, agrège l'historique
+// loyalty_points de chaque client (aucune action admin possible sur ces comptes).
+export interface CustomerAccount {
+  id: string;
+  full_name: string;
+  phone: string;
+  created_at: string;
+  points_earned: number;
+  points_spent: number;
+}
+
 export interface Category {
   id: string;
   restaurant_id: string;
@@ -73,6 +84,7 @@ export interface Order {
   code?: string | null;
   notes?: string | null;
   total_amount: number | null;
+  loyalty_points_spent: number;
   created_at: string;
   updated_at: string;
   table?: TableRecord;

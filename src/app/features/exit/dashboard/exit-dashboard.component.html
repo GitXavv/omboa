@@ -2,10 +2,6 @@
 
   <div class="exit-header">
     <h1 class="exit-title">Sortie</h1>
-    <div class="exit-status" [class.exit-status--on]="connected()">
-      <span class="exit-status__dot"></span>
-      {{ connected() ? 'En ligne' : 'Hors ligne' }}
-    </div>
   </div>
 
   @if (loading()) {

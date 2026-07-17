@@ -133,14 +133,21 @@ export class KitchenComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.realtime.connect(this.auth.getToken() ?? undefined)
-      .then(() => this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId))
-      .catch(() => {});
+    // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
+    // SignalR est déjà ouverte et maintenue par le layout — on rejoint juste le groupe
+    // cuisine dessus, sans ouvrir/fermer notre propre connexion (qui la couperait).
+    if (this.auth.isOwner()) {
+      this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId).catch(() => {});
+    } else {
+      this.realtime.connect(this.auth.getToken() ?? undefined)
+        .then(() => this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId))
+        .catch(() => {});
+    }
   }
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
-    this.realtime.disconnect();
+    if (!this.auth.isOwner()) this.realtime.disconnect();
     clearInterval(this.clockInterval);
   }
 

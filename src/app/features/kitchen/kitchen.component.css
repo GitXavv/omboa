@@ -1,6 +1,6 @@
 /* ── Page ────────────────────────────────────────────────────────────────── */
 .kitchen-page {
-  min-height: calc(100vh - var(--navbar-h));
+  min-height: 100vh;
   background: #111;
   color: #f0e8dc;
   display: flex;

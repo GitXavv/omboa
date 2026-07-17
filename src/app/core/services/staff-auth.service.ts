@@ -36,6 +36,12 @@ export class StaffAuthService {
     }).pipe(tap(res => this.storeSession(res)));
   }
 
+  // Re-authentification avant de révéler le champ de changement d'une clé staff — ne
+  // modifie pas la session, juste une vérification de la clé owner courante.
+  verifyOwnerKey(key: string) {
+    return this.http.post<void>(`${environment.apiUrl}/staff/verify-owner-key`, { key });
+  }
+
   logout() {
     const slug = this.currentStaff()?.restaurantSlug;
     localStorage.removeItem(this.TOKEN_KEY);
