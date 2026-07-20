@@ -2,9 +2,10 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { forkJoin, firstValueFrom } from 'rxjs';
 import { SuperAdminService, CreateRestaurantPayload } from '../../core/services/super-admin.service';
 import { SuperAdminAuthService } from '../../core/services/super-admin-auth.service';
+import { ImageUploadService } from '../../core/services/image-upload.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Restaurant, SuperAdminStats } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
@@ -37,6 +38,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   private readonly superAdminSvc = inject(SuperAdminService);
   readonly auth = inject(SuperAdminAuthService);
   private readonly toast = inject(ToastService);
+  private readonly imgUpload = inject(ImageUploadService);
 
   readonly loading     = signal(true);
   readonly restaurants  = signal<Restaurant[]>([]);
@@ -51,6 +53,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly editingRestaurant = signal<Restaurant | null>(null);
   readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY, address: '' });
   readonly saving = signal(false);
+
+  // Logo : import direct (comme le formulaire "Réservez une démo"), avec préchargement
+  // du logo actuel en aperçu — logoFile reste null tant qu'aucune nouvelle image n'est
+  // choisie, auquel cas on garde le logo_url existant inchangé.
+  readonly editLogoFile    = signal<File | null>(null);
+  readonly editLogoPreview = signal<string | null>(null);
 
   readonly filteredRestaurants = () => {
     const q = this.search().toLowerCase().trim();
@@ -134,11 +142,24 @@ export class SuperAdminDashboardComponent implements OnInit {
       color_secondary: r.color_secondary,
       address: r.address ?? ''
     });
+    this.editLogoFile.set(null);
+    this.editLogoPreview.set(r.logo_url ?? null);
   }
 
   closeEditForm() { this.editingRestaurant.set(null); }
 
-  submitEdit() {
+  async onEditLogoFileChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('Fichier trop volumineux (maximum 5 Mo).');
+      return;
+    }
+    this.editLogoFile.set(file);
+    this.editLogoPreview.set(await this.imgUpload.readAsDataUrl(file));
+  }
+
+  async submitEdit() {
     const r = this.editingRestaurant();
     const form = this.editForm();
     if (!r || !form.name.trim()) {
@@ -146,23 +167,26 @@ export class SuperAdminDashboardComponent implements OnInit {
       return;
     }
     this.saving.set(true);
-    this.superAdminSvc.updateRestaurant(r.id, {
-      name: form.name,
-      logo_url: form.logo_url || undefined,
-      color_primary: form.color_primary,
-      color_secondary: form.color_secondary,
-      address: form.address || undefined
-    }).subscribe({
-      next: () => {
-        this.toast.success(`${form.name} mis à jour.`);
-        this.saving.set(false);
-        this.editingRestaurant.set(null);
-        this.load();
-      },
-      error: () => {
-        this.toast.error('Impossible de mettre à jour ce restaurant.');
-        this.saving.set(false);
-      }
-    });
+    try {
+      let logoUrl = form.logo_url || undefined;
+      const file = this.editLogoFile();
+      if (file) logoUrl = await firstValueFrom(this.superAdminSvc.uploadLogo(r.id, file));
+
+      await firstValueFrom(this.superAdminSvc.updateRestaurant(r.id, {
+        name: form.name,
+        logo_url: logoUrl,
+        color_primary: form.color_primary,
+        color_secondary: form.color_secondary,
+        address: form.address || undefined
+      }));
+
+      this.toast.success(`${form.name} mis à jour.`);
+      this.editingRestaurant.set(null);
+      this.load();
+    } catch {
+      this.toast.error('Impossible de mettre à jour ce restaurant.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 }

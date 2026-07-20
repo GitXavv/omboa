@@ -19,6 +19,13 @@
 
 /* ── Logo ──────────────────────────────────────────────────────────────────── */
 .navbar__logo { display: flex; align-items: center; flex-shrink: 0; }
+.navbar__logo-img {
+  height: 40px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
 .navbar__logo-text {
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -355,6 +362,21 @@
 .bottom-nav__icon  { font-size: 1.25rem; line-height: 1; position: relative; }
 .bottom-nav__label { letter-spacing: 0.01em; }
 
+/* Icônes Menu/Connexion — coloriées selon la couleur secondaire du restaurant */
+.bottom-nav__icon--menu, .bottom-nav__icon--account {
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-secondary);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.bottom-nav__icon--menu    { mask-image: url('/icons/dinner.png');  -webkit-mask-image: url('/icons/dinner.png'); }
+.bottom-nav__icon--account { mask-image: url('/icons/account.png'); -webkit-mask-image: url('/icons/account.png'); }
+
 .bottom-nav__cart-badge {
   position: absolute;
   top: -6px;
@@ -451,3 +473,31 @@
   .cart-overlay { display: block; }
   /* Sur desktop, le cart-overlay est géré via le dropdown inline */
 }
+
+/* ── Avertissement quitter le mode table ──────────────────────────────────── */
+.menu-nav-warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.menu-nav-warning {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.menu-nav-warning p { margin: 0; color: var(--color-text); line-height: 1.6; font-size: 0.9375rem; }
+.menu-nav-warning__question { font-weight: 600; }
+.menu-nav-warning__actions { display: flex; gap: 10px; }

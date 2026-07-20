@@ -89,3 +89,54 @@
 .sa-modal__close:hover { color: var(--color-text); background: var(--color-bg-subtle); }
 .sa-modal__body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
 .sa-modal__footer { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px 18px; border-top: 1px solid var(--color-border); }
+
+.form-hint { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
+
+/* ── Zone d'import du logo (même motif que menu/catégories et "Réservez une démo") ── */
+.img-upload-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 180px;
+  aspect-ratio: 1 / 1;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+.img-upload-area:hover { border-color: var(--color-primary); background: rgba(var(--color-primary-rgb),0.05); }
+.img-upload-area.has-preview { border-style: solid; }
+
+.img-upload-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.img-upload-icon { font-size: 1.75rem; line-height: 1; }
+.img-upload-text { font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.4; }
+
+.img-upload-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.img-upload-change {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 5px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+}

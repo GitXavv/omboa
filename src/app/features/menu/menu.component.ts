@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { MenuService } from '../../core/services/menu.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
 import { RealtimeService } from '../../core/services/realtime.service';
+import { CartService } from '../../core/services/cart.service';
 import { Category, Product } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
@@ -21,6 +22,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private readonly router  = inject(Router);
   private readonly rt      = inject(RealtimeService);
   readonly restaurantSvc = inject(RestaurantService);
+  readonly cart          = inject(CartService);
 
   readonly categories      = signal<Category[]>([]);
   readonly openIds         = signal<Set<string>>(new Set());

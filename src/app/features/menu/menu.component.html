@@ -1,14 +1,19 @@
 <!-- En-tête de page -->
 <div class="menu-header">
-  <div class="container">
-    <span class="section-tag">Notre carte</span>
-    <h1>Le menu O'Mboa</h1>
-    @if (restaurantSvc.current()?.address; as address) {
-      <p class="menu-header__address">📍 {{ address }}</p>
+  <div class="container menu-header__inner">
+    @if (restaurantSvc.current()?.logo_url; as logo) {
+      <img [src]="logo" [alt]="restaurantSvc.current()?.name" class="menu-header__logo">
     }
-    <div class="menu-header__cta-bar">
-      <span>📱 Vous êtes à table ? Scannez le QR code pour passer votre commande directement.</span>
-    </div>
+    <p class="menu-header__welcome">
+      @if (cart.tableId()) {
+        Constituez votre commande en choisissant les plats et boissons que vous voulez. Nous
+        recevrons la commande instantanément une fois confirmée.
+      } @else {
+        Bienvenue sur {{ restaurantSvc.current()?.name }} ! Voici un aperçu de notre menu. Si
+        vous voulez commander, rendez-vous sur les lieux et scannez le QR code sur l'une des
+        tables.
+      }
+    </p>
   </div>
 </div>
 

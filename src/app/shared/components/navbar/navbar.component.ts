@@ -29,6 +29,7 @@ export class NavbarComponent {
   readonly searchQuery  = signal('');
   readonly userMenuOpen = signal(false);
   readonly cartOpen     = signal(false);
+  readonly menuNavWarning = signal(false);
 
   private readonly router = inject(Router);
 
@@ -66,6 +67,22 @@ export class NavbarComponent {
   }
 
   logout() { this.auth.logout(); this.userMenuOpen.set(false); }
+
+  // Depuis une table scannée (cart.tableId() actif), quitter vers la page menu visiteur
+  // fait perdre l'accès à la commande en cours tant qu'on n'a pas rescanné — on avertit
+  // avant de naviguer, sauf si on y est déjà (rien à quitter dans ce cas).
+  onMenuClick(event: Event) {
+    if (this.cart.tableId() && !this.router.url.split('?')[0].endsWith('/menu')) {
+      event.preventDefault();
+      this.menuNavWarning.set(true);
+    }
+  }
+
+  cancelMenuNav()  { this.menuNavWarning.set(false); }
+  confirmMenuNav() {
+    this.menuNavWarning.set(false);
+    this.router.navigate(['/', this.slug(), 'menu']);
+  }
 
   get userInitial(): string {
     return this.auth.currentUser()?.full_name?.charAt(0).toUpperCase() ?? '?';

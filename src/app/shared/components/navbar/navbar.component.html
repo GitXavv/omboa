@@ -1,9 +1,13 @@
 <nav class="navbar">
   <div class="container navbar__inner">
 
-    <!-- Logo -->
+    <!-- Logo du restaurant -->
     <a [routerLink]="['/', slug(), 'menu']" class="navbar__logo">
-      <span class="navbar__logo-text">O'Mboa</span>
+      @if (restaurantSvc.current()?.logo_url; as logo) {
+        <img [src]="logo" [alt]="restaurantSvc.current()?.name" class="navbar__logo-img">
+      } @else {
+        <span class="navbar__logo-text">{{ restaurantSvc.current()?.name }}</span>
+      }
     </a>
 
     <!-- Liens desktop -->
@@ -122,13 +126,9 @@
 
 <!-- Navigation mobile fixe en bas -->
 <nav class="bottom-nav" aria-label="Navigation principale">
-  <a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active" class="bottom-nav__item">
-    <span class="bottom-nav__icon">🍽️</span>
+  <a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active" class="bottom-nav__item" (click)="onMenuClick($event)">
+    <span class="bottom-nav__icon bottom-nav__icon--menu"></span>
     <span class="bottom-nav__label">Menu</span>
-  </a>
-  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav__item">
-    <span class="bottom-nav__icon">🏠</span>
-    <span class="bottom-nav__label">Accueil</span>
   </a>
   <!-- Panier si connecté + items, sinon Auth/Compte -->
   @if (auth.isLoggedIn() && cart.count() > 0) {
@@ -146,17 +146,36 @@
         </div>
       }
       <button class="bottom-nav__item" (click)="toggleUserMenu()" [class.active]="userMenuOpen()">
-        <span class="bottom-nav__icon">👤</span>
+        <span class="bottom-nav__icon bottom-nav__icon--account"></span>
         <span class="bottom-nav__label">{{ userFirstName }}</span>
       </button>
     </div>
   } @else {
     <button class="bottom-nav__item" (click)="authModal.open('login')">
-      <span class="bottom-nav__icon">🔑</span>
+      <span class="bottom-nav__icon bottom-nav__icon--account"></span>
       <span class="bottom-nav__label">Connexion</span>
     </button>
   }
 </nav>
+
+<!-- ── Avertissement : quitter le mode table pour la page menu visiteur ────── -->
+@if (menuNavWarning()) {
+  <div class="menu-nav-warning-overlay" (click)="cancelMenuNav()">
+    <div class="menu-nav-warning" (click)="$event.stopPropagation()">
+      <p>
+        Attention, continuer cette action va vous ramener à la page de menu mais version
+        visiteur. Vous ne pourrez pas passer une commande de là et vous devrez rescanner le
+        QR code d'une table pour le faire. Il n'est pas nécessaire de continuer ainsi alors
+        que vous êtes déjà sur la table.
+      </p>
+      <p class="menu-nav-warning__question">Continuer quand même ?</p>
+      <div class="menu-nav-warning__actions">
+        <button class="btn btn--ghost btn--full" (click)="cancelMenuNav()">Annuler</button>
+        <button class="btn btn--primary btn--full" (click)="confirmMenuNav()">Continuer</button>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- Panel panier mobile (bottom sheet) -->
 @if (cartOpen()) {

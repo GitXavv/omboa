@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Restaurant, SuperAdminStats, Log } from '../models';
 import { DemoRequest } from './demo-request.service';
 import { environment } from '../../../environments/environment';
@@ -31,6 +31,14 @@ export class SuperAdminService {
 
   updateRestaurant(id: string, data: Partial<Pick<Restaurant, 'name' | 'logo_url' | 'color_primary' | 'color_secondary' | 'address' | 'is_active' | 'archived'>>): Observable<void> {
     return this.http.put<void>(`${this.base}/restaurants/${id}`, data);
+  }
+
+  uploadLogo(restaurantId: string, file: File): Observable<string> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http
+      .post<{ url: string }>(`${this.base}/restaurants/${restaurantId}/logo-upload`, form)
+      .pipe(map(r => r.url));
   }
 
   getStats(): Observable<SuperAdminStats> {
