@@ -79,6 +79,9 @@
 .danger-btn { color: var(--color-error) !important; }
 .danger-btn:hover { background: var(--color-error-bg) !important; }
 
+/* Note en bas de page */
+.tables-hint { font-size: 0.8125rem; text-align: center; }
+
 /* Inline delete confirm */
 .table-card__confirm { display: flex; flex-direction: column; gap: 8px; }
 .table-card__confirm p { font-size: 0.875rem; color: var(--color-warning); font-weight: 500; }

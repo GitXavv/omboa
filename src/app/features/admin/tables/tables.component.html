@@ -67,13 +67,13 @@
                 {{ t.is_active ? 'Désactiver' : 'Activer' }}
               </button>
               <button class="btn btn--ghost btn--sm" (click)="startEdit(t)">✏️ Renommer</button>
-              <a [href]="getQrUrl(t.id)" target="_blank" class="btn btn--outline btn--sm">⬇ QR</a>
-              <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete(t.id)">🗑️</button>
+              <a [href]="getTableUrl(t.id)" target="_blank" class="btn btn--outline btn--sm">Y accéder</a>
+              <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete(t)">🗑️</button>
             </div>
           } @else {
             <!-- Confirmation suppression -->
             <div class="table-card__confirm">
-              <p>Supprimer cette table ?</p>
+              <p>Supprimer ce QR code de table ? Ce QR code ne marchera plus jamais si oui.</p>
               <div class="table-card__confirm-btns">
                 <button class="btn btn--ghost btn--sm" (click)="cancelDelete()">Non</button>
                 <button class="btn btn--primary btn--sm danger-confirm" (click)="confirmDelete(t.id)">Supprimer</button>
@@ -85,5 +85,10 @@
 
       }
     </div>
+
+    <p class="tables-hint text-muted">
+      Vous pouvez faire un clic droit sur chaque QR code pour effectuer des actions sur
+      image telles que la copie dans le presse-papiers et le téléchargement.
+    </p>
   }
 </div>

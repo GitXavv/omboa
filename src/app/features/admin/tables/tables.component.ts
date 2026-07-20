@@ -44,9 +44,13 @@ export class TablesComponent implements OnInit {
   }
 
   toggleActive(t: TableStatus) {
+    if (t.is_active && t.is_occupied) {
+      this.toast.error('Cette table est toujours occupée. Vous ne pouvez pas la désactiver maintenant.');
+      return;
+    }
     this.tableSvc.update(t.id, { number: t.number, is_active: !t.is_active }).subscribe({
       next: () => { this.toast.success(t.is_active ? 'Table désactivée' : 'Table activée'); this.load(); },
-      error: () => this.toast.error('Erreur lors de la mise à jour')
+      error: (e: { error?: { message?: string } }) => this.toast.error(e.error?.message ?? 'Erreur lors de la mise à jour')
     });
   }
 
@@ -66,8 +70,14 @@ export class TablesComponent implements OnInit {
 
   cancelEdit() { this.editId.set(null); }
 
-  askDelete(id: string) { this.confirmDeleteId.set(id); }
-  cancelDelete()        { this.confirmDeleteId.set(null); }
+  askDelete(t: TableStatus) {
+    if (t.is_active) {
+      this.toast.error('Il faut désactiver cette table avant de la supprimer.');
+      return;
+    }
+    this.confirmDeleteId.set(t.id);
+  }
+  cancelDelete() { this.confirmDeleteId.set(null); }
 
   confirmDelete(id: string) {
     this.tableSvc.delete(id).subscribe({
@@ -80,8 +90,14 @@ export class TablesComponent implements OnInit {
   }
 
   getQrUrl(id: string) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(this.getTableUrl(id))}`;
+  }
+
+  // Ouvre exactement la page qu'un client obtiendrait en scannant le QR code — aucun membre
+  // du staff ne peut y passer commande (les rôles staff n'ont pas de panier client).
+  getTableUrl(id: string) {
     const base = window.location.origin;
     const slug = this.staffAuth.currentStaff()?.restaurantSlug ?? '';
-    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(`${base}/${slug}/table/${id}`)}`;
+    return `${base}/${slug}/table/${id}`;
   }
 }
