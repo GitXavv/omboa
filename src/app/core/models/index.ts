@@ -10,6 +10,9 @@ export interface Restaurant {
   address: string | null;
   is_active: boolean;
   archived: boolean;
+  // Avantages de points de fidélité (dépense/réduction) — géré par l'owner, activé par
+  // défaut. N'affecte jamais le gain de points, seulement la dépense sur une commande.
+  loyalty_enabled: boolean;
   created_at: string;
 }
 

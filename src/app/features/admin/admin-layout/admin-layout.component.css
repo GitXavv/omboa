@@ -55,7 +55,8 @@
   padding: 11px 12px;
   border-radius: var(--radius-md);
   text-decoration: none;
-  color: var(--color-text-muted);
+  /* Icône en mask-image (background-color: currentColor) — suit automatiquement. */
+  color: var(--color-secondary);
   font-size: 0.875rem;
   font-weight: 600;
   transition: color var(--transition-fast), background-color var(--transition-fast);

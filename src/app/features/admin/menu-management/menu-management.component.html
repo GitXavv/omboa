@@ -83,9 +83,10 @@
                   {{ p.is_available ? 'Disponible' : 'Indisponible' }}
                 </span>
                 <div class="product-row__actions">
-                  <button class="btn btn--ghost btn--sm" (click)="toggleAvailability(p)">
-                    {{ p.is_available ? 'Désactiver' : 'Activer' }}
-                  </button>
+                  <label class="availability-toggle" [attr.aria-label]="p.is_available ? 'Désactiver ce plat' : 'Activer ce plat'">
+                    <input type="checkbox" [checked]="p.is_available" (change)="toggleAvailability(p)">
+                    <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
+                  </label>
                   <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)">✏️</button>
                   <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('product', p.id, p.name)">🗑️</button>
                 </div>

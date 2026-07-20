@@ -30,29 +30,116 @@
 .sa-search::placeholder { color: var(--color-text-light); }
 .sa-search:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); }
 
-.sa-table {
+/* ── Grille de cards restaurants (façon Tables & QR) ─────────────────────── */
+.restaurants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.restaurant-card {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  position: relative;
+  transition: opacity var(--transition-fast);
+}
+.restaurant-card--inactive { opacity: 0.6; }
+
+.restaurant-card__menu-wrap { position: absolute; top: 10px; right: 10px; }
+.restaurant-card__dots {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.restaurant-card__dots:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+
+.restaurant-card__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
+  z-index: 20;
+  text-align: left;
 }
-.sa-table__row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-border);
+.restaurant-card__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
 }
-.sa-table__row:last-child { border-bottom: none; }
-.sa-table__row--head { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 700; }
-.sa-table__name { font-weight: 600; }
-.sa-table__slug { color: var(--color-text-muted); font-size: 0.875rem; }
-.sa-table__actions { display: flex; gap: 6px; justify-content: flex-end; }
+.restaurant-card__dropdown-item:hover { background: var(--color-bg-subtle); }
+.restaurant-card__dropdown-item--danger { color: var(--color-error); }
+.restaurant-card__dropdown-item--danger:hover { background: var(--color-error-bg); }
+
+.restaurant-card__logo {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.restaurant-card__names { display: flex; flex-direction: column; gap: 2px; }
+.restaurant-card__name { font-size: 1.0625rem; font-weight: 700; margin: 0; }
+.restaurant-card__slug { font-size: 0.8125rem; color: var(--color-text-muted); }
+
+.restaurant-card__status-row { display: flex; align-items: center; gap: 8px; }
+.restaurant-card__status-label { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-muted); }
+.restaurant-card__status-label--active { color: var(--color-success); }
+
+.restaurant-card__date { font-size: 0.75rem; }
+
+/* Toggle Djelica (même motif que menu-management.component) */
+.availability-toggle { display: inline-flex; cursor: pointer; flex-shrink: 0; }
+.availability-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.availability-toggle__track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition: background var(--transition-fast);
+}
+.availability-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+.availability-toggle input:checked + .availability-toggle__track { background: var(--color-primary); }
+.availability-toggle input:checked + .availability-toggle__track .availability-toggle__thumb { transform: translateX(18px); }
+.availability-toggle input:focus-visible + .availability-toggle__track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 
 @media (max-width: 860px) {
   .sa-stats { grid-template-columns: repeat(2, 1fr); }
-  .sa-table__row { grid-template-columns: 1fr; gap: 4px; }
 }
 
 /* ── Modale création ─────────────────────────────────────────────────────── */
@@ -88,6 +175,25 @@
   font-size: 0.875rem; cursor: pointer; padding: 4px 6px; border-radius: var(--radius-sm);
 }
 .sa-modal__close:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+
+/* ── Variantes : avertissement (désactivation/archivage) et petite modale (clé) ──── */
+.sa-modal--warning { max-width: 460px; border: 1.5px solid var(--color-error); }
+.sa-modal--sm { max-width: 400px; }
+.sa-modal__body--warning { display: flex; flex-direction: column; gap: 14px; padding: 22px; }
+.sa-modal__body--warning p { margin: 0; color: var(--color-text); line-height: 1.6; font-size: 0.9375rem; }
+.sa-modal__question { font-weight: 700; }
+.sa-modal__body--stack { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; }
+.sa-modal__body--stack .form-control {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+}
+.sa-modal__body--stack .form-control:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); outline: none; }
+.sa-modal__error { margin: 0; font-size: 0.8125rem; color: var(--color-error); }
+.danger-confirm { background: var(--color-error) !important; color: #fff !important; }
+
 .sa-modal__body {
   padding: 18px 20px;
   display: grid;

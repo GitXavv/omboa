@@ -26,13 +26,6 @@
   object-fit: contain;
   border-radius: var(--radius-sm);
 }
-.navbar__logo-text {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-on-secondary);
-  letter-spacing: -0.02em;
-}
 
 /* ── Liens ───────────────────────────────────────────────────────────────── */
 .navbar__links { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -283,7 +276,7 @@
 .navbar__user-menu-item--danger { color: var(--color-error); }
 .navbar__user-menu-item--danger:hover { background: var(--color-error-bg); }
 
-/* ── Bouton Ma commande (header, toujours visible) ───────────────────────── */
+/* ── Bouton Ma commande (header, client à table uniquement) ──────────────── */
 .navbar__commande-btn {
   position: relative;
   width: 38px;
@@ -297,27 +290,42 @@
   cursor: pointer;
   transition: background var(--transition-fast), border-color var(--transition-fast);
   flex-shrink: 0;
-  text-decoration: none;
 }
-.navbar__commande-btn:hover,
-.navbar__commande-btn.active { background: rgba(var(--color-primary-rgb),0.15); border-color: var(--color-primary); }
+.navbar__commande-btn:hover { background: rgba(var(--color-primary-rgb),0.15); border-color: var(--color-primary); }
+.navbar__commande-btn--pulse { animation: commandesPulse 700ms ease; }
+@keyframes commandesPulse {
+  0%   { transform: scale(1); background: rgba(255,255,255,0.06); }
+  25%  { transform: scale(1.35); background: rgba(var(--color-primary-rgb),0.3); }
+  55%  { transform: scale(0.95); }
+  100% { transform: scale(1); background: rgba(255,255,255,0.06); }
+}
 
-.navbar__commande-hdr-icon {
-  width: 20px;
-  height: 20px;
-  background-color: color-mix(in srgb, var(--color-on-secondary) 70%, transparent);
-  mask-image: url('/icons/nav-orders.svg');
-  -webkit-mask-image: url('/icons/nav-orders.svg');
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
-  transition: background-color var(--transition-fast);
+.navbar__commande-hdr-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  /* Le logo est sombre à l'origine — inversé en blanc pour ressortir sur le fond
+     --color-secondary du header, comme c'était déjà le cas sur le bandeau table. */
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
 }
-.navbar__commande-btn:hover .navbar__commande-hdr-icon,
-.navbar__commande-btn.active .navbar__commande-hdr-icon { background-color: var(--color-on-secondary); }
+
+.navbar__commande-hdr-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  padding: 0 4px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ── Mobile : cacher liens, actions et afficher bottom nav ───────────────── */
 @media (max-width: 768px) {

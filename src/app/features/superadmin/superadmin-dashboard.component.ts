@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -11,6 +11,7 @@ import { Restaurant, SuperAdminStats } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { ColorPickerComponent } from '../../shared/components/color-picker/color-picker.component';
 import { slugify } from '../../core/utils/slug';
+import { restaurantLogoUrl } from '../../core/utils/logo';
 
 interface EditRestaurantForm {
   name: string;
@@ -60,11 +61,34 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly editLogoFile    = signal<File | null>(null);
   readonly editLogoPreview = signal<string | null>(null);
 
+  // Menu contextuel "⋮" (Modifier / Archiver) — un seul ouvert à la fois.
+  readonly openCardMenu = signal<string | null>(null);
+
+  // Désactivation (toggle) — avertissement puis re-authentification par la clé super admin.
+  // La réactivation, elle, est immédiate (action sûre, réversible) : pas de popup.
+  readonly deactivateTarget   = signal<Restaurant | null>(null);
+  readonly deactivateKeyPopup = signal(false);
+  readonly deactivateKey      = signal('');
+  readonly deactivateError    = signal('');
+  readonly deactivating       = signal(false);
+
+  // Archivage — avertissement seul, pas de re-authentification.
+  readonly archiveTarget = signal<Restaurant | null>(null);
+  readonly archiving     = signal(false);
+
+  readonly logoUrl = restaurantLogoUrl;
+
   readonly filteredRestaurants = () => {
     const q = this.search().toLowerCase().trim();
     if (!q) return this.restaurants();
     return this.restaurants().filter(r => r.name.toLowerCase().includes(q) || r.slug.toLowerCase().includes(q));
   };
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.restaurant-card__menu-wrap')) this.openCardMenu.set(null);
+  }
 
   ngOnInit() { this.load(); }
 
@@ -118,22 +142,100 @@ export class SuperAdminDashboardComponent implements OnInit {
     });
   }
 
-  toggleActive(r: Restaurant) {
-    this.superAdminSvc.updateRestaurant(r.id, { is_active: !r.is_active }).subscribe({
-      next: () => { this.toast.success(`${r.name} ${!r.is_active ? 'activé' : 'désactivé'}.`); this.load(); },
-      error: () => this.toast.error('Impossible de modifier ce restaurant.')
+  toggleCardMenu(id: string) {
+    this.openCardMenu.update(cur => cur === id ? null : id);
+  }
+
+  // ── Activer / désactiver ────────────────────────────────────────────────
+  onToggleActive(r: Restaurant) {
+    if (!r.is_active) {
+      // Réactivation : action sûre et réversible, immédiate.
+      this.superAdminSvc.updateRestaurant(r.id, { is_active: true }).subscribe({
+        next: () => { this.toast.success(`${r.name} activé.`); this.load(); },
+        error: () => this.toast.error('Impossible d\'activer ce restaurant.')
+      });
+      return;
+    }
+    this.deactivateTarget.set(r);
+  }
+
+  cancelDeactivateWarning() { this.deactivateTarget.set(null); }
+
+  proceedToDeactivateKey() {
+    this.deactivateKeyPopup.set(true);
+    this.deactivateKey.set('');
+    this.deactivateError.set('');
+  }
+
+  cancelDeactivateKey() {
+    this.deactivateKeyPopup.set(false);
+    this.deactivateTarget.set(null);
+  }
+
+  confirmDeactivateKey() {
+    const r = this.deactivateTarget();
+    if (!r || !this.deactivateKey().trim()) return;
+
+    this.deactivating.set(true);
+    this.deactivateError.set('');
+    this.auth.verifyKey(this.deactivateKey().trim()).subscribe({
+      next: () => {
+        this.superAdminSvc.updateRestaurant(r.id, { is_active: false }).subscribe({
+          next: () => {
+            this.toast.success(`${r.name} désactivé.`);
+            this.deactivating.set(false);
+            this.deactivateKeyPopup.set(false);
+            this.deactivateTarget.set(null);
+            this.load();
+          },
+          error: () => {
+            this.toast.error('Impossible de désactiver ce restaurant.');
+            this.deactivating.set(false);
+          }
+        });
+      },
+      error: err => {
+        this.deactivating.set(false);
+        if (err?.error?.locked) {
+          // 5 échecs : session perdue, le verrouillage de 10 minutes est déjà actif
+          // côté serveur pour cette IP — retour à la connexion super admin.
+          this.auth.logout();
+          return;
+        }
+        this.deactivateError.set(err?.error?.message ?? 'Clé incorrecte.');
+      }
     });
   }
 
-  archive(r: Restaurant) {
+  // ── Archiver ─────────────────────────────────────────────────────────────
+  requestArchive(r: Restaurant) {
+    this.openCardMenu.set(null);
+    this.archiveTarget.set(r);
+  }
+
+  cancelArchive() { this.archiveTarget.set(null); }
+
+  confirmArchive() {
+    const r = this.archiveTarget();
+    if (!r) return;
+    this.archiving.set(true);
     this.superAdminSvc.updateRestaurant(r.id, { archived: true }).subscribe({
-      next: () => { this.toast.success(`${r.name} archivé.`); this.load(); },
-      error: () => this.toast.error('Impossible d\'archiver ce restaurant.')
+      next: () => {
+        this.toast.success(`${r.name} archivé.`);
+        this.archiving.set(false);
+        this.archiveTarget.set(null);
+        this.load();
+      },
+      error: () => {
+        this.toast.error('Impossible d\'archiver ce restaurant.');
+        this.archiving.set(false);
+      }
     });
   }
 
   // ── Édition (nom, logo, couleurs de marque) ───────────────────────────────
   openEditForm(r: Restaurant) {
+    this.openCardMenu.set(null);
     this.editingRestaurant.set(r);
     this.editForm.set({
       name: r.name,

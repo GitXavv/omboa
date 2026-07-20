@@ -3,11 +3,7 @@
 
     <!-- Logo du restaurant -->
     <a [routerLink]="['/', slug(), 'menu']" class="navbar__logo">
-      @if (restaurantSvc.current()?.logo_url; as logo) {
-        <img [src]="logo" [alt]="restaurantSvc.current()?.name" class="navbar__logo-img">
-      } @else {
-        <span class="navbar__logo-text">{{ restaurantSvc.current()?.name }}</span>
-      }
+      <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="navbar__logo-img">
     </a>
 
     <!-- Liens desktop -->
@@ -21,7 +17,7 @@
       <input
         type="search"
         class="navbar__search-input"
-        placeholder="Vous cherchez un plat ? Tapez ici…"
+        placeholder="Rechercher un plat, une boisson"
         [value]="searchQuery()"
         (input)="onSearch($event)"
         (keydown.escape)="clearSearch()"
@@ -29,10 +25,15 @@
       >
     </div>
 
-    <!-- Bouton Ma commande -->
-    <a [routerLink]="['/', slug(), 'ma-commande']" routerLinkActive="active" class="navbar__commande-btn" title="Ma commande" aria-label="Ma commande">
-      <span class="navbar__commande-hdr-icon"></span>
-    </a>
+    <!-- Bouton Ma commande — client à table uniquement (session en cours) -->
+    @if (cart.tableId()) {
+      <button class="navbar__commande-btn" [class.navbar__commande-btn--pulse]="commandePulse()" (click)="goToOrder()" title="Ma commande" aria-label="Ma commande">
+        <img src="icons/commandes-logo.png" alt="" class="navbar__commande-hdr-img">
+        @if (cart.count() > 0) {
+          <span class="navbar__commande-hdr-badge">{{ cart.count() }}</span>
+        }
+      </button>
+    }
 
     <!-- Actions desktop -->
     <div class="navbar__actions">

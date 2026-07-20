@@ -45,46 +45,123 @@
       <button class="btn btn--primary" (click)="openCreateForm()">+ Nouveau restaurant</button>
     </div>
 
-    <div class="sa-table">
-      <div class="sa-table__row sa-table__row--head">
-        <span>Nom</span>
-        <span>Tag</span>
-        <span>Statut</span>
-        <span>Créé le</span>
-        <span></span>
-      </div>
+    <div class="restaurants-grid">
       @for (r of filteredRestaurants(); track r.id) {
-        <div class="sa-table__row">
-          <span class="sa-table__name">{{ r.name }}</span>
-          <span class="sa-table__slug">/{{ r.slug }}</span>
-          <span>
-            @if (r.archived) {
-              <span class="status-badge status-badge--cancelled">Archivé</span>
-            } @else if (r.is_active) {
-              <span class="status-badge status-badge--paid">Actif</span>
-            } @else {
-              <span class="status-badge status-badge--pending">Inactif</span>
+        <div class="restaurant-card card" [class.restaurant-card--inactive]="!r.is_active">
+
+          <div class="restaurant-card__menu-wrap">
+            <button class="restaurant-card__dots" (click)="toggleCardMenu(r.id)" aria-label="Options">⋮</button>
+            @if (openCardMenu() === r.id) {
+              <div class="restaurant-card__dropdown">
+                <button class="restaurant-card__dropdown-item" (click)="openEditForm(r)">✏️ Modifier</button>
+                <button class="restaurant-card__dropdown-item restaurant-card__dropdown-item--danger" (click)="requestArchive(r)">🗄️ Archiver</button>
+              </div>
             }
-          </span>
-          <span class="text-muted">{{ r.created_at | date:'dd/MM/yyyy' }}</span>
-          <span class="sa-table__actions">
-            <button class="btn btn--ghost btn--sm" (click)="openEditForm(r)">Modifier</button>
-            @if (!r.archived) {
-              <button class="btn btn--ghost btn--sm" (click)="toggleActive(r)">
-                {{ r.is_active ? 'Désactiver' : 'Activer' }}
-              </button>
-              <button class="btn btn--ghost btn--sm danger-btn" (click)="archive(r)">Archiver</button>
-            }
-          </span>
+          </div>
+
+          <img [src]="logoUrl(r)" [alt]="r.name" class="restaurant-card__logo">
+
+          <div class="restaurant-card__names">
+            <h3 class="restaurant-card__name">{{ r.name }}</h3>
+            <span class="restaurant-card__slug">/{{ r.slug }}</span>
+          </div>
+
+          <div class="restaurant-card__status-row">
+            <label class="availability-toggle" [attr.aria-label]="r.is_active ? 'Désactiver ce restaurant' : 'Activer ce restaurant'">
+              <input type="checkbox" [checked]="r.is_active" (change)="onToggleActive(r)">
+              <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
+            </label>
+            <span class="restaurant-card__status-label" [class.restaurant-card__status-label--active]="r.is_active">
+              {{ r.is_active ? 'Actif' : 'Inactif' }}
+            </span>
+          </div>
+
+          <span class="restaurant-card__date text-muted">Créé le {{ r.created_at | date:'dd/MM/yyyy' }}</span>
+
         </div>
       }
       @if (!filteredRestaurants().length) {
-        <p class="text-muted" style="padding:32px;text-align:center">Aucun restaurant.</p>
+        <p class="text-muted" style="padding:32px;text-align:center;grid-column:1/-1">Aucun restaurant.</p>
       }
     </div>
 
   }
 </div>
+
+<!-- ── Avertissement désactivation ───────────────────────────────────────── -->
+@if (deactivateTarget(); as r) {
+  <div class="sa-modal-overlay" (click)="cancelDeactivateWarning()">
+    <div class="sa-modal sa-modal--warning" (click)="$event.stopPropagation()">
+      <div class="sa-modal__body sa-modal__body--warning">
+        <p>
+          Attention, une fois désactivé, ce restaurant perdra tous les privilièges offert par
+          O'Mboa : ses QR codes ne marcheront plus, les comptes staff ne seront plus
+          accessible, plus aucune statistique ne sera comptabilisée et tous les processus de
+          commande en cours seront fermés. Cela prendra effet immédiatement si vous confirmez
+          ce choix.
+        </p>
+        <p class="sa-modal__question">Voulez-vous vraiment désactiver le restaurant {{ r.name }} ?</p>
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--ghost" (click)="cancelDeactivateWarning()">Annuler</button>
+        <button class="btn btn--primary danger-confirm" (click)="proceedToDeactivateKey()">Oui</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Clé super admin avant désactivation ──────────────────────────────────── -->
+@if (deactivateKeyPopup()) {
+  <div class="sa-modal-overlay" (click)="cancelDeactivateKey()">
+    <div class="sa-modal sa-modal--sm" (click)="$event.stopPropagation()">
+      <div class="sa-modal__header">
+        <span>Confirmez votre identité</span>
+        <button class="sa-modal__close" (click)="cancelDeactivateKey()">✕</button>
+      </div>
+      <div class="sa-modal__body sa-modal__body--stack">
+        <p class="text-muted">Entrez la clé d'accès super admin pour confirmer la désactivation.</p>
+        <input
+          type="password"
+          class="form-control"
+          placeholder="Clé super admin"
+          [ngModel]="deactivateKey()"
+          (ngModelChange)="deactivateKey.set($event)"
+          (keydown.enter)="confirmDeactivateKey()"
+        >
+        @if (deactivateError()) { <p class="sa-modal__error">{{ deactivateError() }}</p> }
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--ghost" [disabled]="deactivating()" (click)="cancelDeactivateKey()">Annuler</button>
+        <button class="btn btn--primary" [disabled]="deactivating() || !deactivateKey().trim()" (click)="confirmDeactivateKey()">
+          @if (deactivating()) { Vérification… } @else { Confirmer }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Avertissement archivage ───────────────────────────────────────────── -->
+@if (archiveTarget(); as r) {
+  <div class="sa-modal-overlay" (click)="cancelArchive()">
+    <div class="sa-modal sa-modal--warning" (click)="$event.stopPropagation()">
+      <div class="sa-modal__body sa-modal__body--warning">
+        <p>
+          Archiver un restaurant revient à le supprimer définitivement de cette interface
+          utilisateur. Le restaurateur concerné ne pourra plus jamais demander une réservation
+          des services offerts par O'Mboa et il ne sera plus possible de créer un restaurant
+          avec les informations de ce restaurant ci. Cette action est difficilement réversible.
+        </p>
+        <p class="sa-modal__question">Archiver {{ r.name }} ?</p>
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--ghost" [disabled]="archiving()" (click)="cancelArchive()">Annuler</button>
+        <button class="btn btn--primary danger-confirm" [disabled]="archiving()" (click)="confirmArchive()">
+          @if (archiving()) { Archivage… } @else { Oui }
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- ── Modale création restaurant ──────────────────────────────────────────── -->
 @if (showCreateForm()) {

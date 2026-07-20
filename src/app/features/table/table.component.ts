@@ -50,7 +50,7 @@ export class TableComponent implements OnInit, OnDestroy {
   private readonly rt       = inject(RealtimeService);
   private readonly loyaltySvc = inject(LoyaltyService);
   private readonly route    = inject(ActivatedRoute);
-  private readonly restaurantSvc = inject(RestaurantService);
+  readonly restaurantSvc = inject(RestaurantService);
 
   readonly step             = signal<Step>('menu');
   readonly table            = signal<TableStatus | null>(null);
@@ -68,12 +68,9 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly codeCopied       = signal(false);
   readonly selectedProduct  = signal<Product | null>(null);
   readonly modalQuantity    = signal(1);
-  readonly commandeTooltip  = signal(false);
   readonly showLoyaltyPromo = signal(false);
-  readonly cartPulse        = signal(false);
   readonly orderNotes       = signal('');
   readonly confirmingSubmit = signal(false);
-  private cartPulseTimer?: ReturnType<typeof setTimeout>;
 
   // ── Réduction fidélité (choisie à la commande, jamais au paiement) ────────
   readonly loyaltyPopupOpen      = signal(false);
@@ -170,8 +167,6 @@ export class TableComponent implements OnInit, OnDestroy {
     this.cart.items().find(i => i.product.id === productId)?.quantity ?? 0;
 
   private subs = new Subscription();
-  private longPressTimer?: ReturnType<typeof setTimeout>;
-  private tooltipHideTimer?: ReturnType<typeof setTimeout>;
   private cashCountdownInterval?: ReturnType<typeof setInterval>;
   private readonly PROMO_KEY   = 'omboa_loyalty_promo_dismissed';
   private readonly STORAGE_KEY = 'omboa_current_order';
@@ -254,14 +249,19 @@ export class TableComponent implements OnInit, OnDestroy {
         }
       })
     );
+
+    // Bouton "Ma commande" du header partagé (visible uniquement en mode table) — n'a
+    // d'effet que si on n'est pas déjà en train de suivre une commande soumise.
+    this.subs.add(
+      this.cart.viewCartRequested$.subscribe(() => {
+        if (this.step() !== 'tracking') this.goToCart();
+      })
+    );
   }
 
   ngOnDestroy() {
     this.subs.unsubscribe();
     this.rt.disconnect();
-    clearTimeout(this.longPressTimer);
-    clearTimeout(this.tooltipHideTimer);
-    clearTimeout(this.cartPulseTimer);
     clearInterval(this.cashCountdownInterval);
   }
 
@@ -346,36 +346,16 @@ export class TableComponent implements OnInit, OnDestroy {
   addToCart(p: Product) {
     this.cart.add(p, '', this.modalQuantity());
     this.toast.success(`${p.name} ajouté à ma commande`);
-    this.triggerCartPulse();
+    this.cart.requestPulse();
     if (this.selectedProduct()) this.closeProduct();
   }
 
   removeFromCart(p: Product) { this.cart.decrement(p.id); }
 
-  private triggerCartPulse() {
-    clearTimeout(this.cartPulseTimer);
-    this.cartPulse.set(false);
-    // Un tick pour permettre à Angular de retirer puis remettre la classe (redéclenche l'animation CSS)
-    requestAnimationFrame(() => {
-      this.cartPulse.set(true);
-      this.cartPulseTimer = setTimeout(() => this.cartPulse.set(false), 700);
-    });
-  }
-
   goToCart() { this.step.set('cart'); this.scrollToTop(); }
   goToMenu() { this.step.set('menu'); this.scrollToTop(); }
 
   private scrollToTop() { window.scrollTo({ top: 0 }); }
-
-  onCommandeTouchStart() {
-    this.longPressTimer = setTimeout(() => this.commandeTooltip.set(true), 500);
-  }
-
-  onCommandeTouchEnd() {
-    clearTimeout(this.longPressTimer);
-    clearTimeout(this.tooltipHideTimer);
-    this.tooltipHideTimer = setTimeout(() => this.commandeTooltip.set(false), 1500);
-  }
 
   dismissLoyaltyPromo() {
     const prev = parseInt(localStorage.getItem(this.PROMO_KEY) ?? '0', 10);

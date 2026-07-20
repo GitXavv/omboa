@@ -48,31 +48,10 @@
 
   <!-- Bandeau table -->
   <div class="table-banner">
-    <div class="container flex-between">
+    <div class="container">
       <span class="table-banner__label">
         📍 {{ table()!.number }}
       </span>
-
-      <!-- Bouton commande : logo + badge -->
-      <div class="commandes-btn-wrap">
-        <button
-          class="commandes-btn"
-          [class.commandes-btn--pulse]="cartPulse()"
-          (click)="goToCart()"
-          title="Ma commande"
-          (touchstart)="onCommandeTouchStart()"
-          (touchend)="onCommandeTouchEnd()"
-          (touchcancel)="onCommandeTouchEnd()"
-        >
-          <img src="icons/commandes-logo.png" alt="Ma commande" class="commandes-logo">
-          <span class="commandes-badge" [class.commandes-badge--active]="cart.items().length > 0">
-            {{ cart.items().length }}
-          </span>
-        </button>
-        @if (commandeTooltip()) {
-          <span class="commandes-tooltip">Ma commande</span>
-        }
-      </div>
     </div>
   </div>
 
@@ -307,13 +286,15 @@
             @if (submitting()) { Envoi en cours… } @else { Passer la commande }
           </button>
 
-          <button class="cart-loyalty-btn" [class.cart-loyalty-btn--active]="pointsToSpend() > 0"
-            [disabled]="!auth.isLoggedIn()" (click)="openLoyaltyPopup()">
-            @if (pointsToSpend() > 0) { <span class="cart-loyalty-btn__check">✓</span> }
-            Appliquer une réduction avec pts de fidélité
-          </button>
-          @if (!auth.isLoggedIn()) {
-            <p class="cart-loyalty-hint">Seuls les clients avec compte peuvent utiliser cette fonction</p>
+          @if (restaurantSvc.current()?.loyalty_enabled) {
+            <button class="cart-loyalty-btn" [class.cart-loyalty-btn--active]="pointsToSpend() > 0"
+              [disabled]="!auth.isLoggedIn()" (click)="openLoyaltyPopup()">
+              @if (pointsToSpend() > 0) { <span class="cart-loyalty-btn__check">✓</span> }
+              Appliquer une réduction avec pts de fidélité
+            </button>
+            @if (!auth.isLoggedIn()) {
+              <p class="cart-loyalty-hint">Seuls les clients avec compte peuvent utiliser cette fonction</p>
+            }
           }
         </div>
       }

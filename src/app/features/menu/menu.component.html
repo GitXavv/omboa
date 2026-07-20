@@ -1,9 +1,7 @@
 <!-- En-tête de page -->
 <div class="menu-header">
   <div class="container menu-header__inner">
-    @if (restaurantSvc.current()?.logo_url; as logo) {
-      <img [src]="logo" [alt]="restaurantSvc.current()?.name" class="menu-header__logo">
-    }
+    <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="menu-header__logo">
     <p class="menu-header__welcome">
       @if (cart.tableId()) {
         Constituez votre commande en choisissant les plats et boissons que vous voulez. Nous

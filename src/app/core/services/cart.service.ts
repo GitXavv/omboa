@@ -1,10 +1,24 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CartItem, Product } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   readonly items = signal<CartItem[]>([]);
   readonly tableId = signal<string | null>(null);
+
+  // Pont entre le header partagé (bouton "Ma commande") et TableComponent, qui gère lui-même
+  // son affichage panier/suivi en interne (pas une route séparée) — un Subject plutôt qu'un
+  // signal pour ne jamais rejouer une demande passée quand un nouvel onglet table se monte.
+  private readonly viewCartRequest$ = new Subject<void>();
+  readonly viewCartRequested$ = this.viewCartRequest$.asObservable();
+  requestViewCart() { this.viewCartRequest$.next(); }
+
+  // Même pont, pour l'animation de pulsation du bouton "Ma commande" quand un plat vient
+  // d'être ajouté (déclenché par TableComponent, joué par NavbarComponent).
+  private readonly pulseRequest$ = new Subject<void>();
+  readonly pulseRequested$ = this.pulseRequest$.asObservable();
+  requestPulse() { this.pulseRequest$.next(); }
 
   readonly total = computed(() =>
     this.items().reduce((sum, item) => sum + item.product.price * item.quantity, 0)

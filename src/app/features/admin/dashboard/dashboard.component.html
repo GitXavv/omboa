@@ -49,5 +49,47 @@
       }
     </div>
 
+    <!-- Avantages des points de fidélité -->
+    <div class="dash-setting card">
+      <div class="dash-setting__row">
+        <div class="dash-setting__info">
+          <span class="dash-setting__label">Avantages des points de fidélité</span>
+          <p class="dash-setting__desc">
+            Si activés, les clients avec compte pourront profiter de leurs points de
+            fidélité et les dépenser pour appliquer eux-mêmes des réductions sur les
+            commandes qu'ils passent. Bien que ces avantages encouragent généralement les
+            clients à venir régulièrement chez vous, vous avez le droit de les désactiver.
+          </p>
+        </div>
+        <label class="availability-toggle" [attr.aria-label]="loyaltyEnabled() ? 'Désactiver les avantages fidélité' : 'Activer les avantages fidélité'">
+          <input type="checkbox" [checked]="loyaltyEnabled()" (change)="requestToggleLoyalty()">
+          <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
+        </label>
+      </div>
+    </div>
+
   }
 </div>
+
+<!-- ── Confirmation activation/désactivation avantages fidélité ─────────────── -->
+@if (loyaltyConfirmTarget() !== null; as target) {
+  <div class="dash-setting-overlay" (click)="cancelLoyaltyToggle()">
+    <div class="dash-setting-modal" (click)="$event.stopPropagation()">
+      <p>
+        Ce changement ne s'appliquera pas immédiatement. Les clients qui auraient déjà
+        utilisé leurs points de fidélité pour appliquer une réduction sur leurs commandes
+        respectives ne seront pas affectés. Cependant, rien de particulier ne se passera si
+        vous êtes sur le point d'activer les avantages plutôt.
+      </p>
+      <p class="dash-setting-modal__question">
+        {{ loyaltyConfirmTarget() ? 'Activer' : 'Désactiver' }} les avantages de points de fidélité ?
+      </p>
+      <div class="dash-setting-modal__actions">
+        <button class="btn btn--ghost btn--full" [disabled]="loyaltySaving()" (click)="cancelLoyaltyToggle()">Annuler</button>
+        <button class="btn btn--primary btn--full" [disabled]="loyaltySaving()" (click)="confirmLoyaltyToggle()">
+          @if (loyaltySaving()) { … } @else { Confirmer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

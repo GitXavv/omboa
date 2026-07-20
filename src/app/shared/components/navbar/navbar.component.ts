@@ -31,6 +31,10 @@ export class NavbarComponent {
   readonly cartOpen     = signal(false);
   readonly menuNavWarning = signal(false);
 
+  // Pulsation du bouton "Ma commande" quand TableComponent y ajoute un plat.
+  readonly commandePulse = signal(false);
+  private commandePulseTimer?: ReturnType<typeof setTimeout>;
+
   private readonly router = inject(Router);
 
   constructor() {
@@ -40,6 +44,16 @@ export class NavbarComponent {
       if (!e.urlAfterRedirects.includes('/menu')) this.searchQuery.set('');
       this.userMenuOpen.set(false);
       this.cartOpen.set(false);
+    });
+
+    this.cart.pulseRequested$.subscribe(() => {
+      clearTimeout(this.commandePulseTimer);
+      this.commandePulse.set(false);
+      // Un tick pour permettre à Angular de retirer puis remettre la classe (redéclenche l'animation CSS)
+      requestAnimationFrame(() => {
+        this.commandePulse.set(true);
+        this.commandePulseTimer = setTimeout(() => this.commandePulse.set(false), 700);
+      });
     });
   }
 
@@ -82,6 +96,20 @@ export class NavbarComponent {
   confirmMenuNav() {
     this.menuNavWarning.set(false);
     this.router.navigate(['/', this.slug(), 'menu']);
+  }
+
+  // Bouton "Ma commande" du header — table uniquement (cart.tableId() actif). TableComponent
+  // gère lui-même son affichage panier/suivi en interne (pas une route séparée) : si on y est
+  // déjà, on le lui demande via CartService ; sinon on y navigue d'abord (son propre ngOnInit
+  // résout ensuite le bon écran — panier, suivi, ou menu).
+  goToOrder() {
+    const tableId = this.cart.tableId();
+    if (!tableId) return;
+    if (this.router.url.split('?')[0].includes('/table/')) {
+      this.cart.requestViewCart();
+    } else {
+      this.router.navigate(['/', this.slug(), 'table', tableId]);
+    }
   }
 
   get userInitial(): string {

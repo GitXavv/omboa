@@ -21,83 +21,6 @@
 }
 .table-banner__label { font-weight: 600; font-size: 0.9375rem; }
 
-/* ── Bouton Ma commande (logo + badge) ───────────────────────────────────── */
-.commandes-btn-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.commandes-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
-}
-.commandes-btn:hover { background: rgba(255,255,255,0.12); }
-.commandes-btn--pulse { animation: commandesPulse 700ms ease; }
-@keyframes commandesPulse {
-  0%   { transform: scale(1); background: transparent; }
-  25%  { transform: scale(1.35); background: rgba(255,255,255,0.3); }
-  55%  { transform: scale(0.95); }
-  100% { transform: scale(1); background: transparent; }
-}
-
-.commandes-logo {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.92;
-}
-
-.commandes-badge {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  transition: color var(--transition-fast), background var(--transition-fast);
-  color: rgba(255,255,255,0.35);
-  background: transparent;
-}
-.commandes-badge--active {
-  color: var(--color-on-primary);
-  background: var(--color-primary);
-}
-
-.commandes-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  background: rgba(24,14,7,0.92);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  pointer-events: none;
-  animation: fadeInTooltip 150ms ease;
-}
-.commandes-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  right: 12px;
-  border: 5px solid transparent;
-  border-top-color: rgba(24,14,7,0.92);
-}
-
 /* ── Bandeau promo fidélité ───────────────────────────────────────────────── */
 .loyalty-promo {
   background: linear-gradient(135deg, rgba(var(--color-accent-rgb),0.18), rgba(var(--color-primary-rgb),0.12));
@@ -716,7 +639,6 @@
 
 /* ── Animations ───────────────────────────────────────────────────────────── */
 @keyframes fadeIn        { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeInTooltip { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp       { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
