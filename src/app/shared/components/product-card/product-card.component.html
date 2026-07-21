@@ -1,6 +1,6 @@
 <div class="product-card card" [class.product-card--unavailable]="!product.is_available">
 
-  <!-- Image produit → 320×320px carré -->
+  <!-- Image produit -> 320×320px carré -->
   <div class="product-card__img">
     @if (product.image_url) {
       <img [src]="product.image_url" [alt]="product.name" loading="lazy">

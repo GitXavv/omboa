@@ -18,8 +18,8 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
   confirmed: 'Acceptée par le restaurant',
   preparing: 'En préparation',
-  ready:     'Prête — finalisez votre paiement',
-  paid:      'Payée — en attente de service',
+  ready:     'Prête - finalisez votre paiement',
+  paid:      'Payée - en attente de service',
   served:    'Servie',
   released:  'Servie',
   cancelled: 'Annulée',
@@ -46,7 +46,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
   readonly codeCopied   = signal(false);
   readonly cancelling   = signal(false);
 
-  // Popup réceptionniste → client : raison d'une annulation
+  // Popup réceptionniste -> client : raison d'une annulation
   readonly cancelReasonPopup = signal<string | null>(null);
 
   // Paiement inline (affiché quand status = ready et pas encore de paiement)
@@ -60,7 +60,7 @@ export class MaCommandeComponent implements OnInit, OnDestroy {
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
 
-  // Sous-total avant réduction fidélité — toujours la somme des articles, indépendamment
+  // Sous-total avant réduction fidélité - toujours la somme des articles, indépendamment
   // de total_amount (qui inclut déjà la réduction dès la création de la commande).
   readonly orderItemsTotal = computed(() =>
     (this.order()?.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0)

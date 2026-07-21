@@ -1,6 +1,6 @@
 <div class="exit-detail-page container">
 
-  <a [routerLink]="['/', auth.currentStaff()?.restaurantSlug, 'exit']" class="btn btn--ghost btn--sm exit-detail__back">← Retour au tableau de bord</a>
+  <a [routerLink]="['/', auth.currentStaff()?.restaurantSlug, 'exit']" class="btn btn--ghost btn--sm exit-detail__back"><- Retour au tableau de bord</a>
 
   @if (loading()) {
     <app-loader label="Recherche de la commande…" />
@@ -15,7 +15,7 @@
 
       <div class="exit-detail__head">
         <div>
-          <span class="exit-detail__table">📍 Table {{ order()!.table?.number ?? '—' }}</span>
+          <span class="exit-detail__table">📍 Table {{ order()!.table?.number ?? '-' }}</span>
           <span class="exit-detail__date text-muted">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
         <span class="status-badge status-badge--{{ order()!.status }}">

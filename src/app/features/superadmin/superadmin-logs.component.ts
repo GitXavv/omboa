@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { SuperAdminService } from '../../core/services/super-admin.service';
 import { Log } from '../../core/models';
@@ -16,7 +15,7 @@ const EVENT_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-superadmin-logs',
   standalone: true,
-  imports: [RouterLink, DatePipe, LoaderComponent],
+  imports: [DatePipe, LoaderComponent],
   templateUrl: './superadmin-logs.component.html',
   styleUrl: './superadmin-logs.component.css'
 })

@@ -3,7 +3,7 @@ import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { StaffAuthService } from '../services/staff-auth.service';
 
 // Garde les routes staff (/:restaurantSlug/admin|kitchen|reception|exit) : vérifie le
-// rôle ET que la session staff correspond bien au restaurant de l'URL — empêche un
+// rôle ET que la session staff correspond bien au restaurant de l'URL - empêche un
 // réceptionniste connecté au resto A d'atteindre /{resto-B}/reception en éditant l'URL.
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const staffAuth = inject(StaffAuthService);

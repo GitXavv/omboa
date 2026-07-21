@@ -6,6 +6,7 @@ import { RealtimeService } from '../../core/services/realtime.service';
 import { StaffAuthService } from '../../core/services/staff-auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 import { Order, OrderStatus } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
@@ -30,6 +31,7 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
   readonly auth         = inject(StaffAuthService);
   private readonly toast = inject(ToastService);
   private readonly notif = inject(NotificationService);
+  readonly restaurantSvc = inject(RestaurantService);
 
   readonly orders    = signal<Order[]>([]);
   readonly loading    = signal(true);
@@ -37,7 +39,7 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
   readonly acceptingId = signal<string | null>(null);
   readonly methodLabels = METHOD_LABELS;
 
-  // Même formule que LoyaltyService.CalculateDiscount côté API — seule la réception (et
+  // Même formule que LoyaltyService.CalculateDiscount côté API - seule la réception (et
   // l'admin, en lecture seule) voit ce détail, jamais la cuisine ni la sortie.
   discountPercent(points: number): number {
     return Math.min(points / 100 * 5, 30);
@@ -76,7 +78,7 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
 
       if (ev.type === 'order:new') {
         this.load();
-        this.toast.info(`🔔 Nouvelle commande — Table ${ev.payload.tableNumber}`);
+        this.toast.info(`🔔 Nouvelle commande - Table ${ev.payload.tableNumber}`);
         this.notif.playNewOrderSound();
         this.notif.showBrowserNotification('Nouvelle commande', `Table ${ev.payload.tableNumber}`);
       }
@@ -105,7 +107,7 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
     });
 
     // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
-    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") — on ne
+    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") - on ne
     // doit pas ouvrir/fermer notre propre connexion, ça couperait celle du layout.
     if (this.auth.isOwner()) {
       this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).catch(() => {});
@@ -137,7 +139,7 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
     this.receptionSvc.accept(order.id).subscribe({
       next: u => {
         this.orders.update(l => l.map(o => o.id === u.id ? { ...u, payment: o.payment } : o));
-        this.toast.success(`Table ${order.table?.number ?? ''} acceptée — envoyée en cuisine`);
+        this.toast.success(`Table ${order.table?.number ?? ''} acceptée - envoyée en cuisine`);
         this.acceptingId.set(null);
       },
       error: () => {
@@ -149,14 +151,14 @@ export class ReceptionDashboardComponent implements OnInit, OnDestroy {
 
   confirmCash(order: Order) {
     this.receptionSvc.confirmCashPayment(order.id).subscribe({
-      next: () => this.toast.success(`Paiement espèces confirmé — Table ${order.table?.number ?? ''}`),
+      next: () => this.toast.success(`Paiement espèces confirmé - Table ${order.table?.number ?? ''}`),
       error: err => this.toast.error(err?.error?.message ?? 'Impossible de confirmer le paiement.')
     });
   }
 
   markServed(order: Order) {
     this.receptionSvc.markServed(order.id).subscribe({
-      next: () => this.toast.success(`Commande servie — Table ${order.table?.number ?? ''}`),
+      next: () => this.toast.success(`Commande servie - Table ${order.table?.number ?? ''}`),
       error: err => this.toast.error(err?.error?.message ?? 'Impossible de marquer la commande servie.')
     });
   }

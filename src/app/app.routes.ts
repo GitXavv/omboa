@@ -20,22 +20,18 @@ export const routes: Routes = [
   // ── Super admin (page cachée /osuper) ────────────────────────
   {
     path: 'osuper',
+    pathMatch: 'full',
     loadComponent: () => import('./features/superadmin/superadmin-login.component').then(m => m.SuperAdminLoginComponent)
   },
   {
-    path: 'osuper/dashboard',
+    path: 'osuper',
     canActivate: [superAdminGuard],
-    loadComponent: () => import('./features/superadmin/superadmin-dashboard.component').then(m => m.SuperAdminDashboardComponent)
-  },
-  {
-    path: 'osuper/logs',
-    canActivate: [superAdminGuard],
-    loadComponent: () => import('./features/superadmin/superadmin-logs.component').then(m => m.SuperAdminLogsComponent)
-  },
-  {
-    path: 'osuper/applications',
-    canActivate: [superAdminGuard],
-    loadComponent: () => import('./features/superadmin/superadmin-applications.component').then(m => m.SuperAdminApplicationsComponent)
+    loadComponent: () => import('./features/superadmin/superadmin-layout/superadmin-layout.component').then(m => m.SuperAdminLayoutComponent),
+    children: [
+      { path: 'dashboard',     loadComponent: () => import('./features/superadmin/superadmin-dashboard.component').then(m => m.SuperAdminDashboardComponent) },
+      { path: 'logs',          loadComponent: () => import('./features/superadmin/superadmin-logs.component').then(m => m.SuperAdminLogsComponent) },
+      { path: 'applications',  loadComponent: () => import('./features/superadmin/superadmin-applications.component').then(m => m.SuperAdminApplicationsComponent) }
+    ]
   },
 
   // ── Tout le reste vit sous /:restaurantSlug/* ────────────────
@@ -54,6 +50,10 @@ export const routes: Routes = [
       {
         path: 'ma-commande',
         loadComponent: () => import('./features/ma-commande/ma-commande.component').then(m => m.MaCommandeComponent)
+      },
+      {
+        path: 'connexion',
+        loadComponent: () => import('./features/auth-page/auth-page.component').then(m => m.AuthPageComponent)
       },
       {
         path: 'account',
@@ -83,7 +83,7 @@ export const routes: Routes = [
           { path: 'customers', loadComponent: () => import('./features/admin/customers/customers.component').then(m => m.CustomersComponent) },
           { path: 'settings', loadComponent: () => import('./features/admin/settings/admin-settings.component').then(m => m.AdminSettingsComponent) },
 
-          // Vues admin en lecture seule (sidebar toujours visible) — mêmes composants
+          // Vues admin en lecture seule (sidebar toujours visible) - mêmes composants
           // que les routes staff top-level ci-dessous ; chaque composant se met lui-même
           // en lecture seule via auth.isOwner() (aucune action possible pour l'owner).
           { path: 'kitchen',   loadComponent: () => import('./features/kitchen/kitchen.component').then(m => m.KitchenComponent) },

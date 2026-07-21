@@ -4,17 +4,15 @@ import { filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { RestaurantService } from '../../../core/services/restaurant.service';
-import { AuthModalService } from '../../../core/services/auth-modal.service';
-import { AuthModalComponent } from '../../../features/auth-modal/auth-modal.component';
 import { DecimalPipe } from '@angular/common';
 
-// Header restaurant-scopé (menu/table/ma-commande/account) — clients uniquement.
+// Header restaurant-scopé (menu/table/ma-commande/account) - clients uniquement.
 // Le staff n'apparaît plus jamais ici : il accède à ses interfaces via /:slug/ostaff,
 // jamais par une navigation visible dans ce header.
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, DecimalPipe, AuthModalComponent],
+  imports: [RouterLink, RouterLinkActive, DecimalPipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -22,14 +20,12 @@ export class NavbarComponent {
   readonly auth  = inject(AuthService);
   readonly cart  = inject(CartService);
   readonly restaurantSvc = inject(RestaurantService);
-  readonly authModal = inject(AuthModalService);
 
   readonly slug = computed(() => this.restaurantSvc.current()?.slug ?? '');
 
   readonly searchQuery  = signal('');
   readonly userMenuOpen = signal(false);
   readonly cartOpen     = signal(false);
-  readonly menuNavWarning = signal(false);
 
   // Pulsation du bouton "Ma commande" quand TableComponent y ajoute un plat.
   readonly commandePulse = signal(false);
@@ -82,26 +78,23 @@ export class NavbarComponent {
 
   logout() { this.auth.logout(); this.userMenuOpen.set(false); }
 
-  // Depuis une table scannée (cart.tableId() actif), quitter vers la page menu visiteur
-  // fait perdre l'accès à la commande en cours tant qu'on n'a pas rescanné — on avertit
-  // avant de naviguer, sauf si on y est déjà (rien à quitter dans ce cas).
+  // Client à table : "Menu" revient à l'écran menu de la table (jamais la page menu
+  // visiteur - TableComponent gère lui-même son affichage panier/suivi/menu en interne).
   onMenuClick(event: Event) {
-    if (this.cart.tableId() && !this.router.url.split('?')[0].endsWith('/menu')) {
-      event.preventDefault();
-      this.menuNavWarning.set(true);
+    const tableId = this.cart.tableId();
+    if (!tableId) return; // visiteur neutre : routerLink navigue normalement vers /menu
+    event.preventDefault();
+    if (this.router.url.split('?')[0].includes('/table/')) {
+      this.cart.requestViewMenu();
+    } else {
+      this.router.navigate(['/', this.slug(), 'table', tableId]);
     }
   }
 
-  cancelMenuNav()  { this.menuNavWarning.set(false); }
-  confirmMenuNav() {
-    this.menuNavWarning.set(false);
-    this.router.navigate(['/', this.slug(), 'menu']);
-  }
-
-  // Bouton "Ma commande" du header — table uniquement (cart.tableId() actif). TableComponent
+  // Bouton "Ma commande" du header - table uniquement (cart.tableId() actif). TableComponent
   // gère lui-même son affichage panier/suivi en interne (pas une route séparée) : si on y est
   // déjà, on le lui demande via CartService ; sinon on y navigue d'abord (son propre ngOnInit
-  // résout ensuite le bon écran — panier, suivi, ou menu).
+  // résout ensuite le bon écran - panier, suivi, ou menu).
   goToOrder() {
     const tableId = this.cart.tableId();
     if (!tableId) return;

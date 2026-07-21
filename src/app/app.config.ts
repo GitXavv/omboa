@@ -11,7 +11,7 @@ export const appConfig: ApplicationConfig = {
       routes,
       withViewTransitions(),
       // Nécessaire pour que les liens type routerLink="/" [fragment]="..." (ex. "En savoir
-      // plus" → retour vers une section précise de la landing) scrollent réellement
+      // plus" -> retour vers une section précise de la landing) scrollent réellement
       // jusqu'à l'ancre après navigation, au lieu de rester en haut de page.
       withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' })
     ),

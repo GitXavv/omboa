@@ -46,13 +46,13 @@ export class OrdersComponent implements OnInit, OnDestroy {
   });
 
   // La connexion SignalR au groupe admin est ouverte par AdminLayoutComponent (qui
-  // enveloppe cette page) — ici on ne fait que se rebrancher sur le flux déjà actif.
+  // enveloppe cette page) - ici on ne fait que se rebrancher sur le flux déjà actif.
   ngOnInit() {
     this.load();
     this.sub = this.rt.events$.subscribe(ev => {
       if (ev.type === 'order:new' || ev.type === 'order:status') {
         this.load();
-        if (ev.type === 'order:new') this.toast.info(`Nouvelle commande — ${ev.payload.tableNumber}`);
+        if (ev.type === 'order:new') this.toast.info(`Nouvelle commande - ${ev.payload.tableNumber}`);
       }
     });
   }

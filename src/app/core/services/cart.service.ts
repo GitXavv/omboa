@@ -8,11 +8,17 @@ export class CartService {
   readonly tableId = signal<string | null>(null);
 
   // Pont entre le header partagé (bouton "Ma commande") et TableComponent, qui gère lui-même
-  // son affichage panier/suivi en interne (pas une route séparée) — un Subject plutôt qu'un
+  // son affichage panier/suivi en interne (pas une route séparée) - un Subject plutôt qu'un
   // signal pour ne jamais rejouer une demande passée quand un nouvel onglet table se monte.
   private readonly viewCartRequest$ = new Subject<void>();
   readonly viewCartRequested$ = this.viewCartRequest$.asObservable();
   requestViewCart() { this.viewCartRequest$.next(); }
+
+  // Même pont, pour le bouton "Menu" du header - revient à l'étape menu de TableComponent
+  // au lieu de naviguer vers la page menu visiteur.
+  private readonly viewMenuRequest$ = new Subject<void>();
+  readonly viewMenuRequested$ = this.viewMenuRequest$.asObservable();
+  requestViewMenu() { this.viewMenuRequest$.next(); }
 
   // Même pont, pour l'animation de pulsation du bouton "Ma commande" quand un plat vient
   // d'être ajouté (déclenché par TableComponent, joué par NavbarComponent).

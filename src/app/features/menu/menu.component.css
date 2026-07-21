@@ -267,7 +267,7 @@
 .product-modal-overlay {
   position: fixed;
   inset: 0;
-  /* Au-dessus de .bottom-nav (z-index 4100) — la modale doit primer sur la barre de
+  /* Au-dessus de .bottom-nav (z-index 4100) - la modale doit primer sur la barre de
      navigation mobile, jamais l'inverse (sinon un bouton en bas de modale resterait
      inatteignable). */
   z-index: 4200;

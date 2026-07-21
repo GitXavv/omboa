@@ -1,0 +1,149 @@
+/* ── Structure générale (sidebar façon AdminLayoutComponent) ──────────────── */
+.sa-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────────────── */
+.sa-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-card);
+  border-right: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sa-sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+.sa-sidebar__logo {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sa-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 2px;
+  flex: 1;
+}
+
+.sa-nav__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+}
+.sa-nav__row:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+.sa-nav__row--active { color: var(--color-primary); background: var(--color-primary-faded); }
+
+.sa-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.sa-nav__icon--applications { mask-image: url('/icons/nav-applications.svg'); -webkit-mask-image: url('/icons/nav-applications.svg'); }
+.sa-nav__icon--logs         { mask-image: url('/icons/nav-logs.svg');         -webkit-mask-image: url('/icons/nav-logs.svg'); }
+.sa-nav__icon--logout       { mask-image: url('/icons/nav-logout.svg');       -webkit-mask-image: url('/icons/nav-logout.svg'); }
+
+.sa-sidebar__user {
+  padding: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.sa-sidebar__logout { color: var(--color-text-muted); }
+.sa-sidebar__logout:hover { color: var(--color-error); background: var(--color-error-bg); }
+
+/* ── Contenu ───────────────────────────────────────────────────────────────── */
+.sa-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Barre mobile (burger) ─────────────────────────────────────────────────── */
+.sa-mobile-bar {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.sa-mobile-bar__burger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 24px;
+  padding: 4px;
+}
+.sa-mobile-bar__burger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 1px;
+}
+.sa-mobile-bar__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sa-overlay { display: none; }
+
+/* ── Responsive : sidebar -> tiroir ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .sa-mobile-bar { display: flex; }
+
+  .sa-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 500;
+    transform: translateX(-100%);
+    transition: transform var(--transition-fast);
+    box-shadow: var(--shadow-lg);
+  }
+  .sa-sidebar--open { transform: translateX(0); }
+
+  .sa-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 450;
+  }
+}

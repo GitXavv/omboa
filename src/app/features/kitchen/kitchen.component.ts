@@ -5,6 +5,7 @@ import { RealtimeService } from '../../core/services/realtime.service';
 import { StaffAuthService } from '../../core/services/staff-auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 import { Order, OrderStatus, Payment } from '../../core/models';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 
@@ -25,8 +26,8 @@ const METHOD_LABELS: Record<string, string> = {
   mtn_momo:     'MTN MoMo'
 };
 
-// La cuisine ne fait avancer que confirmed → preparing → ready. L'acceptation
-// (pending→confirmed) revient au réceptionniste, la suite (paiement/service) aussi.
+// La cuisine ne fait avancer que confirmed -> preparing -> ready. L'acceptation
+// (pending->confirmed) revient au réceptionniste, la suite (paiement/service) aussi.
 const KITCHEN_STATUSES: OrderStatus[] = ['confirmed', 'preparing', 'ready'];
 
 function nextStatus(order: Order): OrderStatus | null {
@@ -58,6 +59,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
   readonly auth             = inject(StaffAuthService);
   private readonly toast    = inject(ToastService);
   private readonly notif    = inject(NotificationService);
+  readonly restaurantSvc    = inject(RestaurantService);
 
   readonly orders       = signal<Order[]>([]);
   readonly loading      = signal(true);
@@ -99,7 +101,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
         this.orderSvc.getById(ev.payload.orderId).subscribe(o =>
           this.orders.update(list => [o, ...list])
         );
-        this.toast.info(`🔔 Commande acceptée — Table ${ev.payload.tableNumber}`);
+        this.toast.info(`🔔 Commande acceptée - Table ${ev.payload.tableNumber}`);
         this.notif.playNewOrderSound();
         this.notif.showBrowserNotification('Nouvelle commande en cuisine', `Table ${ev.payload.tableNumber}`);
       }
@@ -134,7 +136,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
     });
 
     // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
-    // SignalR est déjà ouverte et maintenue par le layout — on rejoint juste le groupe
+    // SignalR est déjà ouverte et maintenue par le layout - on rejoint juste le groupe
     // cuisine dessus, sans ouvrir/fermer notre propre connexion (qui la couperait).
     if (this.auth.isOwner()) {
       this.realtime.invoke('JoinKitchen', this.auth.currentStaff()?.restaurantId).catch(() => {});
@@ -177,7 +179,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
     return (Date.now() - new Date(dateStr).getTime()) > 15 * 60 * 1000; // > 15 min
   }
 
-  // ── Avancement simple (confirmed → preparing → ready) ────────────────────
+  // ── Avancement simple (confirmed -> preparing -> ready) ────────────────────
   requestAdvance(id: string) { this.confirmingId.set(id); }
   dismissConfirm()           { this.confirmingId.set(null); }
 
@@ -188,7 +190,7 @@ export class KitchenComponent implements OnInit, OnDestroy {
     this.orderSvc.updateStatus(order.id, next).subscribe({
       next: u => {
         this.orders.update(l => l.map(o => o.id === u.id ? { ...u, payment: o.payment } : o));
-        this.toast.success(`Table ${order.table?.number || ''} → ${STATUS_LABELS[next]}`);
+        this.toast.success(`Table ${order.table?.number || ''} -> ${STATUS_LABELS[next]}`);
       },
       error: () => this.toast.error('Erreur lors du changement de statut.')
     });

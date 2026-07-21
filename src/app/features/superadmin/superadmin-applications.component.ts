@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { SuperAdminService } from '../../core/services/super-admin.service';
 import { DemoRequest } from '../../core/services/demo-request.service';
@@ -13,13 +12,13 @@ type Tab = 'active' | 'archived';
 //   déroulable au clic pour les détails complets (tag, adresse, couleurs) + bouton
 //   Archiver.
 // - Onglet "Archives" : une fois archivée, seuls nom/adresse/date de soumission/date
-//   d'archivage restent visibles (email, logo, couleurs masqués — voir template).
+//   d'archivage restent visibles (email, logo, couleurs masqués - voir template).
 // Lecture seule sinon : pas de workflow d'approbation, le super admin crée le restaurant
 // à la main (modale "+ Nouveau restaurant" du dashboard) une fois le contact établi.
 @Component({
   selector: 'app-superadmin-applications',
   standalone: true,
-  imports: [RouterLink, DatePipe, LoaderComponent],
+  imports: [DatePipe, LoaderComponent],
   templateUrl: './superadmin-applications.component.html',
   styleUrl: './superadmin-applications.component.css'
 })

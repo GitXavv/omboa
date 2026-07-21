@@ -55,7 +55,7 @@ export class MenuManagementComponent implements OnInit {
     for (const cat of this.categories()) {
       result.push({ id: cat.id, label: cat.name });
       for (const sub of cat.subcategories ?? [])
-        result.push({ id: sub.id, label: `↳ ${sub.name}` });
+        result.push({ id: sub.id, label: `- ${sub.name}` });
     }
     return result;
   });

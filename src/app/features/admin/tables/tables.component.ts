@@ -93,7 +93,7 @@ export class TablesComponent implements OnInit {
     return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(this.getTableUrl(id))}`;
   }
 
-  // Ouvre exactement la page qu'un client obtiendrait en scannant le QR code — aucun membre
+  // Ouvre exactement la page qu'un client obtiendrait en scannant le QR code - aucun membre
   // du staff ne peut y passer commande (les rôles staff n'ont pas de panier client).
   getTableUrl(id: string) {
     const base = window.location.origin;

@@ -21,7 +21,7 @@ export class App {
   readonly headerMode = signal<HeaderMode>('landing');
   private readonly restaurantSvc = inject(RestaurantService);
 
-  // Jamais utilisé directement ici — l'injection suffit à activer son effect() interne
+  // Jamais utilisé directement ici - l'injection suffit à activer son effect() interne
   // (couleurs de marque appliquées/retirées selon RestaurantService.current()) pour
   // toute la durée de vie de l'app.
   private readonly theme = inject(RestaurantThemeService);
@@ -38,7 +38,7 @@ export class App {
     });
   }
 
-  // Landing globale + pages "En savoir plus" (fidelite, liée depuis la landing — même
+  // Landing globale + pages "En savoir plus" (fidelite, liée depuis la landing - même
   // header/footer, aucun contexte restaurant) : header dédié (2095_level). Pages client
   // restaurant-scopées (menu/table/ma-commande/account) : navbar partagé. Tout le reste
   // (staff, /ostaff, /osuper) : ces pages gèrent leur propre en-tête.
@@ -52,7 +52,7 @@ export class App {
     const [slug, section] = segments;
     if (slug === 'osuper') return 'none';
     if (App.STATIC_LANDING_PAGES.includes(slug)) return 'landing';
-    if (section && ['menu', 'table', 'ma-commande', 'account'].includes(section)) return 'navbar';
+    if (section && ['menu', 'table', 'ma-commande', 'account', 'connexion'].includes(section)) return 'navbar';
     return 'none';
   }
 

@@ -25,7 +25,7 @@
       >
     </div>
 
-    <!-- Bouton Ma commande — client à table uniquement (session en cours) -->
+    <!-- Bouton Ma commande - client à table uniquement (session en cours) -->
     @if (cart.tableId()) {
       <button class="navbar__commande-btn" [class.navbar__commande-btn--pulse]="commandePulse()" (click)="goToOrder()" title="Ma commande" aria-label="Ma commande">
         <img src="icons/commandes-logo.png" alt="" class="navbar__commande-hdr-img">
@@ -111,13 +111,13 @@
               <a [routerLink]="['/', slug(), 'account']" class="navbar__user-menu-item">👤 Mon compte</a>
               <hr class="navbar__user-menu-divider">
               <button class="navbar__user-menu-item navbar__user-menu-item--danger" (click)="logout()">
-                ↩ Déconnexion
+                Déconnexion
               </button>
             </div>
           }
         </div>
       } @else {
-        <button class="btn btn--primary btn--sm" (click)="authModal.open('login')">Connexion / Inscription</button>
+        <a [routerLink]="['/', slug(), 'connexion']" class="btn btn--primary btn--sm">Connexion / Inscription</a>
       }
 
     </div>
@@ -143,7 +143,7 @@
         <div class="bottom-nav__dropdown">
           <a [routerLink]="['/', slug(), 'account']" class="bottom-nav__dropdown-item" (click)="userMenuOpen.set(false)">👤 Mon compte</a>
           <hr class="bottom-nav__dropdown-divider">
-          <button class="bottom-nav__dropdown-item bottom-nav__dropdown-item--danger" (click)="logout()">↩ Déconnexion</button>
+          <button class="bottom-nav__dropdown-item bottom-nav__dropdown-item--danger" (click)="logout()">Déconnexion</button>
         </div>
       }
       <button class="bottom-nav__item" (click)="toggleUserMenu()" [class.active]="userMenuOpen()">
@@ -152,31 +152,12 @@
       </button>
     </div>
   } @else {
-    <button class="bottom-nav__item" (click)="authModal.open('login')">
+    <a [routerLink]="['/', slug(), 'connexion']" routerLinkActive="active" class="bottom-nav__item">
       <span class="bottom-nav__icon bottom-nav__icon--account"></span>
       <span class="bottom-nav__label">Connexion</span>
-    </button>
+    </a>
   }
 </nav>
-
-<!-- ── Avertissement : quitter le mode table pour la page menu visiteur ────── -->
-@if (menuNavWarning()) {
-  <div class="menu-nav-warning-overlay" (click)="cancelMenuNav()">
-    <div class="menu-nav-warning" (click)="$event.stopPropagation()">
-      <p>
-        Attention, continuer cette action va vous ramener à la page de menu mais version
-        visiteur. Vous ne pourrez pas passer une commande de là et vous devrez rescanner le
-        QR code d'une table pour le faire. Il n'est pas nécessaire de continuer ainsi alors
-        que vous êtes déjà sur la table.
-      </p>
-      <p class="menu-nav-warning__question">Continuer quand même ?</p>
-      <div class="menu-nav-warning__actions">
-        <button class="btn btn--ghost btn--full" (click)="cancelMenuNav()">Annuler</button>
-        <button class="btn btn--primary btn--full" (click)="confirmMenuNav()">Continuer</button>
-      </div>
-    </div>
-  </div>
-}
 
 <!-- Panel panier mobile (bottom sheet) -->
 @if (cartOpen()) {
@@ -221,9 +202,4 @@
       }
     </div>
   </div>
-}
-
-<!-- ── Modale connexion/inscription client ─────────────────────────────────── -->
-@if (authModal.isOpen()) {
-  <app-auth-modal />
 }

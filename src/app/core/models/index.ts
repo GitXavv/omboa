@@ -3,20 +3,20 @@ export interface Restaurant {
   name: string;
   slug: string;
   logo_url: string | null;
-  // Jamais NULL en base (migration_restaurant_default_colors.sql) — toujours au moins
+  // Jamais NULL en base (migration_restaurant_default_colors.sql) - toujours au moins
   // la palette Omboa par défaut.
   color_primary: string;
   color_secondary: string;
   address: string | null;
   is_active: boolean;
   archived: boolean;
-  // Avantages de points de fidélité (dépense/réduction) — géré par l'owner, activé par
+  // Avantages de points de fidélité (dépense/réduction) - géré par l'owner, activé par
   // défaut. N'affecte jamais le gain de points, seulement la dépense sur une commande.
   loyalty_enabled: boolean;
   created_at: string;
 }
 
-// Rôle staff (JWT scheme "Staff" — clé secrète, pas de compte individuel)
+// Rôle staff (JWT scheme "Staff" - clé secrète, pas de compte individuel)
 export type StaffRole = 'owner' | 'cook' | 'receptionist' | 'exit';
 
 export interface StaffSession {
@@ -26,7 +26,7 @@ export interface StaffSession {
   restaurantName: string;
 }
 
-// Compte client (Supabase Auth) — plus de rôle, toujours "customer" implicitement,
+// Compte client (Supabase Auth) - plus de rôle, toujours "customer" implicitement,
 // rattaché à un seul restaurant.
 export interface Customer {
   id: string;
@@ -36,7 +36,7 @@ export interface Customer {
   created_at: string;
 }
 
-// Ligne de la page admin "Clients avec compte" — lecture seule, agrège l'historique
+// Ligne de la page admin "Clients avec compte" - lecture seule, agrège l'historique
 // loyalty_points de chaque client (aucune action admin possible sur ces comptes).
 export interface CustomerAccount {
   id: string;

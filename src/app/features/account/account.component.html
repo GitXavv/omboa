@@ -37,7 +37,7 @@
               <div class="order-card__header">
                 <div>
                   <strong>Commande du {{ order.created_at | date:'dd/MM/yyyy à HH:mm' }}</strong>
-                  <span class="text-muted" style="font-size:.875rem">Table : {{ order.table?.number ?? '—' }}</span>
+                  <span class="text-muted" style="font-size:.875rem">Table : {{ order.table?.number ?? '-' }}</span>
                 </div>
                 <span class="status-badge status-badge--{{ order.status }}">
                   {{ {pending:'En attente',confirmed:'Acceptée',preparing:'En préparation',ready:'Prête',served:'Servie',paid:'Payée',released:'Servie',cancelled:'Annulée'}[order.status] }}
@@ -46,7 +46,7 @@
               <div class="order-card__items">
                 @for (item of order.order_items ?? []; track item.id) {
                   <span class="order-card__item">
-                    {{ item.product_name ?? '—' }} × {{ item.quantity }}
+                    {{ item.product_name ?? '-' }} × {{ item.quantity }}
                   </span>
                 }
               </div>

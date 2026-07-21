@@ -47,7 +47,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     return this.allProducts().filter(p => p.name.toLowerCase().includes(q));
   });
 
-  // Volet "Notre sélection" — plats marqués `trend` par l'owner, toutes catégories confondues.
+  // Volet "Notre sélection" - plats marqués `trend` par l'owner, toutes catégories confondues.
   // Pas de temps réel : recalculé uniquement au chargement de la page.
   readonly trendProducts = computed<Product[]>(() =>
     this.allProducts().filter(p => p.trend && p.is_available)

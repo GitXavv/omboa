@@ -17,6 +17,17 @@
   gap: 16px;
   flex-wrap: wrap;
 }
+.kitchen-header__left { display: flex; align-items: center; gap: 14px; }
+.kitchen-header__logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.06);
+  padding: 6px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
 .kitchen-header h1 {
   font-family: var(--font-display);
   font-size: 1.75rem;
@@ -180,7 +191,7 @@
   padding: 3px 8px;
 }
 
-/* Note de commande — discrète, ne doit pas concurrencer les items */
+/* Note de commande - discrète, ne doit pas concurrencer les items */
 .order-card__order-note {
   font-size: 0.8125rem;
   color: rgba(240,232,220,0.5);

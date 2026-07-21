@@ -13,7 +13,7 @@ const PRIMARY_VARS = [
 ];
 const SECONDARY_VARS = ['--color-secondary', '--color-secondary-light', '--color-on-secondary'];
 
-// Saturation/valeur (HSV, fractions 0–1) d'origine de chaque ton neutre — mesurées sur
+// Saturation/valeur (HSV, fractions 0-1) d'origine de chaque ton neutre - mesurées sur
 // la palette Omboa par défaut, pour que le "poids" visuel (contraste, lisibilité) ne
 // change jamais, seule la teinte suit la couleur du restaurant.
 const NEUTRAL_SV: Record<string, [number, number]> = {
@@ -27,11 +27,11 @@ const NEUTRAL_SV: Record<string, [number, number]> = {
 };
 
 // Applique les couleurs de marque du restaurant courant (choisies par le super admin,
-// jamais par l'owner) par-dessus la palette omboa par défaut — UNIQUEMENT sur les routes
+// jamais par l'owner) par-dessus la palette omboa par défaut - UNIQUEMENT sur les routes
 // /:restaurantSlug/*. La landing page et /osuper ne doivent JAMAIS être teintées : ce
 // service vérifie donc lui-même la route courante (inRestaurantContext, dérivé des
 // événements Router ici, pas d'une valeur poussée par un autre composant) en plus de
-// RestaurantService.current() — même si ce dernier reste par erreur non-nul en quittant
+// RestaurantService.current() - même si ce dernier reste par erreur non-nul en quittant
 // un restaurant (App.clear() a aussi son propre filet de sécurité), la vérification de
 // route ci-dessous suffit à elle seule à empêcher toute fuite de couleur vers la landing
 // ou le super admin.
@@ -39,13 +39,13 @@ const NEUTRAL_SV: Record<string, [number, number]> = {
 // --color-accent suit désormais --color-primary (alias via var(), pas de recalcul) : sans
 // ça, la personnalisation ne touchait que les boutons/prix alors que la plupart des textes
 // mis en avant (titres de section, badges "prêt", quantités...) utilisent --color-accent,
-// pas --color-primary — le changement de couleur semblait à peine appliqué.
+// pas --color-primary - le changement de couleur semblait à peine appliqué.
 @Injectable({ providedIn: 'root' })
 export class RestaurantThemeService {
   private readonly restaurantSvc = inject(RestaurantService);
   private readonly router = inject(Router);
 
-  // Défaut à false tant qu'aucun NavigationEnd n'a encore été observé — évite tout flash
+  // Défaut à false tant qu'aucun NavigationEnd n'a encore été observé - évite tout flash
   // de couleur personnalisée avant que la première navigation n'ait confirmé la route.
   private readonly inRestaurantContext = signal(this.isRestaurantRoute(this.router.url));
 
@@ -69,12 +69,12 @@ export class RestaurantThemeService {
         // Texte lisible sur un bouton/badge de cette couleur, même si le restaurant
         // a choisi une teinte très claire (pas de blanc sur blanc).
         root.setProperty('--color-on-primary', contrastForeground(p));
-        // Alias — tout ce qui utilisait le doré par défaut (--color-accent) devient la
+        // Alias - tout ce qui utilisait le doré par défaut (--color-accent) devient la
         // couleur de marque du restaurant, exactement comme --color-primary.
         root.setProperty('--color-accent', 'var(--color-primary)');
         root.setProperty('--color-accent-light', 'var(--color-primary-light)');
         root.setProperty('--color-accent-rgb', 'var(--color-primary-rgb)');
-        // Tons neutres (texte discret, bordures, fonds de carte) — reteintés dans la
+        // Tons neutres (texte discret, bordures, fonds de carte) - reteintés dans la
         // même teinte que la couleur de marque, sans changer leur contraste/lisibilité.
         // Sans ça, la plupart des libellés, bordures et fonds de section restaient
         // visuellement "marron" malgré un bouton/prix bien coloré.
@@ -96,7 +96,7 @@ export class RestaurantThemeService {
     });
   }
 
-  // Vrai uniquement pour /:restaurantSlug/* — jamais pour '/' (landing) ni '/osuper*'.
+  // Vrai uniquement pour /:restaurantSlug/* - jamais pour '/' (landing) ni '/osuper*'.
   private isRestaurantRoute(url: string): boolean {
     const path = url.split('?')[0];
     const segments = path.split('/').filter(Boolean);

@@ -12,7 +12,7 @@ export interface PrepTimeLine {
 // (préparer 4 portions du même plat prend plus de temps qu'une seule, mais pas 4 fois plus) :
 //   effectif = durée × √quantité
 //
-// Le total est ensuite la moyenne généralisée d'ordre p=4 des durées effectives — une
+// Le total est ensuite la moyenne généralisée d'ordre p=4 des durées effectives - une
 // moyenne qui se rapproche du maximum à mesure que p augmente, sans jamais l'atteindre
 // tout à fait (contrairement au max pur, qui ignorerait complètement les autres plats).
 const CONCURRENCY_EXPONENT = 4;

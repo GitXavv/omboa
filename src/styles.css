@@ -1,10 +1,10 @@
-/* O'MBOA — Design System */
+/* O'MBOA - Design System */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 /* Variables */
 :root {
-  /* Terracotta — couleur d'action principale (personnalisable par restaurant, voir
-     RestaurantThemeService — --color-on-primary est le texte à utiliser par-dessus,
+  /* Terracotta - couleur d'action principale (personnalisable par restaurant, voir
+     RestaurantThemeService - --color-on-primary est le texte à utiliser par-dessus,
      recalculé automatiquement pour rester lisible quelle que soit la teinte choisie) */
   --color-primary:       #C87D60;
   --color-primary-dark:  #A5603E;
@@ -13,12 +13,12 @@
   --color-primary-faded: rgba(var(--color-primary-rgb), 0.12);
   --color-on-primary:    #ffffff;
 
-  /* Marron chaud moyen — boutons & surfaces secondaires (personnalisable par restaurant) */
+  /* Marron chaud moyen - boutons & surfaces secondaires (personnalisable par restaurant) */
   --color-secondary:       #6B4030;
   --color-secondary-light: #8A5540;
   --color-on-secondary:    #ffffff;
 
-  /* Or chaud — accents & highlights. Personnalisable : suit --color-primary dès qu'un
+  /* Or chaud - accents & highlights. Personnalisable : suit --color-primary dès qu'un
      restaurant a des couleurs de marque (voir RestaurantThemeService), pour que TOUT ce
      qui est doré/marron par défaut change avec la couleur choisie, pas seulement les
      boutons et les prix. */
@@ -177,7 +177,7 @@ p  { line-height: 1.7; }
 .section { padding: 80px 0; }
 @media (max-width: 768px) { .section { padding: 56px 0; } }
 
-/* Tags de section — style éditorial */
+/* Tags de section - style éditorial */
 .section-tag {
   display: inline-flex;
   align-items: center;
@@ -213,7 +213,7 @@ p  { line-height: 1.7; }
 .section-header .section-tag::before,
 .section-header .section-tag::after { display: none; }
 
-/* Ligne or entre le tag et le titre — comme le tm-hr de templatemo */
+/* Ligne or entre le tag et le titre - comme le tm-hr de templatemo */
 .section-header h2::before {
   content: '';
   display: block;
@@ -349,13 +349,13 @@ p  { line-height: 1.7; }
 
 /*
   Specs images :
-  hero-bg       → 1920×900px  (paysage, restaurant ou plat signature)
-  story-img     → 600×750px   (portrait 4:5, ambiance salle)
-  specialty-*   → 480×480px   (carré 1:1, photo plat fond neutre)
-  category-img  → 800×420px   (paysage 16:8, catégorie menu)
-  product-thumb → 320×320px   (carré 1:1, photo plat menu)
-  logo          → SVG ou PNG transparent, 200×200px
-  og-image      → 1200×630px  (partage réseaux sociaux)
+  hero-bg       -> 1920×900px  (paysage, restaurant ou plat signature)
+  story-img     -> 600×750px   (portrait 4:5, ambiance salle)
+  specialty-*   -> 480×480px   (carré 1:1, photo plat fond neutre)
+  category-img  -> 800×420px   (paysage 16:8, catégorie menu)
+  product-thumb -> 320×320px   (carré 1:1, photo plat menu)
+  logo          -> SVG ou PNG transparent, 200×200px
+  og-image      -> 1200×630px  (partage réseaux sociaux)
 */
 
 /* ── Popup reçu (partagé table + ma-commande) ─────────────────────────────── */

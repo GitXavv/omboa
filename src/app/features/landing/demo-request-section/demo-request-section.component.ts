@@ -19,10 +19,10 @@ interface DemoForm {
 const DEFAULT_COLOR_PRIMARY = '#C87D60';
 const DEFAULT_COLOR_SECONDARY = '#6B4030';
 
-// "Réservez une démo" — dernière section de la landing, sur le modèle de Djelica (bouton
+// "Réservez une démo" - dernière section de la landing, sur le modèle de Djelica (bouton
 // header qui scroll jusqu'ici). Contrairement au formulaire de Djelica (texte seul), on
 // demande ici tout ce qui compose une fiche restaurant (sauf tag/is_active/archived/
-// created_at, gérés par le super admin) : c'est un lead, pas une création de compte — le
+// created_at, gérés par le super admin) : c'est un lead, pas une création de compte - le
 // super admin crée le restaurant lui-même une fois le contact établi.
 @Component({
   selector: 'app-demo-request-section',

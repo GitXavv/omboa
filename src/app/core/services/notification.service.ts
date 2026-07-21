@@ -16,7 +16,7 @@ export class NotificationService {
     }
   }
 
-  // Nouvelle commande / commande acceptée — throttlé pour éviter le chevauchement
+  // Nouvelle commande / commande acceptée - throttlé pour éviter le chevauchement
   // en cas d'arrivée de plusieurs commandes rapprochées.
   playNewOrderSound() {
     const now = Date.now();
@@ -44,7 +44,7 @@ export class NotificationService {
       const audio = new Audio(`sounds/${file}`);
       audio.play().catch(() => {});
     } catch {
-      // Lecture audio bloquée (ex: pas d'interaction utilisateur préalable) — ignorer.
+      // Lecture audio bloquée (ex: pas d'interaction utilisateur préalable) - ignorer.
     }
   }
 }

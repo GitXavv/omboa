@@ -4,7 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { StaffAuthService } from '../services/staff-auth.service';
 import { SuperAdminAuthService } from '../services/super-admin-auth.service';
 
-// Les trois sessions (client, staff, super admin) sont mutuellement exclusives —
+// Les trois sessions (client, staff, super admin) sont mutuellement exclusives -
 // au plus une seule a un token à un instant donné, donc l'ordre de priorité ici
 // n'a d'effet que si plusieurs onglets ont laissé des tokens orphelins.
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

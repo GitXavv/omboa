@@ -2,6 +2,7 @@
 
   <header class="reception-header">
     <div class="reception-header__left">
+      <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="reception-header__logo">
       <h1>Réception</h1>
     </div>
   </header>
@@ -29,7 +30,7 @@
       @for (o of tabOrders(); track o.id) {
         <div class="order-card">
           <div class="order-card__head">
-            <span class="order-card__table">Table {{ o.table?.number || '—' }}</span>
+            <span class="order-card__table">Table {{ o.table?.number || '-' }}</span>
             @if (o.table && !o.table.is_active) {
               <span class="order-card__table-disabled">⚠️ Table désactivée</span>
             }
@@ -56,7 +57,7 @@
 
           <ul class="order-card__items">
             @for (item of (o.order_items ?? []); track item.id) {
-              <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '—' }}</li>
+              <li><span class="order-card__qty">×{{ item.quantity }}</span> {{ item.product_name ?? '-' }}</li>
             }
           </ul>
 
@@ -74,7 +75,7 @@
               @switch (o.status) {
                 @case ('pending') {
                   <button class="order-card__btn order-card__btn--advance" [disabled]="acceptingId() === o.id" (click)="accept(o)">
-                    @if (acceptingId() === o.id) { … } @else { Accepter → cuisine }
+                    @if (acceptingId() === o.id) { … } @else { Accepter -> cuisine }
                   </button>
                   <button class="order-card__btn order-card__btn--cancel" (click)="openCancelDialog(o.id)">✕ Annuler</button>
                 }

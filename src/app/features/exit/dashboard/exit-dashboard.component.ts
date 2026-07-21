@@ -6,6 +6,7 @@ import { TableService } from '../../../core/services/table.service';
 import { ExitService } from '../../../core/services/exit.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { StaffAuthService } from '../../../core/services/staff-auth.service';
+import { RestaurantService } from '../../../core/services/restaurant.service';
 import { TableStatus, RecentOrder } from '../../../core/models';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
@@ -25,6 +26,7 @@ export class ExitDashboardComponent implements OnInit, OnDestroy {
   private readonly exitSvc = inject(ExitService);
   private readonly rt   = inject(RealtimeService);
   readonly auth         = inject(StaffAuthService);
+  readonly restaurantSvc = inject(RestaurantService);
   private readonly router = inject(Router);
 
   readonly tables       = signal<TableStatus[]>([]);
@@ -55,7 +57,7 @@ export class ExitDashboardComponent implements OnInit, OnDestroy {
     });
 
     // Vue admin (lecture seule, imbriquée dans AdminLayoutComponent) : la connexion
-    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") — on ne
+    // SignalR est déjà ouverte et maintenue par le layout (même groupe "admin") - on ne
     // doit pas ouvrir/fermer notre propre connexion, ça couperait celle du layout.
     if (this.auth.isOwner()) {
       this.rt.invoke('JoinAdmin', this.auth.currentStaff()?.restaurantId).catch(() => {});

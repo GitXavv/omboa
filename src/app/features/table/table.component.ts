@@ -10,7 +10,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
-import { AuthModalService } from '../../core/services/auth-modal.service';
 import { LoyaltyService } from '../../core/services/loyalty.service';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -25,8 +24,8 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
   pending:   'En attente',
   confirmed: 'Acceptée par le restaurant',
   preparing: 'En préparation',
-  ready:     'Prête — finalisez votre paiement',
-  paid:      'Payée — en attente de service',
+  ready:     'Prête - finalisez votre paiement',
+  paid:      'Payée - en attente de service',
   served:    'Servie',
   released:  'Servie',
   cancelled: 'Annulée',
@@ -42,7 +41,6 @@ const STATUS_LABELS: Partial<Record<string, string>> = {
 export class TableComponent implements OnInit, OnDestroy {
   readonly cart       = inject(CartService);
   readonly auth       = inject(AuthService);
-  readonly authModal  = inject(AuthModalService);
   private readonly menuSvc  = inject(MenuService);
   private readonly tableSvc = inject(TableService);
   private readonly orderSvc = inject(OrderService);
@@ -78,7 +76,7 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly loyaltyBalance        = signal(0);
   // Points réellement appliqués à la commande en cours de composition
   readonly pointsToSpend      = signal(0);
-  // Valeur en cours d'ajustement dans la pop-up — ne remplace pointsToSpend qu'au clic
+  // Valeur en cours d'ajustement dans la pop-up - ne remplace pointsToSpend qu'au clic
   // sur "Appliquer la réduction", pour permettre d'annuler sans y toucher.
   readonly draftPointsToSpend = signal(0);
 
@@ -123,7 +121,7 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly trackedStatusLabels = STATUS_LABELS;
   readonly cancelling          = signal(false);
 
-  // Popup cuisine/réceptionniste → client : raison d'une annulation
+  // Popup cuisine/réceptionniste -> client : raison d'une annulation
   readonly cancelReasonPopup = signal<string | null>(null);
 
   // Paiement inline (affiché dans tracking quand status = ready)
@@ -138,19 +136,19 @@ export class TableComponent implements OnInit, OnDestroy {
     return (o.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0);
   });
 
-  // Sous-total avant réduction fidélité — toujours la somme des articles, indépendamment
+  // Sous-total avant réduction fidélité - toujours la somme des articles, indépendamment
   // de total_amount (qui inclut déjà la réduction dès la création de la commande).
   readonly trackingItemsTotal = computed(() =>
     (this.trackedOrder()?.order_items ?? []).reduce((s, i) => s + i.unit_price * i.quantity, 0)
   );
   readonly trackingDiscount = computed(() => Math.max(0, this.trackingItemsTotal() - this.trackingTotal()));
 
-  // Durée de préparation estimée — panier pas encore validé
+  // Durée de préparation estimée - panier pas encore validé
   readonly cartPrepMinutes = computed(() =>
     estimatePrepMinutes(this.cart.items().map(i => ({ duration: i.product.cook_duration, quantity: i.quantity })))
   );
 
-  // Durée de préparation estimée — commande déjà validée
+  // Durée de préparation estimée - commande déjà validée
   readonly trackedPrepMinutes = computed(() => {
     const items = this.trackedOrder()?.order_items ?? [];
     return estimatePrepMinutes(items.map(i => ({ duration: i.product_cook_duration ?? 15, quantity: i.quantity })));
@@ -250,12 +248,18 @@ export class TableComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Bouton "Ma commande" du header partagé (visible uniquement en mode table) — n'a
+    // Bouton "Ma commande" du header partagé (visible uniquement en mode table) - n'a
     // d'effet que si on n'est pas déjà en train de suivre une commande soumise.
     this.subs.add(
       this.cart.viewCartRequested$.subscribe(() => {
         if (this.step() !== 'tracking') this.goToCart();
       })
+    );
+
+    // Bouton "Menu" du header partagé - revient simplement à l'écran menu de la table,
+    // sans jamais naviguer vers la page menu visiteur.
+    this.subs.add(
+      this.cart.viewMenuRequested$.subscribe(() => this.goToMenu())
     );
   }
 
@@ -274,7 +278,7 @@ export class TableComponent implements OnInit, OnDestroy {
     if (stillActive && order.table_id !== tableId) {
       this.table.set(t);
       this.tableError.set(
-        `Vous avez déjà une commande en cours à la table ${order.table?.number ?? '—'}. ` +
+        `Vous avez déjà une commande en cours à la table ${order.table?.number ?? '-'}. ` +
         `Terminez-la avant d'en commencer une nouvelle.`
       );
       this.tableErrorType.set('other-table-active');
@@ -374,7 +378,7 @@ export class TableComponent implements OnInit, OnDestroy {
     const tableId = this.route.snapshot.paramMap.get('tableId');
     const restaurantId = this.restaurantSvc.current()?.id;
     if (!tableId || !restaurantId) return;
-    const tableNumber = this.table()?.number ?? '—';
+    const tableNumber = this.table()?.number ?? '-';
     this.rt.invoke('ReportTableIssue', restaurantId, tableId, tableNumber)
       .then(() => { this.tableIssueReported.set(true); this.toast.success('Les responsables ont été alertés.'); })
       .catch(() => this.toast.error('Impossible d\'envoyer le signalement. Réessayez.'));
@@ -388,7 +392,7 @@ export class TableComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(code).then(() => this.codeCopied.set(true));
   }
 
-  // ── Soumission de commande → tracking immédiat, paiement différé ─────────
+  // ── Soumission de commande -> tracking immédiat, paiement différé ─────────
   requestSubmitOrder() {
     const tableId = this.table()?.id;
     if (!tableId || !this.cart.items().length) return;
@@ -510,6 +514,10 @@ export class TableComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  // Fermeture simple - n'annule rien côté serveur, la commande reste bien en attente du
+  // paiement espèces, on referme juste l'overlay pour laisser voir le suivi en dessous.
+  closeCashPopup() { this.cashPopupOpen.set(false); }
+
   changeCashPayment() {
     if (this.cashChangeDisabled()) return;
     const orderId = this.orderId()!;
@@ -518,7 +526,7 @@ export class TableComponent implements OnInit, OnDestroy {
       next: () => {
         clearInterval(this.cashCountdownInterval);
         this.cashPopupOpen.set(false);
-        // Retire le paiement du trackedOrder → le formulaire de paiement réapparaît
+        // Retire le paiement du trackedOrder -> le formulaire de paiement réapparaît
         this.trackedOrder.update(o => o ? { ...o, payment: undefined } : null);
         this.payPhone.set('');
       },

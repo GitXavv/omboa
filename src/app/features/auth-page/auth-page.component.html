@@ -1,0 +1,130 @@
+<div class="auth-page container">
+  <div class="auth-panels">
+    <!-- === CONNEXION === -->
+    <div class="auth-panel">
+      <div class="auth-panel__header">
+        <h2>Content de vous revoir</h2>
+        <p>Connectez-vous pour passer commande et profiter de vos avantages fidélité.</p>
+      </div>
+
+      @if (loginError()) {
+        <div class="auth-alert">{{ loginError() }}</div>
+      }
+
+      <form class="auth-form" (ngSubmit)="submitLogin()">
+        <div class="auth-field">
+          <label class="auth-field__label" for="loginPhone">
+            Numéro de téléphone <span class="req">*</span>
+          </label>
+          <input
+            id="loginPhone"
+            type="tel"
+            class="auth-field__input"
+            [ngModel]="loginPhone()"
+            (ngModelChange)="loginPhone.set($event)"
+            name="loginPhone"
+            autocomplete="tel"
+            required
+          >
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="loginPassword">
+            Mot de passe <span class="req">*</span>
+          </label>
+          <input
+            id="loginPassword"
+            type="password"
+            class="auth-field__input"
+            [ngModel]="loginPassword()"
+            (ngModelChange)="loginPassword.set($event)"
+            name="loginPassword"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="auth-btn" [disabled]="loginLoading()">
+          @if (loginLoading()) { Connexion… } @else { Se connecter }
+        </button>
+      </form>
+    </div>
+
+    <!-- Séparateur -->
+    <div class="auth-sep" aria-hidden="true">
+      <div class="auth-sep__line"></div>
+      <span class="auth-sep__text">ou</span>
+      <div class="auth-sep__line"></div>
+    </div>
+
+    <!-- === INSCRIPTION === -->
+    <div class="auth-panel">
+      <div class="auth-panel__header">
+        <h2>Créer un compte</h2>
+        <p>Rejoignez-nous et profitez de nos avantages fidélité.</p>
+      </div>
+
+      @if (registerError()) {
+        <div class="auth-alert">{{ registerError() }}</div>
+      }
+
+      <form class="auth-form" (ngSubmit)="submitRegister()">
+        <div class="auth-field">
+          <label class="auth-field__label" for="fullName">
+            Nom complet <span class="req">*</span>
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            class="auth-field__input"
+            [ngModel]="fullName()"
+            (ngModelChange)="fullName.set($event)"
+            name="fullName"
+            minlength="2"
+            maxlength="100"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="regPhone">
+            Numéro de téléphone <span class="req">*</span>
+          </label>
+          <input
+            id="regPhone"
+            type="tel"
+            class="auth-field__input"
+            [ngModel]="regPhone()"
+            (ngModelChange)="regPhone.set($event)"
+            name="regPhone"
+            autocomplete="tel"
+            required
+          >
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="regPassword">
+            Mot de passe <span class="req">*</span>
+          </label>
+          <input
+            id="regPassword"
+            type="password"
+            class="auth-field__input"
+            [ngModel]="regPassword()"
+            (ngModelChange)="regPassword.set($event)"
+            name="regPassword"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+          <small class="auth-field__hint">Au moins 8 caractères</small>
+        </div>
+
+        <button type="submit" class="auth-btn" [disabled]="registerLoading()">
+          @if (registerLoading()) { Création en cours… } @else { Créer mon compte }
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

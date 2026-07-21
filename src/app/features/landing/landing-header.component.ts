@@ -2,7 +2,7 @@ import { Component, HostListener, signal } from '@angular/core';
 
 // Header desktop/mobile de la landing page globale, sur le modèle du template
 // 2095_level (barre fixe qui rétrécit au scroll, liens en ancre à droite, hamburger
-// mobile) — couleurs remplacées par la palette omboa. Distinct du navbar partagé :
+// mobile) - couleurs remplacées par la palette omboa. Distinct du navbar partagé :
 // la landing n'a pas de contexte restaurant (pas de recherche/panier/compte ici).
 @Component({
   selector: 'app-landing-header',

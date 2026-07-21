@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, inject, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { forkJoin, firstValueFrom } from 'rxjs';
 import { SuperAdminService, CreateRestaurantPayload } from '../../core/services/super-admin.service';
@@ -21,7 +20,7 @@ interface EditRestaurantForm {
   address: string;
 }
 
-// Palette Omboa par défaut — mêmes valeurs que --color-primary/--color-secondary dans
+// Palette Omboa par défaut - mêmes valeurs que --color-primary/--color-secondary dans
 // styles.css et que la constante équivalente côté API (SuperAdminController). color_primary/
 // color_secondary ne sont jamais NULL en base : un nouveau restaurant part toujours avec
 // ces couleurs pré-sélectionnées, modifiables via la palette avant validation.
@@ -31,7 +30,7 @@ const DEFAULT_COLOR_SECONDARY = '#6B4030';
 @Component({
   selector: 'app-superadmin-dashboard',
   standalone: true,
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, LoaderComponent, ColorPickerComponent],
+  imports: [FormsModule, DecimalPipe, DatePipe, LoaderComponent, ColorPickerComponent],
   templateUrl: './superadmin-dashboard.component.html',
   styleUrl: './superadmin-dashboard.component.css'
 })
@@ -50,21 +49,21 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly newRestaurant  = signal<CreateRestaurantPayload>(this.blankNewRestaurant());
   readonly creating       = signal(false);
 
-  // Édition (nom/logo/couleurs) — jamais les clés d'accès, réservées à l'owner lui-même.
+  // Édition (nom/logo/couleurs) - jamais les clés d'accès, réservées à l'owner lui-même.
   readonly editingRestaurant = signal<Restaurant | null>(null);
   readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY, address: '' });
   readonly saving = signal(false);
 
   // Logo : import direct (comme le formulaire "Réservez une démo"), avec préchargement
-  // du logo actuel en aperçu — logoFile reste null tant qu'aucune nouvelle image n'est
+  // du logo actuel en aperçu - logoFile reste null tant qu'aucune nouvelle image n'est
   // choisie, auquel cas on garde le logo_url existant inchangé.
   readonly editLogoFile    = signal<File | null>(null);
   readonly editLogoPreview = signal<string | null>(null);
 
-  // Menu contextuel "⋮" (Modifier / Archiver) — un seul ouvert à la fois.
+  // Menu contextuel "⋮" (Modifier / Archiver) - un seul ouvert à la fois.
   readonly openCardMenu = signal<string | null>(null);
 
-  // Désactivation (toggle) — avertissement puis re-authentification par la clé super admin.
+  // Désactivation (toggle) - avertissement puis re-authentification par la clé super admin.
   // La réactivation, elle, est immédiate (action sûre, réversible) : pas de popup.
   readonly deactivateTarget   = signal<Restaurant | null>(null);
   readonly deactivateKeyPopup = signal(false);
@@ -72,7 +71,7 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly deactivateError    = signal('');
   readonly deactivating       = signal(false);
 
-  // Archivage — avertissement seul, pas de re-authentification.
+  // Archivage - avertissement seul, pas de re-authentification.
   readonly archiveTarget = signal<Restaurant | null>(null);
   readonly archiving     = signal(false);
 
@@ -198,7 +197,7 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.deactivating.set(false);
         if (err?.error?.locked) {
           // 5 échecs : session perdue, le verrouillage de 10 minutes est déjà actif
-          // côté serveur pour cette IP — retour à la connexion super admin.
+          // côté serveur pour cette IP - retour à la connexion super admin.
           this.auth.logout();
           return;
         }

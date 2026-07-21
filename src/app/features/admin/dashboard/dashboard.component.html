@@ -33,7 +33,7 @@
     <div class="dash-orders">
       <div class="dash-orders__hd">
         <p class="dash-orders__title">Commandes récentes</p>
-        <a [routerLink]="['/', slug(), 'admin', 'orders']" class="btn btn--ghost btn--sm">Tout voir →</a>
+        <a [routerLink]="['/', slug(), 'admin', 'orders']" class="btn btn--ghost btn--sm">Tout voir -></a>
       </div>
 
       @if (!recentOrders().length) {
@@ -41,7 +41,7 @@
       }
       @for (o of recentOrders(); track o.id) {
         <div class="dash-order-row">
-          <span class="dash-order-row__table">Table {{ o.table?.number ?? '—' }}</span>
+          <span class="dash-order-row__table">Table {{ o.table?.number ?? '-' }}</span>
           <span class="dash-order-row__time">{{ o.created_at | date:'HH:mm' }}</span>
           <span class="status-badge status-badge--{{ o.status }}">{{ statusFr[o.status] }}</span>
           <span class="dash-order-row__amt">{{ o.total_amount | number:'1.0-0' }}<span class="dash-order-row__curr"> F</span></span>

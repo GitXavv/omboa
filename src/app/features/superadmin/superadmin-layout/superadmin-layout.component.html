@@ -1,0 +1,45 @@
+<div class="sa-shell">
+
+  <!-- ── Barre mobile (burger) ─────────────────────────────────────────────── -->
+  <div class="sa-mobile-bar">
+    <button class="sa-mobile-bar__burger" (click)="toggleMobile()" aria-label="Ouvrir le menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="sa-mobile-bar__name">Super admin</span>
+  </div>
+
+  @if (mobileOpen()) {
+    <div class="sa-overlay" (click)="closeMobile()"></div>
+  }
+
+  <!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+  <aside class="sa-sidebar" [class.sa-sidebar--open]="mobileOpen()">
+    <a routerLink="/osuper/dashboard" class="sa-sidebar__brand">
+      <img src="/icons/main/omboa-main-logo.png" alt="O'Mboa" class="sa-sidebar__logo">
+    </a>
+
+    <nav class="sa-sidebar__nav">
+      <a routerLink="/osuper/applications" routerLinkActive="sa-nav__row--active" class="sa-nav__row">
+        <span class="sa-nav__icon sa-nav__icon--applications"></span>
+        <span class="sa-nav__label">Applications</span>
+      </a>
+      <a routerLink="/osuper/logs" routerLinkActive="sa-nav__row--active" class="sa-nav__row">
+        <span class="sa-nav__icon sa-nav__icon--logs"></span>
+        <span class="sa-nav__label">Logs</span>
+      </a>
+    </nav>
+
+    <div class="sa-sidebar__user">
+      <button class="sa-sidebar__logout" (click)="auth.logout()">
+        <span class="sa-nav__icon sa-nav__icon--logout"></span>
+        <span class="sa-nav__label">Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Contenu ───────────────────────────────────────────────────────────── -->
+  <main class="sa-content">
+    <router-outlet />
+  </main>
+
+</div>

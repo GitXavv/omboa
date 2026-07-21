@@ -4,7 +4,7 @@ import { catchError, of } from 'rxjs';
 import { RestaurantService } from '../services/restaurant.service';
 import { Restaurant } from '../models';
 
-// Peuple RestaurantService.current avant toute route /:restaurantSlug/* — redirige
+// Peuple RestaurantService.current avant toute route /:restaurantSlug/* - redirige
 // vers la landing page si le slug ne correspond à aucun restaurant actif.
 export const restaurantResolver: ResolveFn<Restaurant | null> = (route: ActivatedRouteSnapshot) => {
   const restaurantSvc = inject(RestaurantService);

@@ -1,4 +1,4 @@
-﻿/* ── Page ─────────────────────────────────────────────────────────────────── */
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 .mc-page { min-height: calc(100vh - var(--navbar-h)); padding-bottom: 80px; }
 .mc-container { max-width: 600px; padding-top: 48px; }
 
@@ -140,7 +140,7 @@
   .mc-search__row { flex-direction: column; }
 }
 
-/* ── Popup cuisine → client ──────────────────────────────────────────────── */
+/* ── Popup cuisine -> client ──────────────────────────────────────────────── */
 .mc-kitchen-overlay {
   position: fixed;
   inset: 0;

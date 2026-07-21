@@ -7,7 +7,7 @@ const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(ma
 let nextId = 0;
 
 // Color picker complet (carré saturation/valeur + curseur de teinte + pipette + champs
-// RVB + hex modifiable) — le même principe que Djelica.
+// RVB + hex modifiable) - le même principe que Djelica.
 @Component({
   selector: 'app-color-picker',
   standalone: true,
@@ -22,7 +22,7 @@ export class ColorPickerComponent {
   private readonly id = nextId++;
   private readonly registry = inject(ColorPickerRegistryService);
   // Un seul picker ouvert à la fois, tous instances confondues (ex. primaire/secondaire
-  // dans le même formulaire) — en ouvrir un ferme automatiquement les autres puisque
+  // dans le même formulaire) - en ouvrir un ferme automatiquement les autres puisque
   // `open` n'est vrai que pour l'instance dont l'id correspond à celui du registre.
   readonly open = computed(() => this.registry.openId() === this.id);
 
@@ -44,13 +44,13 @@ export class ColorPickerComponent {
   // Dernière valeur émise par NOUS-MÊME (pas un signal : ne doit jamais être une
   // dépendance réactive de l'effect ci-dessous, sinon on obtient une boucle où l'effect
   // se redéclenche à cause de son propre emit() et écrase la couleur qu'on vient de
-  // choisir en la comparant à this.hex() — la sélection semble alors "ne pas prendre"
+  // choisir en la comparant à this.hex() - la sélection semble alors "ne pas prendre"
   // ou revenir en arrière juste après un drag dans le carré/la teinte).
   private lastEmitted: string | null = null;
 
   constructor() {
     // Se resynchronise si le parent change la valeur de l'extérieur (ex. ouverture de
-    // la modale d'édition d'un autre restaurant) — jamais si ça vient de nous-même : on
+    // la modale d'édition d'un autre restaurant) - jamais si ça vient de nous-même : on
     // compare à lastEmitted, jamais à this.hex() (qui, lui, dépend de hue/sat/val et
     // recréerait la boucle décrite ci-dessus).
     effect(() => {
@@ -99,11 +99,11 @@ export class ColorPickerComponent {
     this.emit();
   }
 
-  // Saisie manuelle de l'hex — validée à la confirmation (blur/Entrée), jamais à chaque
+  // Saisie manuelle de l'hex - validée à la confirmation (blur/Entrée), jamais à chaque
   // frappe : le champ est en binding [value] à sens unique (pas ngModel), donc il ne se
   // fait pas reformater sous les doigts de l'utilisateur pendant qu'il tape.
   onHexCommit(raw: string) {
-    if (!hexToRgb(raw)) return; // valeur invalide — le [value]="hex()" restaure l'affichage précédent
+    if (!hexToRgb(raw)) return; // valeur invalide - le [value]="hex()" restaure l'affichage précédent
     this.setHsvFromHex(raw);
     this.emit();
   }
@@ -116,7 +116,7 @@ export class ColorPickerComponent {
       this.setHsvFromHex(result.sRGBHex);
       this.emit();
     } catch {
-      // Annulé par l'utilisateur (touche Échap pendant la capture) — rien à faire.
+      // Annulé par l'utilisateur (touche Échap pendant la capture) - rien à faire.
     }
   }
 

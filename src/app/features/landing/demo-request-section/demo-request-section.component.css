@@ -11,7 +11,7 @@
   flex-direction: column;
   gap: 20px;
 }
-/* .card met overflow:hidden globalement (coins arrondis) — ça rognait la palette de
+/* .card met overflow:hidden globalement (coins arrondis) - ça rognait la palette de
    couleur (position absolute) dès qu'elle dépassait le cadre du formulaire. Spécificité
    à deux classes pour être sûr de l'emporter sur la règle globale .card. */
 .demo-request__form.card {

@@ -58,6 +58,18 @@
   <!-- ── ÉTAPE 1 : Menu (style accordéon) ──────────────────────────── -->
   @if (step() === 'menu') {
 
+    <!-- En-tête : logo + texte de bienvenue (identique à la page menu visiteur, mais
+         avec le texte spécifique aux clients à table) -->
+    <div class="table-welcome">
+      <div class="container table-welcome__inner">
+        <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="table-welcome__logo">
+        <p class="table-welcome__text">
+          Constituez votre commande en choisissant les plats et boissons que vous voulez.
+          Nous recevrons la commande instantanément une fois confirmée.
+        </p>
+      </div>
+    </div>
+
     <!-- Bandeau promo fidélité (non connecté, < 2 fermetures) -->
     @if (showLoyaltyPromo()) {
       <div class="loyalty-promo">
@@ -65,7 +77,7 @@
           <div class="loyalty-promo__content">
             <span class="loyalty-promo__icon">🌟</span>
             <p>Créez un compte <strong>O'Mboa</strong> et cumulez des points fidélité à chaque visite !</p>
-            <button class="btn btn--accent btn--sm" (click)="authModal.open('register')">Créer un compte</button>
+            <a [routerLink]="['/', restaurantSvc.current()?.slug, 'connexion']" class="btn btn--accent btn--sm">Créer un compte</a>
             <button class="loyalty-promo__close" (click)="dismissLoyaltyPromo()" aria-label="Fermer">✕</button>
           </div>
         </div>
@@ -212,7 +224,7 @@
   <!-- ── ÉTAPE 2 : Ma commande ────────────────────────────────────── -->
   @if (step() === 'cart') {
     <div class="cart-page container">
-      <button class="btn btn--ghost btn--sm" (click)="goToMenu()">← Continuer mes achats</button>
+      <button class="btn btn--ghost btn--sm" (click)="goToMenu()"><- Continuer mes achats</button>
       <h2>Ma commande</h2>
 
       @if (!cart.items().length) {
@@ -376,6 +388,9 @@
           table.
         </p>
         <div class="order-confirm__actions">
+          <button class="btn btn--ghost btn--full" (click)="copyCode()" [disabled]="codeCopied()">
+            @if (codeCopied()) { ✓ Copié } @else { 📋 Copier dans le presse-papiers }
+          </button>
           <button class="btn btn--primary btn--full" (click)="dismissOrderCodePopup()">Ok</button>
         </div>
       </div>
@@ -405,7 +420,7 @@
         <div class="tracking-card card">
           <div class="tracking-card__head">
             <div>
-              <div class="tracking-card__table">📍 Table {{ trackedOrder()!.table?.number ?? '—' }}</div>
+              <div class="tracking-card__table">📍 Table {{ trackedOrder()!.table?.number ?? '-' }}</div>
               <div class="tracking-card__sub text-muted">Commande en cours</div>
             </div>
             <span class="tracking-card__status tracking-status--{{ trackedOrder()!.status }}">
@@ -442,7 +457,7 @@
             </div>
           }
 
-          <!-- Formulaire de paiement — affiché uniquement quand la commande est prête et non encore payée -->
+          <!-- Formulaire de paiement - affiché uniquement quand la commande est prête et non encore payée -->
           @if (trackedOrder()!.status === 'ready' && !trackedOrder()!.payment) {
             <div class="tracking-payment">
               <h3 class="tracking-payment__title">Finalisez votre paiement</h3>
@@ -481,7 +496,7 @@
 
           @if (trackedOrder()!.status === 'paid') {
             <div class="tracking-svc-code">
-              <span class="tracking-svc-code__hint">Votre commande est payée — le personnel arrive avec votre commande.</span>
+              <span class="tracking-svc-code__hint">Votre commande est payée - le personnel arrive avec votre commande.</span>
             </div>
           }
 
@@ -543,7 +558,7 @@
   </div>
 }
 
-<!-- ── Popup annulation (réceptionniste → client) ──────────────────────────── -->
+<!-- ── Popup annulation (réceptionniste -> client) ──────────────────────────── -->
 @if (cancelReasonPopup()) {
   <div class="kitchen-popup-overlay" (click)="dismissCancelReasonPopup()">
     <div class="kitchen-popup" (click)="$event.stopPropagation()">
@@ -562,15 +577,16 @@
 
 <!-- ── Popup paiement en espèce : en attente de confirmation du personnel ──── -->
 @if (cashPopupOpen()) {
-  <div class="cash-popup-overlay">
-    <div class="cash-popup">
+  <div class="cash-popup-overlay" (click)="closeCashPopup()">
+    <div class="cash-popup" (click)="$event.stopPropagation()">
       <div class="cash-popup__header">
         💵 Paiement en espèce
+        <button class="cash-popup__close" (click)="closeCashPopup()" aria-label="Fermer">✕</button>
       </div>
       <div class="cash-popup__body">
         <p class="cash-popup__text">
           Votre commande a bien été reçue. Un membre du personnel va venir vers votre table
-          pour encaisser votre paiement en espèces, puis confirmera lui-même la réception —
+          pour encaisser votre paiement en espèces, puis confirmera lui-même la réception -
           vous n'avez rien d'autre à faire.
         </p>
       </div>
@@ -617,7 +633,7 @@
           <div class="receipt__meta">
             <span class="receipt__meta-title">REÇU</span>
             <span class="receipt__meta-date">{{ trackedOrder()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
-            <span class="receipt__meta-ref">Table {{ trackedOrder()!.table?.number ?? '—' }}</span>
+            <span class="receipt__meta-ref">Table {{ trackedOrder()!.table?.number ?? '-' }}</span>
             @if (trackedOrder()!.code) {
               <span class="receipt__meta-ref">Code {{ trackedOrder()!.code }}</span>
             }

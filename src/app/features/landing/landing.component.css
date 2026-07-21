@@ -12,7 +12,7 @@
   background-size: cover;
   background-position: center 25%;
 }
-/* Voile chaleureux — effet cinématique mix-blend sur la photo */
+/* Voile chaleureux - effet cinématique mix-blend sur la photo */
 .hero::before {
   content: '';
   position: absolute;

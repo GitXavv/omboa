@@ -16,7 +16,7 @@ const STATUS_FR: Record<string, string> = {
 };
 
 // Le SignalR "JoinAdmin" et la logique de notification (signalement table) vivent
-// désormais dans AdminLayoutComponent, qui enveloppe toutes les pages /admin/* — ici
+// désormais dans AdminLayoutComponent, qui enveloppe toutes les pages /admin/* - ici
 // on ne fait que se rebrancher sur le flux d'événements déjà ouvert par le parent.
 @Component({
   selector: 'app-dashboard',

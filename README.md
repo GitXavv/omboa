@@ -1,4 +1,4 @@
-# O'Mboa — Frontend
+# O'Mboa - Frontend
 
 Application web Angular 21 multi-restaurant. Chaque restaurant est accessible sous
 `/:restaurantSlug/...` ; un super admin gère la liste des restaurants depuis `/osuper`.
@@ -7,10 +7,10 @@ Permet aux clients de parcourir le menu et de passer commande via QR code, et au
 
 ## Stack
 
-- **Angular 21** — standalone components, signals, lazy loading
-- **@microsoft/signalr** — temps réel (statut commandes)
-- **Capacitor** — build Android natif
-- **Supabase Auth** — authentification client uniquement (voir plus bas pour le staff)
+- **Angular 21** - standalone components, signals, lazy loading
+- **@microsoft/signalr** - temps réel (statut commandes)
+- **Capacitor** - build Android natif
+- **Supabase Auth** - authentification client uniquement (voir plus bas pour le staff)
 
 ## Structure des pages
 
@@ -36,18 +36,18 @@ Permet aux clients de parcourir le menu et de passer commande via QR code, et au
 | `/osuper/dashboard` | CRUD restaurants + stats globales | Super admin |
 | `/osuper/logs` | Logs des actions du super admin uniquement | Super admin |
 
-**Connexion/inscription client** : plus de route dédiée — c'est une modale ouverte depuis
+**Connexion/inscription client** : plus de route dédiée - c'est une modale ouverte depuis
 le bouton "Connexion / Inscription" du header, disponible sur `/menu`, `/table/:id`,
 `/ma-commande`, `/account`.
 
-## Authentification — deux systèmes distincts
+## Authentification - deux systèmes distincts
 
 - **Clients** : Supabase Auth classique (téléphone + mot de passe), un compte par
   restaurant (le numéro de téléphone n'est pas unique globalement).
 - **Staff + super admin** : pas de compte individuel. Chaque restaurant a une clé
   secrète par rôle (owner/cook/receptionist/exit), hachée en base (bcrypt), saisie sur
   la page cachée `/:restaurantSlug/ostaff`. Le super admin a sa propre clé, saisie sur
-  `/osuper`. Ces clés n'apparaissent dans aucun lien visible de l'app — seule
+  `/osuper`. Ces clés n'apparaissent dans aucun lien visible de l'app - seule
   l'inscription à l'URL y donne accès.
 
 ## Installation
@@ -60,7 +60,7 @@ npm install
 
 ```bash
 npm start
-# → http://localhost:4200
+# -> http://localhost:4200
 ```
 
 L'API backend doit tourner sur `http://localhost:5272`.
@@ -103,10 +103,10 @@ Toutes les variables CSS sont dans `src/styles.css`.
 
 > ⚠️ Ce sont des clés de **test**, à changer avant toute mise en production réelle.
 > Les clés staff se changent depuis `/:restaurantSlug/admin/settings` (owner uniquement).
-> La clé super admin n'a pas d'UI de rotation pour l'instant — elle se change directement
+> La clé super admin n'a pas d'UI de rotation pour l'instant - elle se change directement
 > en base (`UPDATE superadmin_auth SET key_hash = crypt('nouvelle_cle', gen_salt('bf'))`).
 
-**Restaurant de test : O'Mboa Test** (slug `o-mboa-test`) — accès staff sur
+**Restaurant de test : O'Mboa Test** (slug `o-mboa-test`) - accès staff sur
 `/o-mboa-test/ostaff` :
 
 | Rôle | Clé |
@@ -116,18 +116,18 @@ Toutes les variables CSS sont dans `src/styles.css`.
 | Réceptionniste | `r3c,Mboa` |
 | Sortie (exit) | `s0r,Mboa` |
 
-**Super admin** — accès sur `/osuper` :
+**Super admin** - accès sur `/osuper` :
 
 | Clé |
 |-----|
 | `5Npe9,Mboa` |
 
 Les clés sont **sensibles à la casse**. Un seul champ à remplir sur chaque page de
-connexion — pas de sélection de rôle : le backend détermine le rôle à partir de la clé
+connexion - pas de sélection de rôle : le backend détermine le rôle à partir de la clé
 saisie.
 
 Ces clés sont insérées par la migration `sql/migration_multi_restaurant.sql` côté
-`omboa-api`, hachées via `pgcrypto`/bcrypt — jamais stockées en clair.
+`omboa-api`, hachées via `pgcrypto`/bcrypt - jamais stockées en clair.
 
 ---
 

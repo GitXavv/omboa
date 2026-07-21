@@ -1,7 +1,10 @@
 <div class="exit-page container">
 
   <div class="exit-header">
-    <h1 class="exit-title">Sortie</h1>
+    <div class="exit-header__left">
+      <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="exit-header__logo">
+      <h1 class="exit-title">Sortie</h1>
+    </div>
   </div>
 
   @if (loading()) {

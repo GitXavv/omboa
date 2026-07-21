@@ -13,7 +13,7 @@ interface StaffLoginResponse {
   restaurant_name: string;
 }
 
-// Session staff par clé secrète partagée (owner/cook/receptionist/exit) — aucune
+// Session staff par clé secrète partagée (owner/cook/receptionist/exit) - aucune
 // identité individuelle, juste un rôle rattaché à un restaurant. Mutuellement
 // exclusive avec la session client (AuthService) : se connecter à l'un efface l'autre.
 @Injectable({ providedIn: 'root' })
@@ -36,7 +36,7 @@ export class StaffAuthService {
     }).pipe(tap(res => this.storeSession(res)));
   }
 
-  // Re-authentification avant de révéler le champ de changement d'une clé staff — ne
+  // Re-authentification avant de révéler le champ de changement d'une clé staff - ne
   // modifie pas la session, juste une vérification de la clé owner courante.
   verifyOwnerKey(key: string) {
     return this.http.post<void>(`${environment.apiUrl}/staff/verify-owner-key`, { key });
@@ -65,7 +65,7 @@ export class StaffAuthService {
 
   private storeSession(res: StaffLoginResponse) {
     // Une session staff efface toute session client/super admin (mutuellement
-    // exclusives — évite d'attacher deux jeux de headers différents en même temps).
+    // exclusives - évite d'attacher deux jeux de headers différents en même temps).
     localStorage.removeItem('omboa_token');
     localStorage.removeItem('omboa_profile');
     localStorage.removeItem('omboa_superadmin_token');

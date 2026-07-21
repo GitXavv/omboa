@@ -20,7 +20,7 @@ export interface DemoRequest extends DemoRequestPayload {
   created_at: string;
 }
 
-// Endpoints publics — un prospect qui remplit "Réservez une démo" n'a encore aucun
+// Endpoints publics - un prospect qui remplit "Réservez une démo" n'a encore aucun
 // restaurant, donc aucun JWT staff. Distinct d'ImageUploadService (réservé aux owners
 // connectés) : le logo est envoyé vers un bucket Supabase dédié (restau-logos).
 @Injectable({ providedIn: 'root' })

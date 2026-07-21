@@ -1,12 +1,7 @@
 <div class="sa-page">
 
   <header class="sa-header">
-    <h1>Super admin</h1>
-    <div class="sa-header__actions">
-      <a routerLink="/osuper/applications" class="btn btn--ghost btn--sm">Applications</a>
-      <a routerLink="/osuper/logs" class="btn btn--ghost btn--sm">Logs</a>
-      <button class="btn btn--ghost btn--sm" (click)="auth.logout()">Déconnexion</button>
-    </div>
+    <h1>Restaurants</h1>
   </header>
 
   @if (loading()) {
@@ -177,7 +172,7 @@
           <input class="form-control" [ngModel]="newRestaurant().name" (ngModelChange)="onNameChange($event)">
         </div>
         <div class="form-group">
-          <label>Tag (URL) — généré automatiquement à partir du nom</label>
+          <label>Tag (URL) - généré automatiquement à partir du nom</label>
           <input class="form-control" [ngModel]="newRestaurant().slug" readonly disabled>
         </div>
         <div class="form-group">
@@ -215,7 +210,7 @@
   </div>
 }
 
-<!-- ── Modale édition restaurant (nom, logo, couleurs — super admin uniquement) ── -->
+<!-- ── Modale édition restaurant (nom, logo, couleurs - super admin uniquement) ── -->
 @if (editingRestaurant(); as r) {
   <div class="sa-modal-overlay" (click)="closeEditForm()">
     <div class="sa-modal" (click)="$event.stopPropagation()">

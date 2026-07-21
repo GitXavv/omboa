@@ -16,7 +16,7 @@
 
         <div class="mc-order__head">
           <div class="mc-order__meta">
-            <span class="mc-order__table">📍 Table {{ order()!.table?.number ?? '—' }}</span>
+            <span class="mc-order__table">📍 Table {{ order()!.table?.number ?? '-' }}</span>
             <span class="mc-order__date text-muted">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
           <span class="mc-order__status mc-status--{{ order()!.status }}">
@@ -100,7 +100,7 @@
 
         @if (order()!.status === 'paid') {
           <div class="mc-svc-code">
-            <span class="mc-svc-code__hint">Votre commande est payée — le personnel arrive avec votre commande.</span>
+            <span class="mc-svc-code__hint">Votre commande est payée - le personnel arrive avec votre commande.</span>
           </div>
         }
 
@@ -165,7 +165,7 @@
       <div class="mc-cash-popup__body">
         <p class="mc-cash-popup__text">
           Votre commande a bien été reçue. Un membre du personnel va venir vers votre table
-          pour encaisser votre paiement en espèces, puis confirmera lui-même la réception —
+          pour encaisser votre paiement en espèces, puis confirmera lui-même la réception -
           vous n'avez rien d'autre à faire.
         </p>
       </div>
@@ -202,7 +202,7 @@
           <div class="receipt__meta">
             <span class="receipt__meta-title">REÇU</span>
             <span class="receipt__meta-date">{{ order()!.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
-            <span class="receipt__meta-ref">Table {{ order()!.table?.number ?? '—' }}</span>
+            <span class="receipt__meta-ref">Table {{ order()!.table?.number ?? '-' }}</span>
             @if (order()!.code) {
               <span class="receipt__meta-ref">Code {{ order()!.code }}</span>
             }
@@ -268,7 +268,7 @@
   </div>
 }
 
-<!-- ── Popup annulation (réceptionniste → client) ──────────────────────────── -->
+<!-- ── Popup annulation (réceptionniste -> client) ──────────────────────────── -->
 @if (cancelReasonPopup()) {
   <div class="mc-kitchen-overlay" (click)="dismissCancelReasonPopup()">
     <div class="mc-kitchen-popup" (click)="$event.stopPropagation()">

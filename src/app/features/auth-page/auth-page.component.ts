@@ -1,24 +1,25 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { RestaurantService } from '../../core/services/restaurant.service';
-import { AuthModalService } from '../../core/services/auth-modal.service';
 import { ToastService } from '../../core/services/toast.service';
 
-// Modale de connexion/inscription client, ouverte depuis le header restaurant-scopé
-// (plus jamais une route dédiée — le staff n'utilise de toute façon plus jamais ce flux).
+// Connexion/inscription client - une vraie page routée (plus une modale flottante) :
+// header + bottom nav restent visibles et utilisables, le scroll fonctionne normalement,
+// et naviguer ailleurs pendant qu'elle est affichée ne laisse jamais rien bloqué en overlay.
 @Component({
-  selector: 'app-auth-modal',
+  selector: 'app-auth-page',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './auth-modal.component.html',
-  styleUrl: './auth-modal.component.css'
+  templateUrl: './auth-page.component.html',
+  styleUrl: './auth-page.component.css'
 })
-export class AuthModalComponent {
-  readonly modal = inject(AuthModalService);
-  private readonly auth   = inject(AuthService);
+export class AuthPageComponent {
+  private readonly auth = inject(AuthService);
   private readonly restaurantSvc = inject(RestaurantService);
-  private readonly toast  = inject(ToastService);
+  private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
   readonly loginPhone    = signal('');
   readonly loginPassword = signal('');
@@ -31,10 +32,9 @@ export class AuthModalComponent {
   readonly registerLoading = signal(false);
   readonly registerError   = signal('');
 
-  close() { this.modal.close(); }
-
-  onOverlayClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) this.close();
+  private goToMenu() {
+    const slug = this.restaurantSvc.current()?.slug;
+    this.router.navigate(['/', slug, 'menu']);
   }
 
   submitLogin() {
@@ -49,7 +49,7 @@ export class AuthModalComponent {
     this.auth.login(this.loginPhone(), this.loginPassword(), slug).subscribe({
       next: () => {
         this.toast.success('Bienvenue !');
-        this.close();
+        this.goToMenu();
       },
       error: () => {
         this.loginError.set('Numéro de téléphone ou mot de passe incorrect.');
@@ -70,7 +70,7 @@ export class AuthModalComponent {
     this.auth.register(this.regPhone(), this.regPassword(), this.fullName(), slug).subscribe({
       next: () => {
         this.toast.success('Compte créé avec succès !');
-        this.close();
+        this.goToMenu();
       },
       error: (err) => {
         this.registerError.set(err?.error?.message ?? 'Impossible de créer le compte. Réessayez.');

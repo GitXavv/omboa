@@ -1,7 +1,6 @@
 <div class="sa-page">
   <header class="sa-header">
     <h1>Logs super admin</h1>
-    <a routerLink="/osuper/dashboard" class="btn btn--ghost btn--sm">← Retour</a>
   </header>
 
   @if (loading()) {
@@ -21,9 +20,9 @@
     </div>
 
     <div class="sa-pagination">
-      <button class="btn btn--ghost btn--sm" [disabled]="page() === 1" (click)="prevPage()">← Précédent</button>
+      <button class="btn btn--ghost btn--sm" [disabled]="page() === 1" (click)="prevPage()"><- Précédent</button>
       <span class="text-muted">Page {{ page() }}</span>
-      <button class="btn btn--ghost btn--sm" [disabled]="logs().length < 50" (click)="nextPage()">Suivant →</button>
+      <button class="btn btn--ghost btn--sm" [disabled]="logs().length < 50" (click)="nextPage()">Suivant -></button>
     </div>
   }
 </div>

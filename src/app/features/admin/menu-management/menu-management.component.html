@@ -18,7 +18,7 @@
             <img [src]="cat.image_url" [alt]="cat.name" class="cat-section__thumb">
           }
           <div class="cat-section__info">
-            <h3 [class.cat-inactive]="!cat.is_active">{{ cat.name }}{{ !cat.is_active ? ' — désactivée' : '' }}</h3>
+            <h3 [class.cat-inactive]="!cat.is_active">{{ cat.name }}{{ !cat.is_active ? ' - désactivée' : '' }}</h3>
             @if (cat.description) { <p class="cat-section__desc">{{ cat.description }}</p> }
           </div>
           <div class="cat-section__actions">
@@ -35,7 +35,7 @@
               <div class="subcat-section__head flex-between">
                 <div class="subcat-section__info">
                   @if (sub.image_url) { <img [src]="sub.image_url" [alt]="sub.name" class="subcat-thumb"> }
-                  <h4 [class.cat-inactive]="!sub.is_active">{{ sub.name }}{{ !sub.is_active ? ' — désactivée' : '' }}</h4>
+                  <h4 [class.cat-inactive]="!sub.is_active">{{ sub.name }}{{ !sub.is_active ? ' - désactivée' : '' }}</h4>
                 </div>
                 <div style="display:flex;gap:4px">
                   <button class="btn btn--ghost btn--sm" (click)="openCreateProduct(sub.id)">+ Plat</button>

@@ -26,7 +26,7 @@ export class SuperAdminAuthService {
     );
   }
 
-  // Re-authentification avant une action sensible (désactivation d'un restaurant) — ne
+  // Re-authentification avant une action sensible (désactivation d'un restaurant) - ne
   // modifie pas la session, juste une vérification de la clé super admin courante.
   verifyKey(key: string) {
     return this.http.post<void>(`${environment.apiUrl}/superadmin/auth/verify-key`, { key });

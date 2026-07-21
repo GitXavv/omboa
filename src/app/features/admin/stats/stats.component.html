@@ -14,43 +14,32 @@
     <app-loader label="Chargement des statistiques…" />
   } @else if (stats()) {
 
-    <!-- KPI cards -->
-    <div class="kpi-grid">
-      <div class="kpi-card card">
-        <span class="kpi-card__icon">📋</span>
-        <div class="kpi-card__body">
-          <div class="kpi-card__value">{{ stats()!.total_orders | number }}</div>
-          <div class="kpi-card__label">Commandes totales</div>
-        </div>
-      </div>
-      <div class="kpi-card card">
-        <span class="kpi-card__icon">💰</span>
-        <div class="kpi-card__body">
-          <div class="kpi-card__value">{{ stats()!.total_revenue | number:'1.0-0' }}</div>
-          <div class="kpi-card__label">Chiffre d'affaires (FCFA)</div>
-        </div>
-      </div>
-      <div class="kpi-card card">
-        <span class="kpi-card__icon">🧾</span>
-        <div class="kpi-card__body">
-          <div class="kpi-card__value">{{ stats()!.avg_order_value | number:'1.0-0' }}</div>
-          <div class="kpi-card__label">Panier moyen (FCFA)</div>
-        </div>
-      </div>
-      <div class="kpi-card card">
-        <span class="kpi-card__icon">👤</span>
-        <div class="kpi-card__body">
-          <div class="kpi-card__value">{{ stats()!.total_customers | number }}</div>
-          <div class="kpi-card__label">Comptes clients</div>
-        </div>
-      </div>
-      <div class="kpi-card card">
-        <span class="kpi-card__icon">⭐</span>
-        <div class="kpi-card__body">
-          <div class="kpi-card__value">{{ stats()!.loyal_customers | number }}</div>
-          <div class="kpi-card__label">Clients fidèles actifs</div>
-        </div>
-      </div>
+    <!-- KPI : table clé/valeur, valeurs en pastille pleine -->
+    <div class="card stats-kv">
+      <table class="stats-kv__table">
+        <tbody>
+          <tr>
+            <td class="stats-kv__label">📋 Commandes totales</td>
+            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_orders | number }}</span></td>
+          </tr>
+          <tr>
+            <td class="stats-kv__label">💰 Chiffre d'affaires</td>
+            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_revenue | number:'1.0-0' }} FCFA</span></td>
+          </tr>
+          <tr>
+            <td class="stats-kv__label">🧾 Panier moyen</td>
+            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.avg_order_value | number:'1.0-0' }} FCFA</span></td>
+          </tr>
+          <tr>
+            <td class="stats-kv__label">👤 Comptes clients</td>
+            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_customers | number }}</span></td>
+          </tr>
+          <tr>
+            <td class="stats-kv__label">⭐ Clients fidèles actifs</td>
+            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.loyal_customers | number }}</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Deux colonnes -->
@@ -67,7 +56,7 @@
                   <td class="stats-td-label">
                     <span class="status-badge status-badge--{{ row.status }}">{{ statusFr[row.status] ?? row.status }}</span>
                   </td>
-                  <td class="stats-td-value">{{ row.count | number }}</td>
+                  <td class="stats-td-value-cell"><span class="stats-kv__value">{{ row.count | number }}</span></td>
                 </tr>
               }
             </tbody>

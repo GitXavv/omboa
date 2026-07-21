@@ -55,7 +55,7 @@
   padding: 11px 12px;
   border-radius: var(--radius-md);
   text-decoration: none;
-  /* Icône en mask-image (background-color: currentColor) — suit automatiquement. */
+  /* Icône en mask-image (background-color: currentColor) - suit automatiquement. */
   color: var(--color-secondary);
   font-size: 0.875rem;
   font-weight: 600;
@@ -237,7 +237,7 @@
 }
 .adm-notif-row:hover { background: var(--color-bg-subtle); }
 
-/* ── Responsive : sidebar → tiroir ─────────────────────────────────────────── */
+/* ── Responsive : sidebar -> tiroir ─────────────────────────────────────────── */
 @media (max-width: 860px) {
   .adm-mobile-bar { display: flex; }
 

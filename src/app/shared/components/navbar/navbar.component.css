@@ -304,7 +304,7 @@
   width: 22px;
   height: 22px;
   object-fit: contain;
-  /* Le logo est sombre à l'origine — inversé en blanc pour ressortir sur le fond
+  /* Le logo est sombre à l'origine - inversé en blanc pour ressortir sur le fond
      --color-secondary du header, comme c'était déjà le cas sur le bandeau table. */
   filter: brightness(0) invert(1);
   opacity: 0.92;
@@ -339,7 +339,7 @@
   display: none;
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  /* Au-dessus de .auth-modal-overlay (z-index 4000) — la barre du bas doit rester
+  /* Au-dessus de .auth-modal-overlay (z-index 4000) - la barre du bas doit rester
      visible/accessible même quand la modale connexion/inscription est ouverte. */
   z-index: 4100;
   height: var(--bottom-nav-h);
@@ -370,7 +370,7 @@
 .bottom-nav__icon  { font-size: 1.25rem; line-height: 1; position: relative; }
 .bottom-nav__label { letter-spacing: 0.01em; }
 
-/* Icônes Menu/Connexion — coloriées selon la couleur secondaire du restaurant */
+/* Icônes Menu/Connexion - coloriées selon la couleur secondaire du restaurant */
 .bottom-nav__icon--menu, .bottom-nav__icon--account {
   width: 22px;
   height: 22px;
@@ -481,31 +481,3 @@
   .cart-overlay { display: block; }
   /* Sur desktop, le cart-overlay est géré via le dropdown inline */
 }
-
-/* ── Avertissement quitter le mode table ──────────────────────────────────── */
-.menu-nav-warning-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 5000;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.menu-nav-warning {
-  width: 100%;
-  max-width: 420px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.menu-nav-warning p { margin: 0; color: var(--color-text); line-height: 1.6; font-size: 0.9375rem; }
-.menu-nav-warning__question { font-weight: 600; }
-.menu-nav-warning__actions { display: flex; gap: 10px; }

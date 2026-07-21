@@ -12,7 +12,7 @@ interface AuthResponse {
   profile: Customer;
 }
 
-// Session client (Supabase Auth) — le staff n'utilise plus jamais ce service,
+// Session client (Supabase Auth) - le staff n'utilise plus jamais ce service,
 // voir StaffAuthService pour les rôles owner/cook/receptionist/exit.
 @Injectable({ providedIn: 'root' })
 export class AuthService {

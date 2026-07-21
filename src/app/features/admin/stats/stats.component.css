@@ -1,24 +1,23 @@
 .admin-page { padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 28px; max-width: 1100px; }
 .admin-header { flex-wrap: wrap; gap: 16px; align-items: flex-start; }
 
-/* ── KPI cards ─────────────────────────────────────────────────────────────── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+/* ── KPI : table clé/valeur façon XO-PackShip (valeur en pastille pleine) ───── */
+.stats-kv { padding: 8px 24px; }
+.stats-kv__table { width: 100%; border-collapse: collapse; }
+.stats-kv__table tr { border-bottom: 1px solid var(--color-border); }
+.stats-kv__table tr:last-child { border-bottom: none; }
+.stats-kv__label { padding: 16px 8px; font-weight: 600; color: var(--color-text); }
+.stats-kv__value-cell { padding: 12px 8px; text-align: right; }
+.stats-kv__value {
+  display: inline-block;
+  background: rgba(var(--color-primary-rgb), 0.82);
+  color: var(--color-on-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
 }
-@media (max-width: 1050px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 640px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-
-.kpi-card {
-  padding: 20px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.kpi-card__icon  { font-size: 1.75rem; flex-shrink: 0; }
-.kpi-card__value { font-size: 1.5rem; font-weight: 700; font-family: var(--font-display); color: var(--color-primary); line-height: 1; }
-.kpi-card__label { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px; line-height: 1.3; }
 
 /* ── Two-column layout ─────────────────────────────────────────────────────── */
 .stats-two-col {
@@ -50,14 +49,7 @@
 .stats-table { width: 100%; border-collapse: collapse; }
 
 .stats-td-label { padding: 8px 4px; }
-.stats-td-value {
-  padding: 8px 12px;
-  text-align: right;
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-accent);
-}
+.stats-td-value-cell { padding: 8px 4px; text-align: right; }
 
 /* ── Top products ──────────────────────────────────────────────────────────── */
 .top-products { display: flex; flex-direction: column; gap: 4px; }

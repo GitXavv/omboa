@@ -31,7 +31,7 @@ export class AdminSettingsComponent implements OnInit {
   readonly newKey       = signal('');
   readonly saving       = signal(false);
 
-  // Re-authentification (clé owner) requise avant de révéler le champ de changement —
+  // Re-authentification (clé owner) requise avant de révéler le champ de changement -
   // pendingRole = le rôle qu'on s'apprête à éditer, en attente de cette vérification.
   readonly pendingRole   = signal<StaffRole | null>(null);
   readonly reauthKey     = signal('');
@@ -72,7 +72,7 @@ export class AdminSettingsComponent implements OnInit {
       error: err => {
         this.verifying.set(false);
         if (err?.error?.locked) {
-          // 5 échecs : session perdue, retour à la page principale du restaurant —
+          // 5 échecs : session perdue, retour à la page principale du restaurant -
           // le verrouillage de 10 minutes est déjà actif côté serveur pour cette IP.
           this.staffAuth.logout();
           return;

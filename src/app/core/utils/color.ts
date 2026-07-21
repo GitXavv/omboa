@@ -1,4 +1,4 @@
-// Petits utilitaires couleur — servent à dériver, à partir des 2 couleurs de marque
+// Petits utilitaires couleur - servent à dériver, à partir des 2 couleurs de marque
 // choisies par un restaurant (primary/secondary), toutes les variantes dont le design
 // system a besoin (survol, estompé) et un texte de contraste sûr (pas de blanc sur
 // une couleur trop claire). Aucune dépendance externe, tout en JS pur sur du RGB.
@@ -21,7 +21,7 @@ export function rgbToHex({ r, g, b }: Rgb): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-// Luminance relative WCAG — sert à décider si un texte blanc ou foncé est lisible
+// Luminance relative WCAG - sert à décider si un texte blanc ou foncé est lisible
 // par-dessus une couleur donnée.
 function relativeLuminance({ r, g, b }: Rgb): number {
   const srgb = [r, g, b].map(v => {
@@ -37,7 +37,7 @@ function contrastRatio(l1: number, l2: number): number {
 }
 
 // Choisit blanc ou un texte sombre selon celui qui offre le meilleur contraste sur
-// la couleur donnée — évite le texte blanc illisible si le restaurant choisit une
+// la couleur donnée - évite le texte blanc illisible si le restaurant choisit une
 // couleur de marque trop claire.
 export function contrastForeground(hex: string, darkText = '#1a1008'): string {
   const rgb = hexToRgb(hex);
@@ -49,7 +49,7 @@ export function contrastForeground(hex: string, darkText = '#1a1008'): string {
 }
 
 // Éclaircit (amount > 0) ou assombrit (amount < 0) une couleur en l'interpolant
-// vers le blanc ou le noir — sert à générer les variantes -light/-dark au survol.
+// vers le blanc ou le noir - sert à générer les variantes -light/-dark au survol.
 export function shade(hex: string, amount: number): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return hex;
@@ -70,7 +70,7 @@ export function toRgba(hex: string, alpha: number): string {
 
 export interface Hsv { h: number; s: number; v: number; }
 
-// Conversions HSV ↔ RGB — servent au color picker complet (carré saturation/valeur +
+// Conversions HSV <-> RGB - servent au color picker complet (carré saturation/valeur +
 // curseur de teinte), où l'utilisateur manipule teinte/saturation/valeur plutôt que
 // des composantes RVB directement.
 export function rgbToHsv({ r, g, b }: Rgb): Hsv {
@@ -110,7 +110,7 @@ export function hsvToHex(hsv: Hsv): string {
   return rgbToHex(hsvToRgb(hsv));
 }
 
-// Reprend uniquement la TEINTE de `hex` en lui imposant une saturation/valeur fixes —
+// Reprend uniquement la TEINTE de `hex` en lui imposant une saturation/valeur fixes -
 // sert à décliner les tons neutres du thème (texte discret, bordures, fonds de carte…)
 // dans la teinte du restaurant tout en gardant leur "poids" visuel d'origine (même
 // luminosité/contraste qu'avec la palette par défaut, jamais plus clair/saturé).

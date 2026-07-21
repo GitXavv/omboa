@@ -9,7 +9,7 @@ export interface CreateOrderPayload {
   customer_id?: string;
   items: { product_id: string; quantity: number; unit_price: number; notes?: string }[];
   notes?: string;
-  // Réduction fidélité choisie par le client — figée à la commande, jamais recalculée
+  // Réduction fidélité choisie par le client - figée à la commande, jamais recalculée
   // au paiement (voir OrdersController.Create).
   points_to_spend?: number;
 }
