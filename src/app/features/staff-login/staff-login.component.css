@@ -1,48 +1,126 @@
-.staff-login-page {
-  min-height: calc(100vh - var(--navbar-h));
+/* Écran volontairement toujours sombre (peu importe le thème clair/sombre du site),
+   même logique que les overlays déjà en place (product-modal-overlay, etc.). */
+.key-login-page {
+  position: relative;
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: var(--color-bg-subtle);
+  background: #1c130b;
+  overflow: hidden;
 }
 
-.staff-login-card {
+/* ── Fond façon papier peint WhatsApp : petites icônes répétées et entremêlées ── */
+.key-login-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+.key-login-bg__pattern {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  mask-repeat: repeat, repeat, repeat, repeat;
+  mask-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px;
+  mask-position: 0 0, 100px 100px, 100px 0, 0 100px;
+  mask-image:
+    url('/icons/fork-and-spoon.png'),
+    url('/icons/money.png'),
+    url('/icons/nav-kitchen.svg'),
+    url('/icons/commandes-logo.png');
+  -webkit-mask-repeat: repeat, repeat, repeat, repeat;
+  -webkit-mask-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px;
+  -webkit-mask-position: 0 0, 100px 100px, 100px 0, 0 100px;
+  -webkit-mask-image:
+    url('/icons/fork-and-spoon.png'),
+    url('/icons/money.png'),
+    url('/icons/nav-kitchen.svg'),
+    url('/icons/commandes-logo.png');
+}
+
+/* Icône plus grande, seule, par-dessus le motif répété */
+.key-login-bg__watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.06);
+  mask-image: url('/icons/suspect.png');
+  -webkit-mask-image: url('/icons/suspect.png');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+/* ── Carte : logo à gauche, rôle + clé à droite ───────────────────────────── */
+.key-login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 360px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 32px;
+  max-width: 520px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: var(--shadow-md);
+  align-items: center;
+  gap: 28px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
 }
 
-.staff-login-title {
+.key-login-logo {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.key-login-body { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.key-login-role {
   font-family: var(--font-display);
   font-size: 1.5rem;
-  color: var(--color-text);
-  text-align: center;
+  font-weight: 700;
+  color: #fdf6ee;
   margin: 0;
 }
 
-.staff-login-hint {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  text-align: center;
-  margin: 0 0 8px;
+.key-login-hint {
+  font-size: 0.9375rem;
+  color: rgba(253, 246, 238, 0.68);
+  margin: 0 0 14px;
 }
 
-.staff-login-input {
-  text-align: center;
+.key-login-form { display: flex; flex-direction: column; gap: 12px; }
+
+.key-login-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fdf6ee;
   letter-spacing: 0.1em;
 }
+.key-login-input::placeholder { color: rgba(253, 246, 238, 0.4); }
+.key-login-input:focus { border-color: var(--color-primary); }
+.key-login-input:disabled { opacity: 0.5; }
 
-.staff-login-error {
-  font-size: 0.8125rem;
-  color: var(--color-error);
+/* ── Erreur : plus bas, centrée ────────────────────────────────────────────── */
+.key-login-error {
+  position: relative;
+  z-index: 1;
+  margin: 28px 0 0;
   text-align: center;
-  margin: -8px 0 0;
+  color: #ffb4a8;
+  font-size: 0.875rem;
+  max-width: 420px;
+}
+
+@media (max-width: 560px) {
+  .key-login-card { flex-direction: column; text-align: center; padding: 28px 24px; gap: 18px; }
+  .key-login-body { align-items: center; }
+  .key-login-bg__watermark { width: 300px; height: 300px; }
 }

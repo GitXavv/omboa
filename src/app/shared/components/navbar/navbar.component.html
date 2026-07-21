@@ -2,13 +2,13 @@
   <div class="container navbar__inner">
 
     <!-- Logo du restaurant -->
-    <a [routerLink]="['/', slug(), 'menu']" class="navbar__logo">
+    <a [routerLink]="['/', slug(), 'menu']" class="navbar__logo" (click)="onMenuClick($event)">
       <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantSvc.current()?.name" class="navbar__logo-img">
     </a>
 
     <!-- Liens desktop -->
     <ul class="navbar__links">
-      <li><a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active">Menu</a></li>
+      <li><a [routerLink]="['/', slug(), 'menu']" routerLinkActive="active" (click)="onMenuClick($event)">Menu</a></li>
     </ul>
 
     <!-- Barre de recherche + bouton Ma commande -->

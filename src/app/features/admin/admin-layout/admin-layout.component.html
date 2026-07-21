@@ -17,7 +17,7 @@
     <div class="adm-sidebar__brand">
       <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantName()" class="adm-sidebar__logo">
       <div class="adm-sidebar__brand-text">
-        <span class="adm-sidebar__brand-tag">Admin PANEL</span>
+        <span class="adm-sidebar__brand-tag">Administration</span>
         <span class="adm-sidebar__brand-name">{{ restaurantName() }}</span>
       </div>
     </div>
@@ -25,7 +25,7 @@
     <nav class="adm-sidebar__nav">
       <a [routerLink]="['/', slug(), 'admin']" routerLinkActive="adm-nav__row--active" [routerLinkActiveOptions]="{ exact: true }" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--dashboard"></span>
-        <span class="adm-nav__label">Dashboard</span>
+        <span class="adm-nav__label">Tableau de bord</span>
       </a>
       <a [routerLink]="['/', slug(), 'admin', 'menu']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--menu"></span>

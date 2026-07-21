@@ -1,29 +1,35 @@
-<div class="staff-login-page">
-  <div class="staff-login-card">
-    <h1 class="staff-login-title">Accès staff</h1>
-    <p class="staff-login-hint">Saisissez votre clé d'accès.</p>
+<div class="key-login-page">
+  <div class="key-login-bg" aria-hidden="true">
+    <div class="key-login-bg__pattern"></div>
+    <div class="key-login-bg__watermark"></div>
+  </div>
 
-    <form (ngSubmit)="submit()">
-      <div class="form-group">
+  <div class="key-login-card">
+    <img [src]="restaurantSvc.logoUrl()" alt="" class="key-login-logo">
+
+    <div class="key-login-body">
+      <h1 class="key-login-role">Accès staff</h1>
+      <p class="key-login-hint">Entrez la clé d'accès pour continuer</p>
+
+      <form (ngSubmit)="submit()" class="key-login-form">
         <input
           type="password"
-          class="form-control staff-login-input"
-          placeholder="Clé d'accès"
+          class="form-control key-login-input"
           autocomplete="off"
           [ngModel]="key()"
           (ngModelChange)="key.set($event)"
           name="key"
+          [disabled]="locked()"
           autofocus
         >
-      </div>
-
-      @if (error()) {
-        <p class="staff-login-error">{{ error() }}</p>
-      }
-
-      <button type="submit" class="btn btn--primary btn--full" [disabled]="loading() || !key().trim()">
-        @if (loading()) { Vérification… } @else { Entrer }
-      </button>
-    </form>
+        <button type="submit" class="btn btn--primary btn--full" [disabled]="loading() || locked() || !key().trim()">
+          @if (loading()) { Vérification… } @else { Entrer }
+        </button>
+      </form>
+    </div>
   </div>
+
+  @if (error()) {
+    <p class="key-login-error">{{ error() }}</p>
+  }
 </div>

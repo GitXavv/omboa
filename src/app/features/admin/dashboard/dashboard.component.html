@@ -9,26 +9,20 @@
     <!-- Situation du service -->
     <div class="dash-strip">
       <div class="dash-strip__stat">
-        <span class="dash-strip__icon dash-strip__icon--orders"></span>
-        <span class="dash-strip__lbl">Commandes actives</span>
-        <span class="dash-strip__n">{{ activeCount() }}</span>
+        <span class="dash-strip__icon dash-strip__icon--tables"></span>
+        <span class="dash-strip__lbl">Tables</span>
+        <span class="dash-strip__n">{{ tableCount() }}</span>
       </div>
       <div class="dash-strip__sep"></div>
       <div class="dash-strip__stat">
-        <span class="dash-strip__icon dash-strip__icon--clock"></span>
-        <span class="dash-strip__lbl">En attente</span>
-        <span class="dash-strip__n">{{ pendingCount() }}</span>
-      </div>
-      <div class="dash-strip__sep"></div>
-      <div class="dash-strip__stat">
-        <span class="dash-strip__icon dash-strip__icon--kitchen"></span>
-        <span class="dash-strip__lbl">En cuisine</span>
-        <span class="dash-strip__n">{{ preparingCount() }}</span>
+        <span class="dash-strip__icon dash-strip__icon--menu"></span>
+        <span class="dash-strip__lbl">Plats & boissons</span>
+        <span class="dash-strip__n">{{ productCount() }}</span>
       </div>
       <div class="dash-strip__sep"></div>
       <div class="dash-strip__stat dash-strip__stat--wide">
         <span class="dash-strip__icon dash-strip__icon--cash"></span>
-        <span class="dash-strip__lbl">Encaissés</span>
+        <span class="dash-strip__lbl">Revenus</span>
         <span class="dash-strip__n">{{ revenue() | number:'1.0-0' }}<span class="dash-strip__unit"> FCFA</span></span>
       </div>
     </div>
@@ -58,7 +52,7 @@
       <!-- Plats du menu (les plus commandés) -->
       <div class="dash-section">
         <div class="dash-section__hd">
-          <p class="dash-section__title">Plats du menu</p>
+          <p class="dash-section__title">Plats et boissons</p>
           <a [routerLink]="['/', slug(), 'admin', 'menu']" class="btn btn--ghost btn--sm">Tout voir -></a>
         </div>
         @if (!previewProducts().length) {
@@ -66,11 +60,6 @@
         }
         @for (p of previewProducts(); track p.product_id) {
           <div class="dash-product-row">
-            @if (p.product_image_url) {
-              <img [src]="p.product_image_url" [alt]="p.product_name" class="dash-product-row__img">
-            } @else {
-              <span class="dash-product-row__img dash-product-row__img--empty">-</span>
-            }
             <span class="dash-product-row__name">{{ p.product_name }}</span>
             <span class="dash-product-row__qty">{{ p.total_quantity }} vendus</span>
           </div>
@@ -136,7 +125,7 @@
           </p>
         </div>
         <label class="availability-toggle" [attr.aria-label]="loyaltyEnabled() ? 'Désactiver les avantages fidélité' : 'Activer les avantages fidélité'">
-          <input type="checkbox" [checked]="loyaltyEnabled()" (change)="requestToggleLoyalty()">
+          <input type="checkbox" [checked]="loyaltyEnabled()" (click)="$event.preventDefault(); requestToggleLoyalty()">
           <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
         </label>
       </div>

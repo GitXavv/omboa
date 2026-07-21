@@ -2,7 +2,11 @@
 @if (tableError()) {
   <div class="table-error">
     <div class="container table-error__inner">
-      <span class="table-error__icon">⚠️</span>
+      @if (tableErrorType() === 'occupied') {
+        <span class="table-error__icon table-error__icon--occupied"></span>
+      } @else {
+        <span class="table-error__icon">⚠️</span>
+      }
       <h2>Oups !</h2>
       <p>{{ tableError() }}</p>
       <a routerLink="/" class="btn btn--primary">Retour à l'accueil</a>
@@ -48,10 +52,9 @@
 
   <!-- Bandeau table -->
   <div class="table-banner">
-    <div class="container">
-      <span class="table-banner__label">
-        📍 {{ table()!.number }}
-      </span>
+    <div class="container table-banner__inner">
+      <span class="table-banner__icon"></span>
+      <span class="table-banner__label">{{ table()!.number }}</span>
     </div>
   </div>
 
@@ -69,6 +72,32 @@
         </p>
       </div>
     </div>
+
+    @if (trendProducts().length) {
+      <!-- Volet "Notre sélection" - défilement horizontal, identique à la page menu visiteur -->
+      <div class="table-menu-body container">
+        <div class="menu-trend">
+          <div class="menu-trend__header">
+            <h2>Notre sélection</h2>
+          </div>
+          <div class="menu-trend__scroller">
+            @for (p of trendProducts(); track p.id) {
+              <button class="menu-trend__card" (click)="openProduct(p)">
+                <div class="menu-trend__img">
+                  @if (p.image_url) {
+                    <img [src]="p.image_url" [alt]="p.name" loading="lazy">
+                  } @else {
+                    <span>🍽️</span>
+                  }
+                </div>
+                <span class="menu-trend__name">{{ p.name }}</span>
+                <span class="menu-trend__price">{{ p.price | number:'1.0-0' }} FCFA</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Bandeau promo fidélité (non connecté, < 2 fermetures) -->
     @if (showLoyaltyPromo()) {
@@ -224,7 +253,6 @@
   <!-- ── ÉTAPE 2 : Ma commande ────────────────────────────────────── -->
   @if (step() === 'cart') {
     <div class="cart-page container">
-      <button class="btn btn--ghost btn--sm" (click)="goToMenu()"><- Continuer mes achats</button>
       <h2>Ma commande</h2>
 
       @if (!cart.items().length) {

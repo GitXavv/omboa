@@ -9,6 +9,19 @@
   max-width: 400px;
 }
 .table-error__icon { font-size: 3rem; }
+.table-error__icon--occupied {
+  width: 72px;
+  height: 72px;
+  background-color: var(--color-primary);
+  mask-image: url('/icons/occupied.png');
+  -webkit-mask-image: url('/icons/occupied.png');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
 
 /* ── Bandeau table ────────────────────────────────────────────────────────── */
 .table-banner {
@@ -18,6 +31,21 @@
   position: sticky;
   top: var(--navbar-h);
   z-index: 100;
+}
+.table-banner__inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.table-banner__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-color: #fff;
+  mask-image: url('/icons/nav-tables.svg');
+  -webkit-mask-image: url('/icons/nav-tables.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
 }
 .table-banner__label { font-weight: 600; font-size: 0.9375rem; }
 
@@ -83,6 +111,54 @@
 
 /* ── Corps du menu (accordéon) ────────────────────────────────────────────── */
 .table-menu-body { padding-top: 32px; padding-bottom: 100px; }
+
+/* ── Notre sélection (carousel horizontal, centré, couleur secondaire) ─────── */
+.menu-trend { margin-bottom: 40px; text-align: center; }
+.menu-trend__header { margin-bottom: 16px; }
+.menu-trend__header h2 { margin-top: 4px; color: var(--color-secondary); }
+
+.menu-trend__scroller {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.menu-trend__scroller::-webkit-scrollbar { height: 6px; }
+
+.menu-trend__card {
+  flex: 0 0 auto;
+  width: 168px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  text-align: left;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.menu-trend__card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.menu-trend__img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+.menu-trend__img img { width: 100%; height: 100%; object-fit: cover; }
+
+.menu-trend__name { font-weight: 600; font-size: 0.9375rem; color: var(--color-text); }
+.menu-trend__price { font-size: 0.8125rem; color: var(--color-secondary); font-weight: 700; }
 
 .menu-accordion { display: flex; flex-direction: column; gap: 10px; }
 

@@ -17,9 +17,10 @@ export class SuperAdminLoginComponent {
   readonly key     = signal('');
   readonly loading = signal(false);
   readonly error   = signal('');
+  readonly locked  = signal(false);
 
   submit() {
-    if (!this.key().trim()) return;
+    if (!this.key().trim() || this.locked()) return;
     this.loading.set(true);
     this.error.set('');
 
@@ -28,6 +29,12 @@ export class SuperAdminLoginComponent {
       error: err => {
         this.error.set(err?.error?.message ?? 'Clé incorrecte.');
         this.loading.set(false);
+        // Trop de tentatives : on éloigne rapidement du formulaire (verrou serveur actif
+        // 5 minutes, même après rechargement de la page).
+        if (err?.error?.locked || err?.status === 429) {
+          this.locked.set(true);
+          setTimeout(() => this.router.navigate(['/']), 1800);
+        }
       }
     });
   }

@@ -164,6 +164,22 @@ export class TableComponent implements OnInit, OnDestroy {
   readonly cartQuantity = (productId: string) =>
     this.cart.items().find(i => i.product.id === productId)?.quantity ?? 0;
 
+  readonly allProducts = computed<Product[]>(() => {
+    const result: Product[] = [];
+    for (const cat of this.categories()) {
+      result.push(...(cat.products ?? []));
+      for (const sub of (cat.subcategories ?? [])) result.push(...(sub.products ?? []));
+    }
+    return result;
+  });
+
+  // Volet "Notre sélection" - identique à la page menu visiteur, affiché ici pour que le
+  // menu vu depuis une table n'en soit jamais dépourvu (plus qu'une seule version du menu
+  // côté client, celle-ci, avec Notre sélection).
+  readonly trendProducts = computed<Product[]>(() =>
+    this.allProducts().filter(p => p.trend && p.is_available)
+  );
+
   private subs = new Subscription();
   private cashCountdownInterval?: ReturnType<typeof setInterval>;
   private readonly PROMO_KEY   = 'omboa_loyalty_promo_dismissed';

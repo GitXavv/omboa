@@ -288,6 +288,24 @@ p  { line-height: 1.7; }
 .spinner--sm { width: 20px; height: 20px; border-width: 2px; }
 .spinner--lg { width: 52px; height: 52px; border-width: 4px; }
 
+/* Icônes en mask-image (background-color: currentColor - suit la couleur du texte du
+   bouton qui les contient, sauf si surchargées explicitement, ex. couleur secondaire). */
+.icon-pencil, .icon-trending {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: currentColor;
+  vertical-align: middle;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.icon-pencil   { mask-image: url('/icons/pencil.png');        -webkit-mask-image: url('/icons/pencil.png'); }
+.icon-trending { mask-image: url('/icons/trending.png');      -webkit-mask-image: url('/icons/trending.png'); }
+
 /* Grilles */
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }

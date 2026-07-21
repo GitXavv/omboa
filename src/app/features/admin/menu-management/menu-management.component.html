@@ -24,7 +24,7 @@
           <div class="cat-section__actions">
             <button class="btn btn--ghost btn--sm" (click)="openCreateCategory(cat.id)">+ Sous-cat.</button>
             <button class="btn btn--primary btn--sm" (click)="openCreateProduct(cat.id)">+ Plat</button>
-            <button class="btn btn--ghost btn--sm" (click)="openEditCategory(cat)">✏️</button>
+            <button class="btn btn--ghost btn--sm" (click)="openEditCategory(cat)"><span class="icon-pencil"></span></button>
             <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('category', cat.id, cat.name)">🗑️</button>
           </div>
         </div>
@@ -39,7 +39,7 @@
                 </div>
                 <div style="display:flex;gap:4px">
                   <button class="btn btn--ghost btn--sm" (click)="openCreateProduct(sub.id)">+ Plat</button>
-                  <button class="btn btn--ghost btn--sm" (click)="openEditCategory(sub)">✏️</button>
+                  <button class="btn btn--ghost btn--sm" (click)="openEditCategory(sub)"><span class="icon-pencil"></span></button>
                   <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('category', sub.id, sub.name)">🗑️</button>
                 </div>
               </div>
@@ -55,10 +55,16 @@
                     </span>
                     <div class="product-row__actions">
                       <label class="availability-toggle" [attr.aria-label]="p.is_available ? 'Désactiver ce plat' : 'Activer ce plat'">
-                        <input type="checkbox" [checked]="p.is_available" (change)="toggleAvailability(p)">
+                        <input type="checkbox" [checked]="p.is_available" (click)="$event.preventDefault(); toggleAvailability(p)">
                         <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
                       </label>
-                      <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)">✏️</button>
+                      <button class="btn btn--ghost btn--sm trend-btn" [class.trend-btn--active]="p.trend"
+                        [attr.aria-label]="p.trend ? 'Retirer de Notre sélection' : 'Ajouter à Notre sélection'"
+                        [attr.title]="p.trend ? 'Retirer de Notre sélection' : 'Ajouter à Notre sélection'"
+                        (click)="toggleTrend(p)">
+                        <span class="icon-trending"></span>
+                      </button>
+                      <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)"><span class="icon-pencil"></span></button>
                       <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('product', p.id, p.name)">🗑️</button>
                     </div>
                   </div>
@@ -84,10 +90,16 @@
                 </span>
                 <div class="product-row__actions">
                   <label class="availability-toggle" [attr.aria-label]="p.is_available ? 'Désactiver ce plat' : 'Activer ce plat'">
-                    <input type="checkbox" [checked]="p.is_available" (change)="toggleAvailability(p)">
+                    <input type="checkbox" [checked]="p.is_available" (click)="$event.preventDefault(); toggleAvailability(p)">
                     <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
                   </label>
-                  <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)">✏️</button>
+                  <button class="btn btn--ghost btn--sm trend-btn" [class.trend-btn--active]="p.trend"
+                    [attr.aria-label]="p.trend ? 'Retirer de Notre sélection' : 'Ajouter à Notre sélection'"
+                    [attr.title]="p.trend ? 'Retirer de Notre sélection' : 'Ajouter à Notre sélection'"
+                    (click)="toggleTrend(p)">
+                    <span class="icon-trending"></span>
+                  </button>
+                  <button class="btn btn--ghost btn--sm" (click)="openEditProduct(p)"><span class="icon-pencil"></span></button>
                   <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete('product', p.id, p.name)">🗑️</button>
                 </div>
               </div>

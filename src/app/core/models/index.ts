@@ -182,6 +182,7 @@ export interface AdminStats {
     product_id: string;
     product_name: string;
     product_image_url: string | null;
+    unit_price: number;
     total_quantity: number;
     order_count: number;
   }[];

@@ -125,6 +125,20 @@ export class MenuManagementComponent implements OnInit {
     );
   }
 
+  toggleTrend(p: Product) {
+    const next = !p.trend;
+    this.askConfirm(
+      next ? 'Mettre en avant ce plat' : 'Retirer de la sélection',
+      next
+        ? `"${p.name}" sera mis en avant au menu dans la section "Notre sélection" visible par tous les clients. Continuer ?`
+        : `"${p.name}" ne sera plus mis en avant au menu. Continuer ?`,
+      () => this.menuSvc.updateProduct(p.id, { trend: next }).subscribe({
+        next: () => { this.toast.success(next ? 'Ajouté à "Notre sélection"' : 'Retiré de "Notre sélection"'); this.load(); },
+        error: () => this.toast.error('Erreur lors de la mise à jour')
+      })
+    );
+  }
+
   openCreateProduct(categoryId: string) {
     this.formProduct.set({ category_id: categoryId, is_available: true, display_order: 0, trend: false });
     this.prodImagePreview.set(null);

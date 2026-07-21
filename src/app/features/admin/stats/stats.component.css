@@ -7,37 +7,12 @@
 .stats-section:first-child { padding-top: 0; }
 .stats-section:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* ── KPI : table clé/valeur façon XO-PackShip (valeur en pastille pleine) ───── */
+/* ── KPI : table clé/valeur ───────────────────────────────────────────────── */
 .stats-kv__table { width: 100%; border-collapse: collapse; }
 .stats-kv__table tr { border-bottom: 1px solid var(--color-border); }
 .stats-kv__table tr:last-child { border-bottom: none; }
 .stats-kv__label { padding: 16px 8px; font-weight: 600; color: var(--color-text); }
-.stats-kv__value-cell { padding: 12px 8px; text-align: right; }
-.stats-kv__value {
-  display: inline-block;
-  background: rgba(var(--color-primary-rgb), 0.82);
-  color: var(--color-on-primary);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.0625rem;
-  padding: 6px 16px;
-  border-radius: var(--radius-sm);
-}
-
-/* ── Two-column layout ─────────────────────────────────────────────────────── */
-.stats-two-col {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-  align-items: flex-start;
-}
-@media (max-width: 768px) { .stats-two-col { grid-template-columns: 1fr; } }
-
-.stats-block {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.stats-kv__value-cell { padding: 12px 8px; text-align: right; font-weight: 700; }
 
 .stats-block__title {
   font-family: var(--font-body);
@@ -46,39 +21,31 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin: 0;
+  margin: 0 0 16px;
 }
 
 /* ── Orders by status table ────────────────────────────────────────────────── */
 .stats-table { width: 100%; border-collapse: collapse; }
 
 .stats-td-label { padding: 8px 4px; }
-.stats-td-value-cell { padding: 8px 4px; text-align: right; }
+.stats-td-value-cell { padding: 8px 4px; text-align: right; font-weight: 700; }
 
-/* ── Top products ──────────────────────────────────────────────────────────── */
-.top-products { display: flex; flex-direction: column; gap: 4px; }
+/* ── Plats les plus commandés (menu entier, affichage compact) ───────────────── */
+.stats-products { display: flex; flex-direction: column; gap: 2px; }
 
-.top-product-row {
+.stats-product-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 4px;
   border-bottom: 1px solid var(--color-border);
   transition: background var(--transition-fast);
   border-radius: var(--radius-sm);
 }
-.top-product-row:last-child { border-bottom: none; }
-.top-product-row:hover { background: var(--color-bg-subtle); }
+.stats-product-row:last-child { border-bottom: none; }
+.stats-product-row:hover { background: var(--color-bg-subtle); }
 
-.top-product-row__rank {
-  min-width: 22px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-text-muted);
-  text-align: right;
-}
-
-.top-product-row__img {
+.stats-product-row__img {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-sm);
@@ -86,7 +53,7 @@
   flex-shrink: 0;
   border: 1px solid var(--color-border);
 }
-.top-product-row__img--empty {
+.stats-product-row__img--empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,8 +61,8 @@
   background: var(--color-bg-subtle);
 }
 
-.top-product-row__name  { flex: 1; font-size: 0.875rem; font-weight: 500; }
-.top-product-row__qty   { font-size: 0.875rem; font-weight: 700; color: var(--color-primary); white-space: nowrap; }
-.top-product-row__orders { font-size: 0.8rem; white-space: nowrap; min-width: 52px; text-align: right; }
+.stats-product-row__name   { flex: 1; font-size: 0.875rem; font-weight: 500; }
+.stats-product-row__price  { font-size: 0.8125rem; color: var(--color-text-muted); white-space: nowrap; }
+.stats-product-row__orders { font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); white-space: nowrap; min-width: 96px; text-align: right; }
 
 .empty-msg { color: var(--color-text-muted); font-size: 0.875rem; padding: 24px 0; text-align: center; }

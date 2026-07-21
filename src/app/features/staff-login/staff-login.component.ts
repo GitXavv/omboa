@@ -2,6 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StaffAuthService } from '../../core/services/staff-auth.service';
+import { RestaurantService } from '../../core/services/restaurant.service';
 
 @Component({
   selector: 'app-staff-login',
@@ -14,14 +15,16 @@ export class StaffLoginComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly staffAuth = inject(StaffAuthService);
+  readonly restaurantSvc = inject(RestaurantService);
 
   readonly key       = signal('');
   readonly loading    = signal(false);
   readonly error      = signal('');
+  readonly locked     = signal(false);
 
   submit() {
     const slug = this.route.parent?.snapshot.paramMap.get('restaurantSlug') ?? this.route.snapshot.paramMap.get('restaurantSlug');
-    if (!slug || !this.key().trim()) return;
+    if (!slug || !this.key().trim() || this.locked()) return;
 
     this.loading.set(true);
     this.error.set('');
@@ -33,6 +36,13 @@ export class StaffLoginComponent {
       error: err => {
         this.error.set(err?.error?.message ?? 'Clé incorrecte.');
         this.loading.set(false);
+        // Trop de tentatives : on éloigne rapidement du formulaire plutôt que de laisser
+        // le champ ouvert à d'autres essais (le verrou reste de toute façon actif côté
+        // serveur pendant 5 minutes, même après rechargement de la page).
+        if (err?.error?.locked || err?.status === 429) {
+          this.locked.set(true);
+          setTimeout(() => this.router.navigate(['/', slug, 'menu']), 1800);
+        }
       }
     });
   }

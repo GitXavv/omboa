@@ -66,7 +66,7 @@
               <button class="btn btn--ghost btn--sm" (click)="toggleActive(t)">
                 {{ t.is_active ? 'Désactiver' : 'Activer' }}
               </button>
-              <button class="btn btn--ghost btn--sm" (click)="startEdit(t)">✏️ Renommer</button>
+              <button class="btn btn--ghost btn--sm" (click)="startEdit(t)"><span class="icon-pencil"></span> Renommer</button>
               <a [href]="getTableUrl(t.id)" target="_blank" class="btn btn--outline btn--sm">Y accéder</a>
               <button class="btn btn--ghost btn--sm danger-btn" (click)="askDelete(t)">🗑️</button>
             </div>

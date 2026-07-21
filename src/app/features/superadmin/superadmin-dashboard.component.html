@@ -67,7 +67,7 @@
 
           <div class="restaurant-card__status-row">
             <label class="availability-toggle" [attr.aria-label]="r.is_active ? 'Désactiver ce restaurant' : 'Activer ce restaurant'">
-              <input type="checkbox" [checked]="r.is_active" (change)="onToggleActive(r)">
+              <input type="checkbox" [checked]="r.is_active" (click)="$event.preventDefault(); onToggleActive(r)">
               <span class="availability-toggle__track"><span class="availability-toggle__thumb"></span></span>
             </label>
             <span class="restaurant-card__status-label" [class.restaurant-card__status-label--active]="r.is_active">
