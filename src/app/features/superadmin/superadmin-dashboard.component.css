@@ -12,10 +12,25 @@
   padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
-.sa-stat__value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--color-primary); }
+.sa-stat__icon {
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-primary);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.sa-stat__icon--store  { mask-image: url('/icons/nav-store.svg');  -webkit-mask-image: url('/icons/nav-store.svg'); }
+.sa-stat__icon--check  { mask-image: url('/icons/nav-check.svg');  -webkit-mask-image: url('/icons/nav-check.svg'); }
+.sa-stat__icon--tables { mask-image: url('/icons/nav-tables.svg'); -webkit-mask-image: url('/icons/nav-tables.svg'); }
+.sa-stat__icon--orders { mask-image: url('/icons/nav-orders.svg'); -webkit-mask-image: url('/icons/nav-orders.svg'); }
 .sa-stat__label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+.sa-stat__value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--color-primary); }
 
 .sa-toolbar { display: flex; gap: 12px; align-items: center; }
 .sa-search {
@@ -176,7 +191,25 @@
 }
 .sa-modal__close:hover { color: var(--color-text); background: var(--color-bg-subtle); }
 
-/* ── Variantes : avertissement (désactivation/archivage) et petite modale (clé) ──── */
+.sa-modal__body {
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.sa-modal__body .form-group--full { grid-column: 1 / -1; }
+.sa-modal__footer { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px 18px; border-top: 1px solid var(--color-border); flex-shrink: 0; }
+
+@media (max-width: 560px) {
+  .sa-modal__body { grid-template-columns: 1fr; }
+}
+
+/* ── Variantes : avertissement (désactivation/archivage) et petite modale (clé) ────
+   Doivent venir après .sa-modal__body (même spécificité) pour gagner le cascade et
+   annuler son display:grid — sinon le texte se retrouve éclaté sur deux colonnes. */
 .sa-modal--warning { max-width: 460px; border: 1.5px solid var(--color-error); }
 .sa-modal--sm { max-width: 400px; }
 .sa-modal__body--warning { display: flex; flex-direction: column; gap: 14px; padding: 22px; }
@@ -193,22 +226,6 @@
 .sa-modal__body--stack .form-control:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-faded); outline: none; }
 .sa-modal__error { margin: 0; font-size: 0.8125rem; color: var(--color-error); }
 .danger-confirm { background: var(--color-error) !important; color: #fff !important; }
-
-.sa-modal__body {
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 20px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-.sa-modal__body .form-group--full { grid-column: 1 / -1; }
-.sa-modal__footer { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px 18px; border-top: 1px solid var(--color-border); flex-shrink: 0; }
-
-@media (max-width: 560px) {
-  .sa-modal__body { grid-template-columns: 1fr; }
-}
 
 .form-hint { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
 

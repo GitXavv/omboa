@@ -42,7 +42,7 @@
       }
       @for (log of logs(); track log.id) {
         <div class="log-row">
-          <span class="log-row__type log-type--{{ log.event_type | lowercase }}">{{ log.event_type }}</span>
+          <span class="log-row__type log-type--{{ log.event_type | lowercase }}">{{ eventTypeLabels[log.event_type] ?? log.event_type }}</span>
           <span class="log-row__desc">{{ log.description }}</span>
           <span class="log-row__time">{{ log.created_at | date:'dd/MM/yy HH:mm:ss' }}</span>
           <span class="log-row__user">

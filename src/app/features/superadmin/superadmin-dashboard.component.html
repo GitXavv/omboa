@@ -11,20 +11,24 @@
     @if (stats(); as s) {
       <div class="sa-stats">
         <div class="sa-stat">
-          <span class="sa-stat__value">{{ s.total_restaurants }}</span>
+          <span class="sa-stat__icon sa-stat__icon--store"></span>
           <span class="sa-stat__label">Restaurants</span>
+          <span class="sa-stat__value">{{ s.total_restaurants }}</span>
         </div>
         <div class="sa-stat">
-          <span class="sa-stat__value">{{ s.active_restaurants }}</span>
+          <span class="sa-stat__icon sa-stat__icon--check"></span>
           <span class="sa-stat__label">Actifs</span>
+          <span class="sa-stat__value">{{ s.active_restaurants }}</span>
         </div>
         <div class="sa-stat">
-          <span class="sa-stat__value">{{ s.total_tables }}</span>
+          <span class="sa-stat__icon sa-stat__icon--tables"></span>
           <span class="sa-stat__label">Tables au total</span>
+          <span class="sa-stat__value">{{ s.total_tables }}</span>
         </div>
         <div class="sa-stat">
-          <span class="sa-stat__value">{{ s.total_orders | number:'1.0-0' }}</span>
+          <span class="sa-stat__icon sa-stat__icon--orders"></span>
           <span class="sa-stat__label">Commandes traitées</span>
+          <span class="sa-stat__value">{{ s.total_orders | number:'1.0-0' }}</span>
         </div>
       </div>
     }
@@ -48,8 +52,8 @@
             <button class="restaurant-card__dots" (click)="toggleCardMenu(r.id)" aria-label="Options">⋮</button>
             @if (openCardMenu() === r.id) {
               <div class="restaurant-card__dropdown">
-                <button class="restaurant-card__dropdown-item" (click)="openEditForm(r)">✏️ Modifier</button>
-                <button class="restaurant-card__dropdown-item restaurant-card__dropdown-item--danger" (click)="requestArchive(r)">🗄️ Archiver</button>
+                <button class="restaurant-card__dropdown-item" (click)="openEditForm(r)">Modifier</button>
+                <button class="restaurant-card__dropdown-item restaurant-card__dropdown-item--danger" (click)="requestArchive(r)">Archiver</button>
               </div>
             }
           </div>
@@ -172,17 +176,34 @@
           <input class="form-control" [ngModel]="newRestaurant().name" (ngModelChange)="onNameChange($event)">
         </div>
         <div class="form-group">
-          <label>Tag (URL) - généré automatiquement à partir du nom</label>
+          <label>Tag (URL) - généré automatiquement</label>
           <input class="form-control" [ngModel]="newRestaurant().slug" readonly disabled>
         </div>
-        <div class="form-group">
-          <label>Clé admin initiale</label>
-          <input class="form-control" type="text" placeholder="Le futur owner pourra la changer ensuite"
-            [ngModel]="newRestaurant().owner_key" (ngModelChange)="newRestaurant.update(r => ({...r, owner_key: $event}))">
+        <div class="form-group form-group--full">
+          <label>Logo</label>
+          <label class="img-upload-area" [class.has-preview]="createLogoPreview()">
+            @if (createLogoPreview()) {
+              <img [src]="createLogoPreview()!" class="img-upload-preview" alt="Aperçu du logo">
+              <span class="img-upload-change">Changer l'image</span>
+            } @else {
+              <div class="img-upload-cta">
+                <span class="img-upload-icon">🖼️</span>
+                <span class="img-upload-text">Cliquer pour importer un logo</span>
+              </div>
+            }
+            <input type="file" accept="image/*" style="display:none" (change)="onCreateLogoFileChange($event)">
+          </label>
+          <p class="form-hint">Format carré recommandé pour un meilleur affichage - JPEG, PNG ou WebP - max 5 Mo</p>
         </div>
-        <div class="form-group">
+        <div class="form-group form-group--full">
+          <label>Clé admin initiale</label>
+          <input class="form-control" type="text"
+            [ngModel]="newRestaurant().owner_key" (ngModelChange)="newRestaurant.update(r => ({...r, owner_key: $event}))">
+          <p class="form-hint">Le futur administrateur de ce restaurant pourra le changer plus tard.</p>
+        </div>
+        <div class="form-group form-group--full">
           <label>Adresse</label>
-          <input class="form-control" type="text" placeholder="Ex. 123 Avenue de la Paix, Douala"
+          <input class="form-control" type="text"
             [ngModel]="newRestaurant().address" (ngModelChange)="newRestaurant.update(r => ({...r, address: $event}))">
         </div>
         <div class="form-group">
@@ -245,7 +266,7 @@
         </div>
         <div class="form-group form-group--full">
           <label>Adresse</label>
-          <input class="form-control" type="text" placeholder="Ex. 123 Avenue de la Paix, Douala"
+          <input class="form-control" type="text"
             [ngModel]="editForm().address" (ngModelChange)="editForm.update(f => ({...f, address: $event}))">
         </div>
         <div class="form-group">

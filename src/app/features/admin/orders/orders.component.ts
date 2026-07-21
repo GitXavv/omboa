@@ -9,11 +9,11 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
 const STATUS_FR: Record<string, string> = {
-  pending: 'En attente', preparing: 'En préparation', ready: 'Prête',
+  pending: 'En attente', confirmed: 'Acceptée', preparing: 'En préparation', ready: 'Prête',
   paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée', all: 'Toutes'
 };
 
-const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'preparing', 'ready', 'paid', 'served', 'released', 'cancelled'];
+const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'confirmed', 'preparing', 'ready', 'paid', 'served', 'released', 'cancelled'];
 
 @Component({
   selector: 'app-orders',

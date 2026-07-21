@@ -11,7 +11,8 @@ import { TableStatus, RecentOrder } from '../../../core/models';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
 const STATUS_FR: Partial<Record<string, string>> = {
-  served: 'Servie', cancelled: 'Annulée'
+  pending: 'En attente', confirmed: 'Acceptée', preparing: 'En préparation', ready: 'Prête',
+  paid: 'Payée', served: 'Servie', released: 'Libérée', cancelled: 'Annulée'
 };
 
 @Component({

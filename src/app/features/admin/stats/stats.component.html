@@ -14,82 +14,85 @@
     <app-loader label="Chargement des statistiques…" />
   } @else if (stats()) {
 
-    <!-- KPI : table clé/valeur, valeurs en pastille pleine -->
-    <div class="card stats-kv">
-      <table class="stats-kv__table">
-        <tbody>
-          <tr>
-            <td class="stats-kv__label">📋 Commandes totales</td>
-            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_orders | number }}</span></td>
-          </tr>
-          <tr>
-            <td class="stats-kv__label">💰 Chiffre d'affaires</td>
-            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_revenue | number:'1.0-0' }} FCFA</span></td>
-          </tr>
-          <tr>
-            <td class="stats-kv__label">🧾 Panier moyen</td>
-            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.avg_order_value | number:'1.0-0' }} FCFA</span></td>
-          </tr>
-          <tr>
-            <td class="stats-kv__label">👤 Comptes clients</td>
-            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_customers | number }}</span></td>
-          </tr>
-          <tr>
-            <td class="stats-kv__label">⭐ Clients fidèles actifs</td>
-            <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.loyal_customers | number }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="stats-sections">
 
-    <!-- Deux colonnes -->
-    <div class="stats-two-col">
+      <!-- KPI : table clé/valeur, valeurs en pastille pleine -->
+      <section class="stats-section">
+        <table class="stats-kv__table">
+          <tbody>
+            <tr>
+              <td class="stats-kv__label">Commandes totales</td>
+              <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_orders | number }}</span></td>
+            </tr>
+            <tr>
+              <td class="stats-kv__label">Chiffre d'affaires</td>
+              <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_revenue | number:'1.0-0' }} FCFA</span></td>
+            </tr>
+            <tr>
+              <td class="stats-kv__label">Panier moyen</td>
+              <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.avg_order_value | number:'1.0-0' }} FCFA</span></td>
+            </tr>
+            <tr>
+              <td class="stats-kv__label">Comptes clients</td>
+              <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.total_customers | number }}</span></td>
+            </tr>
+            <tr>
+              <td class="stats-kv__label">Clients fidèles actifs</td>
+              <td class="stats-kv__value-cell"><span class="stats-kv__value">{{ stats()!.loyal_customers | number }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-      <!-- Répartition par statut -->
-      <div class="card stats-block">
-        <h3 class="stats-block__title">Répartition des commandes</h3>
-        @if (stats()!.orders_by_status.length) {
-          <table class="stats-table">
-            <tbody>
-              @for (row of stats()!.orders_by_status; track row.status) {
-                <tr>
-                  <td class="stats-td-label">
-                    <span class="status-badge status-badge--{{ row.status }}">{{ statusFr[row.status] ?? row.status }}</span>
-                  </td>
-                  <td class="stats-td-value-cell"><span class="stats-kv__value">{{ row.count | number }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <p class="empty-msg">Aucune commande enregistrée.</p>
-        }
-      </div>
+      <!-- Deux colonnes -->
+      <section class="stats-section stats-two-col">
 
-      <!-- Top 10 plats -->
-      <div class="card stats-block">
-        <h3 class="stats-block__title">Top 10 plats commandés</h3>
-        @if (stats()!.top_products.length) {
-          <div class="top-products">
-            @for (p of stats()!.top_products; track p.product_id; let i = $index) {
-              <div class="top-product-row">
-                <span class="top-product-row__rank">{{ i + 1 }}</span>
-                @if (p.product_image_url) {
-                  <img [src]="p.product_image_url" [alt]="p.product_name" class="top-product-row__img">
-                } @else {
-                  <div class="top-product-row__img top-product-row__img--empty">🍽️</div>
+        <!-- Répartition par statut -->
+        <div class="stats-block">
+          <h3 class="stats-block__title">Répartition des commandes</h3>
+          @if (stats()!.orders_by_status.length) {
+            <table class="stats-table">
+              <tbody>
+                @for (row of stats()!.orders_by_status; track row.status) {
+                  <tr>
+                    <td class="stats-td-label">
+                      <span class="status-badge status-badge--{{ row.status }}">{{ statusFr[row.status] ?? row.status }}</span>
+                    </td>
+                    <td class="stats-td-value-cell"><span class="stats-kv__value">{{ row.count | number }}</span></td>
+                  </tr>
                 }
-                <span class="top-product-row__name">{{ p.product_name }}</span>
-                <span class="top-product-row__qty">{{ p.total_quantity | number }} servi{{ p.total_quantity > 1 ? 's' : '' }}</span>
-                <span class="top-product-row__orders text-muted">{{ p.order_count | number }} cmd.</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="empty-msg">Aucun plat commandé pour l'instant.</p>
-        }
-      </div>
+              </tbody>
+            </table>
+          } @else {
+            <p class="empty-msg">Aucune commande enregistrée.</p>
+          }
+        </div>
 
+        <!-- Top 10 plats -->
+        <div class="stats-block">
+          <h3 class="stats-block__title">Top 10 plats commandés</h3>
+          @if (stats()!.top_products.length) {
+            <div class="top-products">
+              @for (p of stats()!.top_products; track p.product_id; let i = $index) {
+                <div class="top-product-row">
+                  <span class="top-product-row__rank">{{ i + 1 }}</span>
+                  @if (p.product_image_url) {
+                    <img [src]="p.product_image_url" [alt]="p.product_name" class="top-product-row__img">
+                  } @else {
+                    <div class="top-product-row__img top-product-row__img--empty">🍽️</div>
+                  }
+                  <span class="top-product-row__name">{{ p.product_name }}</span>
+                  <span class="top-product-row__qty">{{ p.total_quantity | number }} servi{{ p.total_quantity > 1 ? 's' : '' }}</span>
+                  <span class="top-product-row__orders text-muted">{{ p.order_count | number }} cmd.</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-msg">Aucun plat commandé pour l'instant.</p>
+          }
+        </div>
+
+      </section>
     </div>
   }
 </div>

@@ -1,12 +1,33 @@
 <div class="sa-page">
-  <header class="sa-header">
-    <h1>Logs super admin</h1>
+  <header class="sa-header" style="flex-wrap:wrap;gap:12px">
+    <div>
+      <h1>Logs super admin</h1>
+      @if (!loading()) {
+        <p class="text-muted" style="font-size:.825rem">{{ total() }} événement{{ total() !== 1 ? 's' : '' }} enregistré{{ total() !== 1 ? 's' : '' }}</p>
+      }
+    </div>
+    <button class="btn btn--ghost btn--sm" [disabled]="downloading()" (click)="download()">
+      {{ downloading() ? '…' : '' }} Télécharger .txt
+    </button>
   </header>
+
+  <div class="sa-log-filters">
+    @for (t of eventTypes; track t) {
+      <button class="sa-log-filter-btn" [class.active]="eventType() === t" (click)="filter(t)">
+        {{ labels[t] }}
+      </button>
+    }
+  </div>
 
   @if (loading()) {
     <app-loader label="Chargement…" />
   } @else {
     <div class="sa-log-list">
+      <div class="sa-log-row sa-log-row--head">
+        <span>Type</span>
+        <span>Description</span>
+        <span>Date et heure</span>
+      </div>
       @for (l of logs(); track l.id) {
         <div class="sa-log-row">
           <span class="sa-log-row__type">{{ labels[l.event_type] ?? l.event_type }}</span>
@@ -20,9 +41,9 @@
     </div>
 
     <div class="sa-pagination">
-      <button class="btn btn--ghost btn--sm" [disabled]="page() === 1" (click)="prevPage()"><- Précédent</button>
+      <button class="btn btn--ghost btn--sm" [disabled]="page() === 1" (click)="prevPage()">Précédent</button>
       <span class="text-muted">Page {{ page() }}</span>
-      <button class="btn btn--ghost btn--sm" [disabled]="logs().length < 50" (click)="nextPage()">Suivant -></button>
+      <button class="btn btn--ghost btn--sm" [disabled]="logs().length < 50" (click)="nextPage()">Suivant</button>
     </div>
   }
 </div>

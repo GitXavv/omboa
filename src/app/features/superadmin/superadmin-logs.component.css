@@ -2,6 +2,23 @@
 .sa-header { display: flex; align-items: center; justify-content: space-between; }
 .sa-header h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--color-accent); }
 
+.sa-log-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.sa-log-filter-btn {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.03em;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.sa-log-filter-btn:hover { background: var(--color-bg-subtle); color: var(--color-text); }
+.sa-log-filter-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+
 .sa-log-list {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -18,6 +35,14 @@
   font-size: 0.875rem;
 }
 .sa-log-row:last-child { border-bottom: none; }
+.sa-log-row--head {
+  background: var(--color-bg-subtle);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
 .sa-log-row__type { font-weight: 600; }
 .sa-log-row__date { white-space: nowrap; font-size: 0.8125rem; }
 

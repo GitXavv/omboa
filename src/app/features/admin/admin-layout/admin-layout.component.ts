@@ -6,6 +6,7 @@ import { RealtimeService } from '../../../core/services/realtime.service';
 import { StaffAuthService } from '../../../core/services/staff-auth.service';
 import { TableService } from '../../../core/services/table.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { RestaurantService } from '../../../core/services/restaurant.service';
 
 interface TableIssueNotification {
   id: string;
@@ -33,6 +34,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   private readonly toast    = inject(ToastService);
   private readonly router   = inject(Router);
   readonly auth = inject(StaffAuthService);
+  readonly restaurantSvc = inject(RestaurantService);
 
   readonly slug           = computed(() => this.auth.currentStaff()?.restaurantSlug ?? '');
   readonly restaurantName = computed(() => this.auth.currentStaff()?.restaurantName ?? '');

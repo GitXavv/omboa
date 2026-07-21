@@ -49,6 +49,11 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly newRestaurant  = signal<CreateRestaurantPayload>(this.blankNewRestaurant());
   readonly creating       = signal(false);
 
+  // Logo à la création - même motif que l'édition, mais uploadé via un id temporaire
+  // (le restaurant n'existe pas encore).
+  readonly createLogoFile    = signal<File | null>(null);
+  readonly createLogoPreview = signal<string | null>(null);
+
   // Édition (nom/logo/couleurs) - jamais les clés d'accès, réservées à l'owner lui-même.
   readonly editingRestaurant = signal<Restaurant | null>(null);
   readonly editForm = signal<EditRestaurantForm>({ name: '', logo_url: '', color_primary: DEFAULT_COLOR_PRIMARY, color_secondary: DEFAULT_COLOR_SECONDARY, address: '' });
@@ -111,6 +116,8 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   openCreateForm() {
     this.newRestaurant.set(this.blankNewRestaurant());
+    this.createLogoFile.set(null);
+    this.createLogoPreview.set(null);
     this.showCreateForm.set(true);
   }
 
@@ -120,25 +127,39 @@ export class SuperAdminDashboardComponent implements OnInit {
 
   closeCreateForm() { this.showCreateForm.set(false); }
 
-  submitCreate() {
+  async onCreateLogoFileChange(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('Fichier trop volumineux (maximum 5 Mo).');
+      return;
+    }
+    this.createLogoFile.set(file);
+    this.createLogoPreview.set(await this.imgUpload.readAsDataUrl(file));
+  }
+
+  async submitCreate() {
     const r = this.newRestaurant();
     if (!r.name.trim() || !r.slug.trim() || !r.owner_key.trim()) {
       this.toast.error('Nom, slug et clé admin sont requis.');
       return;
     }
     this.creating.set(true);
-    this.superAdminSvc.createRestaurant(r).subscribe({
-      next: () => {
-        this.toast.success(`Restaurant "${r.name}" créé.`);
-        this.creating.set(false);
-        this.showCreateForm.set(false);
-        this.load();
-      },
-      error: err => {
-        this.toast.error(err?.error?.message ?? 'Impossible de créer le restaurant.');
-        this.creating.set(false);
-      }
-    });
+    try {
+      let logoUrl: string | undefined;
+      const file = this.createLogoFile();
+      if (file) logoUrl = await firstValueFrom(this.superAdminSvc.uploadLogoForNewRestaurant(file));
+
+      await firstValueFrom(this.superAdminSvc.createRestaurant({ ...r, logo_url: logoUrl }));
+
+      this.toast.success(`Restaurant "${r.name}" créé.`);
+      this.showCreateForm.set(false);
+      this.load();
+    } catch (err: any) {
+      this.toast.error(err?.error?.message ?? 'Impossible de créer le restaurant.');
+    } finally {
+      this.creating.set(false);
+    }
   }
 
   toggleCardMenu(id: string) {

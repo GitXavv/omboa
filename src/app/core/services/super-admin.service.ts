@@ -41,12 +41,26 @@ export class SuperAdminService {
       .pipe(map(r => r.url));
   }
 
+  // Avant création (le restaurant n'a pas encore d'id).
+  uploadLogoForNewRestaurant(file: File): Observable<string> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http
+      .post<{ url: string }>(`${this.base}/logo-upload`, form)
+      .pipe(map(r => r.url));
+  }
+
   getStats(): Observable<SuperAdminStats> {
     return this.http.get<SuperAdminStats>(`${this.base}/stats`);
   }
 
-  getLogs(page = 1): Observable<{ data: Log[]; total: number; page: number; limit: number }> {
-    return this.http.get<{ data: Log[]; total: number; page: number; limit: number }>(`${this.base}/logs?page=${page}`);
+  getLogs(page = 1, eventType = ''): Observable<{ data: Log[]; total: number; page: number; limit: number }> {
+    const query = eventType ? `&event_type=${encodeURIComponent(eventType)}` : '';
+    return this.http.get<{ data: Log[]; total: number; page: number; limit: number }>(`${this.base}/logs?page=${page}${query}`);
+  }
+
+  downloadLogs(): Observable<Blob> {
+    return this.http.get(`${this.base}/logs/download`, { responseType: 'blob' });
   }
 
   getDemoRequests(archived = false): Observable<DemoRequest[]> {

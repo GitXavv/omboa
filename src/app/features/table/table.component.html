@@ -476,7 +476,7 @@
               @if (payMethod() === 'orange_money' || payMethod() === 'mtn_momo') {
                 <div class="form-group" style="margin-top:12px">
                   <label>Numéro de téléphone</label>
-                  <input type="tel" class="form-control" placeholder="ex: 6XX XXX XXX"
+                  <input type="tel" class="form-control"
                     [value]="payPhone()"
                     (input)="payPhone.set($any($event.target).value)">
                 </div>

@@ -10,7 +10,7 @@
 /* ── KPI strip ─────────────────────────────────────────────────────────────── */
 .dash-strip {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0;
 }
 
@@ -18,18 +18,40 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   padding-right: 32px;
 }
 .dash-strip__stat--wide { flex: 2; }
 
 .dash-strip__sep {
   width: 1px;
-  height: 52px;
   background: var(--color-border);
   flex-shrink: 0;
   margin-right: 32px;
-  margin-bottom: 6px;
+}
+
+.dash-strip__icon {
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-primary);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+.dash-strip__icon--orders  { mask-image: url('/icons/nav-orders.svg');  -webkit-mask-image: url('/icons/nav-orders.svg'); }
+.dash-strip__icon--clock   { mask-image: url('/icons/nav-clock.svg');   -webkit-mask-image: url('/icons/nav-clock.svg'); }
+.dash-strip__icon--kitchen { mask-image: url('/icons/nav-kitchen.svg'); -webkit-mask-image: url('/icons/nav-kitchen.svg'); }
+.dash-strip__icon--cash    { mask-image: url('/icons/nav-cash.svg');    -webkit-mask-image: url('/icons/nav-cash.svg'); }
+
+.dash-strip__lbl {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
 }
 
 .dash-strip__n {
@@ -47,39 +69,29 @@
   color: var(--color-text-muted);
 }
 
-.dash-strip__lbl {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-muted);
-}
+/* ── Aperçus : sections séparées par une ligne fine, pas de container par bloc ── */
+.dash-sections { display: flex; flex-direction: column; }
+.dash-section { padding: 24px 0; border-bottom: 1px solid var(--color-border); }
+.dash-section:first-child { padding-top: 0; }
+.dash-section:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* ── Commandes récentes ────────────────────────────────────────────────────── */
-.dash-orders {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 28px 28px 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dash-orders__hd {
+.dash-section__hd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 12px;
 }
 
-.dash-orders__title {
+.dash-section__title {
   font-family: var(--font-display);
   font-style: italic;
   font-size: 1.125rem;
   margin: 0;
 }
 
+.empty-msg { color: var(--color-text-muted); font-size: 0.875rem; padding: 24px 0; text-align: center; }
+
+/* ── Commandes récentes ────────────────────────────────────────────────────── */
 .dash-order-row {
   display: grid;
   grid-template-columns: 1fr 52px 110px auto;
@@ -94,6 +106,58 @@
 .dash-order-row__time  { font-size: 0.8rem; color: var(--color-text-muted); }
 .dash-order-row__amt   { font-weight: 700; color: var(--color-primary); font-size: 0.875rem; text-align: right; white-space: nowrap; }
 .dash-order-row__curr  { font-weight: 400; color: var(--color-text-muted); font-size: 0.75rem; }
+
+/* ── Plats du menu (aperçu) ────────────────────────────────────────────────── */
+.dash-product-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.dash-product-row:last-child { border-bottom: none; }
+.dash-product-row__img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+.dash-product-row__img--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: var(--color-bg-subtle);
+}
+.dash-product-row__name { flex: 1; font-size: 0.875rem; font-weight: 500; }
+.dash-product-row__qty  { font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); white-space: nowrap; }
+
+/* ── Clients avec compte (aperçu) ──────────────────────────────────────────── */
+.dash-customer-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.dash-customer-row:last-child { border-bottom: none; }
+.dash-customer-row__name   { flex: 1; font-size: 0.875rem; font-weight: 600; }
+.dash-customer-row__phone  { font-size: 0.8rem; color: var(--color-text-muted); }
+.dash-customer-row__points { font-size: 0.8125rem; font-weight: 700; color: var(--color-primary); white-space: nowrap; }
+
+/* ── Statistiques (aperçu) ─────────────────────────────────────────────────── */
+.dash-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.dash-stat-row:last-child { border-bottom: none; }
+.dash-stat-row__lbl { font-size: 0.875rem; color: var(--color-text-muted); }
+.dash-stat-row__val { font-size: 0.875rem; font-weight: 700; color: var(--color-text); }
 
 /* ── Réglage : avantages des points de fidélité ───────────────────────────── */
 .dash-setting { padding: 24px 28px; }

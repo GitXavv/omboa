@@ -15,8 +15,11 @@
   <!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
   <aside class="adm-sidebar" [class.adm-sidebar--open]="mobileOpen()">
     <div class="adm-sidebar__brand">
-      <span class="adm-sidebar__brand-tag">Admin PANEL</span>
-      <span class="adm-sidebar__brand-name">{{ restaurantName() }}</span>
+      <img [src]="restaurantSvc.logoUrl()" [alt]="restaurantName()" class="adm-sidebar__logo">
+      <div class="adm-sidebar__brand-text">
+        <span class="adm-sidebar__brand-tag">Admin PANEL</span>
+        <span class="adm-sidebar__brand-name">{{ restaurantName() }}</span>
+      </div>
     </div>
 
     <nav class="adm-sidebar__nav">
@@ -42,7 +45,7 @@
       </a>
       <a [routerLink]="['/', slug(), 'admin', 'logs']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--logs"></span>
-        <span class="adm-nav__label">Historique</span>
+        <span class="adm-nav__label">Logs</span>
       </a>
       <a [routerLink]="['/', slug(), 'admin', 'customers']" routerLinkActive="adm-nav__row--active" class="adm-nav__row">
         <span class="adm-nav__icon adm-nav__icon--customers"></span>
