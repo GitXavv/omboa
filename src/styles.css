@@ -58,7 +58,10 @@
   --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.6);
 
-  --font-display: 'Playfair Display', Georgia, serif;
+  /* 'Eras Bold ITC' n'est pas une police libre (Monotype/ITC, pas sur Google Fonts) -
+     'Jost' est l'alternative gratuite la plus proche (géométrique, arrondie, même esprit
+     que Eras/Futura/Kabel), chargée via Google Fonts dans index.html. */
+  --font-display: 'Jost', 'Century Gothic', sans-serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
 
   --radius-sm:   6px;

@@ -1,35 +1,39 @@
 <div class="key-login-page">
-  <div class="key-login-bg" aria-hidden="true">
-    <div class="key-login-bg__pattern"></div>
-    <div class="key-login-bg__watermark"></div>
+
+  <div class="key-login-hero">
+    <span class="key-login-hero__icon" aria-hidden="true"></span>
   </div>
 
-  <div class="key-login-card">
-    <img [src]="restaurantSvc.logoUrl()" alt="" class="key-login-logo">
+  <div class="key-login-columns">
+    <div class="key-login-col key-login-col--logo">
+      <img [src]="restaurantSvc.logoUrl()" alt="" class="key-login-logo">
+    </div>
+    <div class="key-login-col key-login-col--form">
+      <div class="key-login-form-wrap">
+        <h1 class="key-login-role">Staff</h1>
+        <p class="key-login-hint">Entrez la clé d'accès pour continuer</p>
 
-    <div class="key-login-body">
-      <h1 class="key-login-role">Accès staff</h1>
-      <p class="key-login-hint">Entrez la clé d'accès pour continuer</p>
-
-      <form (ngSubmit)="submit()" class="key-login-form">
-        <input
-          type="password"
-          class="form-control key-login-input"
-          autocomplete="off"
-          [ngModel]="key()"
-          (ngModelChange)="key.set($event)"
-          name="key"
-          [disabled]="locked()"
-          autofocus
-        >
-        <button type="submit" class="btn btn--primary btn--full" [disabled]="loading() || locked() || !key().trim()">
-          @if (loading()) { Vérification… } @else { Entrer }
-        </button>
-      </form>
+        <form (ngSubmit)="submit()" class="key-login-form">
+          <input
+            type="password"
+            class="key-login-input"
+            autocomplete="off"
+            [ngModel]="key()"
+            (ngModelChange)="key.set($event)"
+            name="key"
+            [disabled]="locked()"
+            autofocus
+          >
+          <button type="submit" class="btn btn--primary btn--full" [disabled]="loading() || locked() || !key().trim()">
+            @if (loading()) { Vérification… } @else { Entrer }
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
   @if (error()) {
     <p class="key-login-error">{{ error() }}</p>
   }
+
 </div>
