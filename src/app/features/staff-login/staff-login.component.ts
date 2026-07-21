@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StaffAuthService } from '../../core/services/staff-auth.service';
@@ -11,7 +11,7 @@ import { RestaurantService } from '../../core/services/restaurant.service';
   templateUrl: './staff-login.component.html',
   styleUrl: './staff-login.component.css'
 })
-export class StaffLoginComponent {
+export class StaffLoginComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly staffAuth = inject(StaffAuthService);
@@ -21,6 +21,12 @@ export class StaffLoginComponent {
   readonly loading    = signal(false);
   readonly error      = signal('');
   readonly locked     = signal(false);
+
+  // Page en plein écran (position: fixed) - on bloque le scroll du body le temps qu'elle
+  // soit affichée, sinon son `padding-bottom` mobile (prévu pour la bottom-nav, absente
+  // ici) laisse dépasser le fond de la page en dessous.
+  ngOnInit() { document.body.style.overflow = 'hidden'; }
+  ngOnDestroy() { document.body.style.overflow = ''; }
 
   submit() {
     const slug = this.route.parent?.snapshot.paramMap.get('restaurantSlug') ?? this.route.snapshot.paramMap.get('restaurantSlug');

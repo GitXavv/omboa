@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SuperAdminAuthService } from '../../core/services/super-admin-auth.service';
@@ -10,7 +10,7 @@ import { SuperAdminAuthService } from '../../core/services/super-admin-auth.serv
   templateUrl: './superadmin-login.component.html',
   styleUrl: '../staff-login/staff-login.component.css'
 })
-export class SuperAdminLoginComponent {
+export class SuperAdminLoginComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly auth = inject(SuperAdminAuthService);
 
@@ -18,6 +18,12 @@ export class SuperAdminLoginComponent {
   readonly loading = signal(false);
   readonly error   = signal('');
   readonly locked  = signal(false);
+
+  // Page en plein écran (position: fixed) - on bloque le scroll du body le temps qu'elle
+  // soit affichée, sinon son `padding-bottom` mobile (prévu pour la bottom-nav, absente
+  // ici) laisse dépasser le fond de la page en dessous.
+  ngOnInit() { document.body.style.overflow = 'hidden'; }
+  ngOnDestroy() { document.body.style.overflow = ''; }
 
   submit() {
     if (!this.key().trim() || this.locked()) return;
