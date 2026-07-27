@@ -569,6 +569,7 @@
 }
 .payment-method-option input        { accent-color: var(--color-primary); }
 .payment-method-option__icon        { font-size: 1.25rem; }
+.payment-method-option__icon-img    { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
 .payment-method-option.selected     { border-color: var(--color-primary); background: var(--color-primary-faded); }
 .payment-method-option:hover        { border-color: var(--color-primary-light); }
 

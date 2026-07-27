@@ -3,6 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { forkJoin, firstValueFrom } from 'rxjs';
 import { SuperAdminService, CreateRestaurantPayload } from '../../core/services/super-admin.service';
+
+interface CreatedRestaurantKeys {
+  name: string;
+  ownerKey: string;
+  cook: string;
+  receptionist: string;
+  exit: string;
+}
 import { SuperAdminAuthService } from '../../core/services/super-admin-auth.service';
 import { ImageUploadService } from '../../core/services/image-upload.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -48,6 +56,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   readonly showCreateForm = signal(false);
   readonly newRestaurant  = signal<CreateRestaurantPayload>(this.blankNewRestaurant());
   readonly creating       = signal(false);
+
+  // Récapitulatif affiché une seule fois juste après la création - les clés cuisine/
+  // réception/sortie (valeurs fixes par défaut) n'apparaissent nulle part ailleurs côté
+  // super admin, qui n'a normalement aucun accès à staff_keys.
+  readonly createdKeysInfo = signal<CreatedRestaurantKeys | null>(null);
+  readonly copiedKeyLabel  = signal<string | null>(null);
 
   // Logo à la création - même motif que l'édition, mais uploadé via un id temporaire
   // (le restaurant n'existe pas encore).
@@ -150,16 +164,32 @@ export class SuperAdminDashboardComponent implements OnInit {
       const file = this.createLogoFile();
       if (file) logoUrl = await firstValueFrom(this.superAdminSvc.uploadLogoForNewRestaurant(file));
 
-      await firstValueFrom(this.superAdminSvc.createRestaurant({ ...r, logo_url: logoUrl }));
+      const res = await firstValueFrom(this.superAdminSvc.createRestaurant({ ...r, logo_url: logoUrl }));
 
       this.toast.success(`Restaurant "${r.name}" créé.`);
       this.showCreateForm.set(false);
+      this.createdKeysInfo.set({
+        name: r.name,
+        ownerKey: r.owner_key,
+        cook: res.default_staff_keys.cook,
+        receptionist: res.default_staff_keys.receptionist,
+        exit: res.default_staff_keys.exit
+      });
       this.load();
     } catch (err: any) {
       this.toast.error(err?.error?.message ?? 'Impossible de créer le restaurant.');
     } finally {
       this.creating.set(false);
     }
+  }
+
+  dismissCreatedKeysInfo() { this.createdKeysInfo.set(null); }
+
+  copyKey(label: string, value: string) {
+    navigator.clipboard.writeText(value).then(() => {
+      this.copiedKeyLabel.set(label);
+      setTimeout(() => this.copiedKeyLabel.set(null), 1500);
+    });
   }
 
   toggleCardMenu(id: string) {

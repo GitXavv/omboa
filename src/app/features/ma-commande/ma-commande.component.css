@@ -247,6 +247,7 @@
 .payment-method-option input[type="radio"] { width: 16px; height: 16px; accent-color: var(--color-primary); }
 .payment-method-option.selected { border-color: var(--color-primary); background: rgba(var(--color-primary-rgb),0.07); }
 .payment-method-option__icon { font-size: 1.25rem; }
+.payment-method-option__icon-img { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
 
 /* ── Popup paiement en espèce (ma-commande) ─────────────────────────────── */
 .mc-cash-overlay {

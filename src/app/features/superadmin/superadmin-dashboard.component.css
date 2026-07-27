@@ -227,6 +227,19 @@
 .sa-modal__error { margin: 0; font-size: 0.8125rem; color: var(--color-error); }
 .danger-confirm { background: var(--color-error) !important; color: #fff !important; }
 
+/* ── Récapitulatif des clés à la création ─────────────────────────────────── */
+.sa-key-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+.sa-key-row__label { font-size: 0.8125rem; font-weight: 700; color: var(--color-text-muted); width: 80px; flex-shrink: 0; }
+.sa-key-row__value { flex: 1; font-family: monospace; font-size: 0.9375rem; font-weight: 600; letter-spacing: 0.02em; }
+
 .form-hint { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
 
 /* ── Zone d'import du logo (même motif que menu/catégories et "Réservez une démo") ── */

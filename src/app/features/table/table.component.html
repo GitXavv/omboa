@@ -492,10 +492,14 @@
               <p class="tracking-payment__sub">Choisissez votre mode de paiement pour confirmer.</p>
 
               <div class="payment-method-list">
-                @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'🟠'},{id:'mtn_momo',label:'MTN MoMo',icon:'🟡'}]); track m.id) {
+                @for (m of ([{id:'cash',label:'Espèces',icon:'💵'},{id:'orange_money',label:'Orange Money',icon:'/icons/om.png'},{id:'mtn_momo',label:'MTN MoMo',icon:'/icons/momo.png'}]); track m.id) {
                   <label class="payment-method-option" [class.selected]="payMethod() === m.id">
                     <input type="radio" name="track-pay-method" [value]="m.id" [checked]="payMethod() === m.id" (change)="payMethod.set($any(m.id))">
-                    <span class="payment-method-option__icon">{{ m.icon }}</span>
+                    @if (m.id === 'cash') {
+                      <span class="payment-method-option__icon">{{ m.icon }}</span>
+                    } @else {
+                      <img [src]="m.icon" [alt]="m.label" class="payment-method-option__icon-img">
+                    }
                     <span>{{ m.label }}</span>
                   </label>
                 }

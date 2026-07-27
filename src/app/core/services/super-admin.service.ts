@@ -15,6 +15,11 @@ export interface CreateRestaurantPayload {
   address?: string;
 }
 
+export interface CreateRestaurantResponse {
+  restaurant: Restaurant;
+  default_staff_keys: { cook: string; receptionist: string; exit: string };
+}
+
 @Injectable({ providedIn: 'root' })
 export class SuperAdminService {
   private readonly base = `${environment.apiUrl}/superadmin`;
@@ -25,8 +30,8 @@ export class SuperAdminService {
     return this.http.get<Restaurant[]>(`${this.base}/restaurants`);
   }
 
-  createRestaurant(payload: CreateRestaurantPayload): Observable<Restaurant> {
-    return this.http.post<Restaurant>(`${this.base}/restaurants`, payload);
+  createRestaurant(payload: CreateRestaurantPayload): Observable<CreateRestaurantResponse> {
+    return this.http.post<CreateRestaurantResponse>(`${this.base}/restaurants`, payload);
   }
 
   updateRestaurant(id: string, data: Partial<Pick<Restaurant, 'name' | 'logo_url' | 'color_primary' | 'color_secondary' | 'address' | 'is_active' | 'archived'>>): Observable<void> {

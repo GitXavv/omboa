@@ -231,6 +231,57 @@
   </div>
 }
 
+<!-- ── Récapitulatif des clés d'accès après création ──────────────────────────
+     Seule apparition de ces clés côté super admin (staff_keys reste hors de portée
+     du reste de l'interface) - à communiquer au restaurant une fois fermée. -->
+@if (createdKeysInfo(); as k) {
+  <div class="sa-modal-overlay" (click)="dismissCreatedKeysInfo()">
+    <div class="sa-modal sa-modal--sm" (click)="$event.stopPropagation()">
+      <div class="sa-modal__header">
+        <h3>Clés d'accès - {{ k.name }}</h3>
+        <button class="sa-modal__close" (click)="dismissCreatedKeysInfo()">✕</button>
+      </div>
+      <div class="sa-modal__body sa-modal__body--stack">
+        <p class="text-muted" style="font-size:.875rem">
+          À communiquer au personnel concerné. L'administrateur pourra changer ces 4 clés
+          depuis le panneau Staff de son restaurant.
+        </p>
+        <div class="sa-key-row">
+          <span class="sa-key-row__label">Admin</span>
+          <span class="sa-key-row__value">{{ k.ownerKey }}</span>
+          <button class="btn btn--ghost btn--sm" (click)="copyKey('owner', k.ownerKey)">
+            {{ copiedKeyLabel() === 'owner' ? 'Copié !' : 'Copier' }}
+          </button>
+        </div>
+        <div class="sa-key-row">
+          <span class="sa-key-row__label">Cuisine</span>
+          <span class="sa-key-row__value">{{ k.cook }}</span>
+          <button class="btn btn--ghost btn--sm" (click)="copyKey('cook', k.cook)">
+            {{ copiedKeyLabel() === 'cook' ? 'Copié !' : 'Copier' }}
+          </button>
+        </div>
+        <div class="sa-key-row">
+          <span class="sa-key-row__label">Réception</span>
+          <span class="sa-key-row__value">{{ k.receptionist }}</span>
+          <button class="btn btn--ghost btn--sm" (click)="copyKey('receptionist', k.receptionist)">
+            {{ copiedKeyLabel() === 'receptionist' ? 'Copié !' : 'Copier' }}
+          </button>
+        </div>
+        <div class="sa-key-row">
+          <span class="sa-key-row__label">Sortie</span>
+          <span class="sa-key-row__value">{{ k.exit }}</span>
+          <button class="btn btn--ghost btn--sm" (click)="copyKey('exit', k.exit)">
+            {{ copiedKeyLabel() === 'exit' ? 'Copié !' : 'Copier' }}
+          </button>
+        </div>
+      </div>
+      <div class="sa-modal__footer">
+        <button class="btn btn--primary btn--full" (click)="dismissCreatedKeysInfo()">Fermer</button>
+      </div>
+    </div>
+  </div>
+}
+
 <!-- ── Modale édition restaurant (nom, logo, couleurs - super admin uniquement) ── -->
 @if (editingRestaurant(); as r) {
   <div class="sa-modal-overlay" (click)="closeEditForm()">
