@@ -643,6 +643,7 @@
 @if (receiptPopup() && trackedOrder()) {
   <div class="receipt-overlay">
     <div class="receipt-popup">
+      <button class="receipt-popup__close no-print" (click)="closeReceiptPopup()" aria-label="Fermer">✕</button>
 
       <!-- Entête du reçu (masqué à l'impression) -->
       <div class="receipt-popup__toolbar no-print">

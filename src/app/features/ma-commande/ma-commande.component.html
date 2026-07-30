@@ -190,6 +190,7 @@
 @if (receiptPopup() && order()) {
   <div class="receipt-overlay">
     <div class="receipt-popup">
+      <button class="receipt-popup__close no-print" (click)="closeReceiptPopup()" aria-label="Fermer">✕</button>
       <div class="receipt-popup__toolbar no-print">
         <span class="receipt-popup__toolbar-title">Votre reçu est prêt !</span>
         <div class="receipt-popup__toolbar-btns">

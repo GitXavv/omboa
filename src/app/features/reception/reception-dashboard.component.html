@@ -84,6 +84,7 @@
                     <button class="order-card__btn order-card__btn--advance" (click)="confirmCash(o)">💵 Confirmer paiement espèces</button>
                   } @else if (!o.payment) {
                     <span class="order-card__waiting">⏳ En attente du choix de paiement du client</span>
+                    <button class="order-card__btn order-card__btn--advance" (click)="confirmCash(o)">💵 Client a payé en espèces</button>
                   } @else {
                     <span class="order-card__waiting">⏳ Paiement en cours de traitement</span>
                   }
